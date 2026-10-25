@@ -1,13 +1,115 @@
 // use prisma-8
 
-model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  username  String?
-  name      String?
-  posts     Post[]
+// --- Enums ---
+
+enum UserRole {
+  @@type("pg/text@1")
+  owner     = "owner"
+  admin     = "admin"
+  responder = "responder"
+  member    = "member"
+  viewer    = "viewer"
+}
+
+enum ServiceType {
+  @@type("pg/text@1")
+  http      = "http"
+  api       = "api"
+  database  = "database"
+  queue     = "queue"
+  worker    = "worker"
+  other     = "other"
+}
+
+enum ServiceEnvironment {
+  @@type("pg/text@1")
+  production  = "production"
+  staging     = "staging"
+  development = "development"
+}
+
+enum ServiceCriticality {
+  @@type("pg/text@1")
+  low      = "low"
+  medium   = "medium"
+  high     = "high"
+  critical = "critical"
+}
+
+enum ServiceHealthStatus {
+  @@type("pg/text@1")
+  healthy  = "healthy"
+  degraded = "degraded"
+  down     = "down"
+  unknown  = "unknown"
+}
+
+enum IncidentSeverity {
+  @@type("pg/text@1")
+  sev1 = "sev1"
+  sev2 = "sev2"
+  sev3 = "sev3"
+  sev4 = "sev4"
+}
+
+enum IncidentStatus {
+  @@type("pg/text@1")
+  open          = "open"
+  acknowledged  = "acknowledged"
+  investigating = "investigating"
+  mitigated     = "mitigated"
+  resolved      = "resolved"
+}
+
+enum IncidentEventType {
+  @@type("pg/text@1")
+  created       = "created"
+  acknowledged  = "acknowledged"
+  status_change = "status_change"
+  comment       = "comment"
+  assignment    = "assignment"
+  resolved      = "resolved"
+  system        = "system"
+}
+
+enum AlertProcessingStatus {
+  @@type("pg/text@1")
+  pending    = "pending"
+  processed  = "processed"
+  ignored    = "ignored"
+  failed     = "failed"
+}
+
+// --- Models ---
+
+model Company {
+  id        Int        @id @default(autoincrement())
+  name      String
+  users     User[]
+  services  Service[]
+  incidents Incident[]
   createdAt TimestamptzString @default(now())
   updatedAt temporal.updatedAtString()
+
+  @@index([name])
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  username  String?
+  name      String?
+  role      UserRole  @default(member)
+  companyId Int
+  company   Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  posts     Post[]
+  assignedIncidents Incident[]     @relation("IncidentAssignee")
+  incidentEvents    IncidentEvent[] @relation("IncidentEventActor")
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+
+  @@index([companyId])
+  @@index([companyId, role])
 }
 
 model Post {
@@ -18,4 +120,92 @@ model Post {
   authorId  Int
   createdAt TimestamptzString @default(now())
   updatedAt temporal.updatedAtString()
+
+  @@index([authorId])
+}
+
+model Service {
+  id            Int                  @id @default(autoincrement())
+  companyId     Int
+  company       Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name          String
+  description   String?
+  serviceType   ServiceType
+  monitoredUrl  String?
+  environment   ServiceEnvironment
+  criticality   ServiceCriticality
+  healthStatus  ServiceHealthStatus  @default(unknown)
+  incidents     Incident[]
+  alertEvents   AlertEvent[]
+  createdAt     TimestamptzString    @default(now())
+  updatedAt     temporal.updatedAtString()
+
+  @@unique([companyId, name])
+  @@index([companyId])
+  @@index([companyId, healthStatus])
+  @@index([companyId, environment])
+}
+
+model Incident {
+  id                  Int              @id @default(autoincrement())
+  companyId           Int
+  company             Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  serviceId           Int
+  service             Service          @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  title               String
+  description         String?
+  severity            IncidentSeverity
+  status              IncidentStatus   @default(open)
+  assignedResponderId Int?
+  assignedResponder   User?            @relation("IncidentAssignee", fields: [assignedResponderId], references: [id], onDelete: SetNull)
+  detectedAt          TimestamptzString
+  acknowledgedAt      TimestamptzString?
+  resolvedAt          TimestamptzString?
+  events              IncidentEvent[]
+  alertEvents         AlertEvent[]
+  createdAt           TimestamptzString @default(now())
+  updatedAt           temporal.updatedAtString()
+
+  @@index([companyId])
+  @@index([companyId, status])
+  @@index([companyId, severity])
+  @@index([serviceId])
+  @@index([assignedResponderId])
+  // At most one unresolved incident per service (grouping key for v1).
+  @@index([serviceId], where: sql`(status <> 'resolved')`, unique: true, name: "incident_one_unresolved_per_service")
+}
+
+model IncidentEvent {
+  id         Int               @id @default(autoincrement())
+  incidentId Int
+  incident   Incident          @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  actorId    Int?
+  actor      User?             @relation("IncidentEventActor", fields: [actorId], references: [id], onDelete: SetNull)
+  eventType  IncidentEventType
+  message    String
+  occurredAt TimestamptzString @default(now())
+
+  @@index([incidentId])
+  @@index([incidentId, occurredAt])
+  @@index([actorId])
+}
+
+model AlertEvent {
+  id               Int                   @id @default(autoincrement())
+  serviceId        Int
+  service          Service               @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  incidentId       Int?
+  incident         Incident?             @relation(fields: [incidentId], references: [id], onDelete: SetNull)
+  provider         String
+  providerEventId  String
+  payload          Jsonb
+  processingStatus AlertProcessingStatus @default(pending)
+  receivedAt       TimestamptzString     @default(now())
+
+  // Same provider event must not be ingested twice for one service.
+  @@unique([serviceId, provider, providerEventId])
+  @@index([serviceId])
+  @@index([incidentId])
+  @@index([processingStatus])
+  @@index([receivedAt])
 }

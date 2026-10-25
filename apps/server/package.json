@@ -3,16 +3,27 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./incident-engine": "./src/incident-engine/index.ts",
+    "./db": "./src/prisma/db.ts"
+  },
   "scripts": {
-    "contract:emit": "prisma contract emit"
+    "contract:emit": "prisma contract emit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check-types": "tsc --noEmit"
   },
   "devDependencies": {
     "@prisma/cli-engine": "^0.9.0",
     "@types/node": "^26.4.1",
-    "prisma": "^8.0.0-rc.24"
+    "prisma": "^8.0.0-rc.24",
+    "typescript": "7.0.2",
+    "vitest": "^5.0.5"
   },
   "dependencies": {
     "@prisma/orm-postgres": "^8.0.0-rc.18",
-    "dotenv": "^16.0.3"
+    "dotenv": "^16.0.3",
+    "zod": "^4.0.0"
   }
 }
