@@ -97,9 +97,11 @@ model Company {
 model User {
   id        Int       @id @default(autoincrement())
   email     String    @unique
-  username  String?
-  name      String?
-  role      UserRole  @default(member)
+  username     String?
+  name         String?
+  passwordHash String?
+  refreshToken String?
+  role         UserRole  @default(member)
   companyId Int
   company   Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
   posts     Post[]

@@ -1,7 +1,7 @@
 import { createHmac, randomUUID } from 'node:crypto';
 import nodeProcess from 'node:process';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { db } from '../prisma/db.js';
+import { db } from '../../prisma/db.js';
 import { ALERT_WEBHOOK_PROVIDER } from './constants.js';
 import { AlertProcessingError } from './errors.js';
 import { processAlertWebhook } from './process-alert.js';

@@ -1,5 +1,5 @@
 import { and } from '@prisma/orm-postgres/orm-client';
-import { db as defaultDb } from '../prisma/db.js';
+import { db as defaultDb } from '../../prisma/db.js';
 import { assertWebhookAuthorized, type WebhookAuthHeaders } from './auth.js';
 import {
   ALERT_WEBHOOK_PROVIDER,
@@ -79,7 +79,7 @@ async function claimAlertEvent(client: DbClient, payload: AlertWebhookPayload) {
       serviceId: payload.serviceId,
       provider: ALERT_WEBHOOK_PROVIDER,
       providerEventId: payload.eventId,
-      payload: payload as unknown as Record<string, unknown>,
+      payload: payload as any,
       processingStatus: 'pending',
       receivedAt: new Date().toISOString(),
     });

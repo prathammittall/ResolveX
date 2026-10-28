@@ -5,10 +5,14 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./incident-engine": "./src/incident-engine/index.ts",
-    "./db": "./src/prisma/db.ts"
+    "./incident-engine": "./src/services/incident-engine/index.ts",
+    "./auth": "./src/services/auth/index.ts",
+    "./db": "./src/prisma/db.ts",
+    "./server": "./src/server.ts"
   },
   "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
     "contract:emit": "prisma contract emit",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -16,14 +20,19 @@
   },
   "devDependencies": {
     "@prisma/cli-engine": "^0.9.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.4.1",
     "prisma": "^8.0.0-rc.24",
+    "tsx": "^4.23.15",
     "typescript": "7.0.2",
     "vitest": "^5.0.5"
   },
   "dependencies": {
     "@prisma/orm-postgres": "^8.0.0-rc.18",
+    "bcryptjs": "^3.0.3",
     "dotenv": "^16.0.3",
+    "jsonwebtoken": "^9.0.3",
     "zod": "^4.0.0"
   }
 }
