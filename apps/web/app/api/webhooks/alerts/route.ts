@@ -2,7 +2,7 @@ import {
   isAlertProcessingError,
   processAlertWebhook,
   type AlertErrorBody,
-} from 'server';
+} from 'server/incident-engine';
 import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
