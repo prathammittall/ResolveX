@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acme Co — System Status</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            canvas: '#F7F5EF',
+            card: '#FFFDF8',
+            border: '#E5E2DA',
+            primary: '#315E8C',
+            navy: '#172B40',
+            body: '#252D32',
+            muted: '#71808A',
+            amberState: '#D97706',
+            amberBg: '#FEF3C7',
+            sageGreen: '#879B84',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #F7F5EF;
+      color: #252D32;
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-6 sm:p-12 md:py-20 relative selection:bg-slate-200">
+
+  <!-- Faint topographic contour line pattern in corner (5% opacity) -->
+  <div class="fixed top-0 right-0 pointer-events-none opacity-[0.05] overflow-hidden w-96 h-96 -z-10" aria-hidden="true">
+    <svg viewBox="0 0 400 400" fill="none" stroke="#172B40" stroke-width="1.2">
+      <ellipse cx="280" cy="120" rx="60" ry="40" />
+      <ellipse cx="280" cy="120" rx="100" ry="70" />
+      <ellipse cx="280" cy="120" rx="145" ry="105" />
+      <ellipse cx="280" cy="120" rx="195" ry="145" />
+      <ellipse cx="280" cy="120" rx="250" ry="190" />
+      <ellipse cx="280" cy="120" rx="310" ry="240" />
+    </svg>
+  </div>
+
+  <!-- Main Container: Centered 640px column -->
+  <main class="w-full max-w-[640px] mx-auto flex-1 flex flex-col justify-start">
+    
+    <!-- Minimalist Brand Header -->
+    <header class="mb-14 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <!-- Understated mark -->
+        <div class="w-7 h-7 rounded border border-[#E5E2DA] bg-[#FFFDF8] flex items-center justify-center text-[#172B40] font-medium text-xs tracking-wider">
+          A
+        </div>
+        <span class="text-xs font-mono uppercase tracking-widest text-muted">Acme Co Status</span>
+      </div>
+      <div class="text-xs font-mono text-muted">
+        Updated 15:10 UTC
+      </div>
+    </header>
+
+    <!-- Overall System Headline -->
+    <section class="mb-10">
+      <div class="inline-flex items-center space-x-3">
+        <span class="relative flex h-3 w-3">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-60"></span>
+          <span class="relative inline-flex rounded-full h-3 w-3 bg-[#D97706]"></span>
+        </span>
+        <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight text-navy">
+          Degraded performance
+        </h1>
+      </div>
+      <p class="mt-3 text-sm text-muted">
+        We are experiencing elevated error rates on checkout and payment processing services. Responders are actively engaged.
+      </p>
+    </section>
+
+    <!-- Active Incident Card -->
+    <section class="mb-14">
+      <div class="bg-[#FFFDF8] border border-[#E5E2DA] rounded-lg p-6 transition-all">
+        <div class="flex items-center justify-between pb-4 border-b border-[#E5E2DA]">
+          <div class="flex items-center space-x-2.5">
+            <h2 class="text-base font-medium text-navy">
+              Elevated API latency
+            </h2>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A]">
+              Investigating
+            </span>
+          </div>
+          <span class="text-xs font-mono text-muted">
+            15:08 UTC
+          </span>
+        </div>
+
+        <div class="pt-4 space-y-3">
+          <p class="text-sm text-body leading-relaxed">
+            Traffic has been rerouted to secondary clusters. Primary shard connection saturation is stabilizing; P99 latency is trending down from peak levels as traffic settles.
+          </p>
+          <div class="text-[11px] font-mono text-muted pt-1">
+            Impacted component: <span class="text-body font-mono">Payments API</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Services Status Rows -->
+    <section class="mb-16">
+      <div class="flex items-center justify-between mb-3 px-1">
+        <h3 class="text-xs font-mono uppercase tracking-widest text-muted">System Services</h3>
+        <span class="text-xs font-mono text-muted">4 services</span>
+      </div>
+
+      <div class="bg-[#FFFDF8] border border-[#E5E2DA] rounded-lg divide-y divide-[#E5E2DA]">
+        <!-- Payments API (Degraded / Amber) -->
+        <div class="flex items-center justify-between px-5 py-4">
+          <div class="flex items-center space-x-3">
+            <span class="w-2 h-2 rounded-full bg-[#D97706]" aria-hidden="true"></span>
+            <span class="text-sm font-medium text-body">Payments API</span>
+          </div>
+          <span class="text-xs font-mono font-medium text-[#D97706]">
+            Degraded
+          </span>
+        </div>
+
+        <!-- Auth Service (Operational / Sage green) -->
+        <div class="flex items-center justify-between px-5 py-4">
+          <div class="flex items-center space-x-3">
+            <span class="w-2 h-2 rounded-full bg-[#879B84]" aria-hidden="true"></span>
+            <span class="text-sm font-medium text-body">Authentication & SSO</span>
+          </div>
+          <span class="text-xs font-mono font-medium text-[#879B84]">
+            Operational
+          </span>
+        </div>
+
+        <!-- Checkout Engine (Operational / Sage green) -->
+        <div class="flex items-center justify-between px-5 py-4">
+          <div class="flex items-center space-x-3">
+            <span class="w-2 h-2 rounded-full bg-[#879B84]" aria-hidden="true"></span>
+            <span class="text-sm font-medium text-body">Checkout Engine</span>
+          </div>
+          <span class="text-xs font-mono font-medium text-[#879B84]">
+            Operational
+          </span>
+        </div>
+
+        <!-- Webhook & Notifications (Operational / Sage green) -->
+        <div class="flex items-center justify-between px-5 py-4">
+          <div class="flex items-center space-x-3">
+            <span class="w-2 h-2 rounded-full bg-[#879B84]" aria-hidden="true"></span>
+            <span class="text-sm font-medium text-body">Notification Gateway</span>
+          </div>
+          <span class="text-xs font-mono font-medium text-[#879B84]">
+            Operational
+          </span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Clean, Tiny Footer -->
+  <footer class="w-full max-w-[640px] mx-auto pt-6 border-t border-[#E5E2DA] flex flex-col sm:flex-row items-center justify-between text-xs text-muted font-mono gap-3">
+    <div>
+      Acme Co Infrastructure Status
+    </div>
+    <div class="flex items-center space-x-4">
+      <a href="#" class="text-[#315E8C] hover:underline font-medium focus:outline-none focus:ring-1 focus:ring-[#315E8C] rounded">
+        Subscribe to updates &rarr;
+      </a>
+    </div>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,116 @@
+{
+  "designSystems": [
+    {
+      "name": "assets/14f3a662d50341a18fe33f233e193da6",
+      "designSystem": {
+        "displayName": "War-Room",
+        "styleGuidelines": "## Brand & Style\n\nThis design system embodies a calm, editorial, and quiet aesthetic, merging the precision of modern engineering tools with the contemplative feel of a well-designed paper notebook. The personality is deliberate, uncluttered, and reassuringly grounded\u2014crucial for high-stress incident response scenarios. \n\nAdopting a **Minimalism** design style, the system prioritizes heavy whitespace, a strictly restrained color palette, and uncompromising typographic clarity. Information density is intentionally low; every screen features a single, unambiguous focal point. When in doubt, elements are removed rather than added.\n\n## Layout & Spacing\n\nDesigned desktop-first for 1440px viewports, the layout relies on a strict, restrained grid. A slim left navigation bar houses up to five core items with icons and labels. Content areas enforce generous 32px+ spacing, maximum two-column arrangements, and strict limits on vertical density (no more than three cards per screen, and tables capped at five rows). \n\n- **Gutters:** 32px (`2rem`) between grid tracks.\n- **Margins:** 40px (`2.5rem`) outer canvas padding.\n- **Rhythm:** Generous vertical stacking using `space-lg` and `space-xl` to ensure breathing room.\n\n## Elevation & Depth\n\nDepth is conveyed entirely through low-contrast outlines rather than atmospheric shadows or tonal layers. Cards use a crisp `1px` border of `#E5E2DA` against the warm ivory background, preserving a flat, paper-like tactility. Gradients, glows, and glassmorphism are strictly prohibited.\n\n## Components\n\n### Buttons\nPrimary actions use the cobalt blue (`#315E8C`) fill with white text, an 8px radius, and zero shadows. Secondary actions rely on ghost buttons with subtle text styling and no borders.\n\n### Cards\nConstructed with the `#FFFDF8` surface, defined by a 1px `#E5E2DA` border, and bound to an 8px corner radius. Interior padding must be generous (at least `24px`).\n\n### Input Fields\nClean, border-defined boxes with high-contrast text and explicit focus states using the primary cobalt hue. Labels sit outside and above inputs.\n\n### Lists & Tables\nSparse and restrained. Tables are strictly capped at a maximum of 5 rows, utilizing thin horizontal rules and ample cell padding to avoid density.\n\n### Status Badges\nReserved strictly for incident severity levels using muted semantic tones (red, amber, green) paired with JetBrains Mono text.",
+        "theme": {
+          "colorMode": "LIGHT",
+          "font": "INTER",
+          "roundness": "ROUND_FOUR",
+          "customColor": "#315e8c",
+          "headlineFont": "INTER",
+          "bodyFont": "INTER",
+          "labelFont": "JETBRAINS_MONO",
+          "namedColors": {
+            "secondary_fixed_dim": "#b4c8e3",
+            "surface_tint": "#34618f",
+            "surface_container_highest": "#e2e2e6",
+            "primary": "#134673",
+            "card-border": "#E5E2DA",
+            "tertiary_fixed": "#ffdea9",
+            "secondary_container": "#cde1fd",
+            "surface_container": "#ededf2",
+            "secondary_fixed": "#d1e4ff",
+            "on_surface_variant": "#42474f",
+            "primary_container": "#315e8c",
+            "background": "#F7F5EF",
+            "inverse_surface": "#2f3034",
+            "on_primary_fixed": "#001d36",
+            "primary_fixed_dim": "#9fcafe",
+            "surface": "#f9f9fd",
+            "inverse_on_surface": "#f0f0f5",
+            "on_secondary": "#ffffff",
+            "severity-green": "#3D7A5D",
+            "on_surface": "#1a1c1f",
+            "severity-red": "#B84A39",
+            "surface_dim": "#d9dade",
+            "on_primary_fixed_variant": "#174976",
+            "card": "#FFFDF8",
+            "inverse_primary": "#9fcafe",
+            "tertiary": "#5b3f00",
+            "on_tertiary_fixed": "#271900",
+            "outline": "#727780",
+            "on_secondary_fixed": "#071d31",
+            "primary_fixed": "#d1e4ff",
+            "surface_bright": "#f9f9fd",
+            "on_tertiary_container": "#fdcc77",
+            "on_error": "#ffffff",
+            "error_container": "#ffdad6",
+            "on_background": "#1a1c1f",
+            "on_primary": "#ffffff",
+            "surface_container_lowest": "#ffffff",
+            "on_error_container": "#93000a",
+            "on_tertiary": "#ffffff",
+            "error": "#ba1a1a",
+            "on_tertiary_fixed_variant": "#5e4100",
+            "surface_container_low": "#f3f3f8",
+            "on_primary_container": "#b8d7ff",
+            "surface_container_high": "#e8e8ec",
+            "text-main": "#252D32",
+            "on_secondary_fixed_variant": "#35485f",
+            "accent-sage": "#879B84",
+            "severity-amber": "#C47D15",
+            "accent-sandstone": "#C9B79D",
+            "on_secondary_container": "#51647c",
+            "text-secondary": "#71808A",
+            "secondary": "#4d6077",
+            "surface_variant": "#e2e2e6",
+            "tertiary_fixed_dim": "#efbf6b",
+            "tertiary_container": "#785506",
+            "outline_variant": "#c2c7d0"
+          },
+          "designMd": "---\nname: War-Room\ncolors:\n  surface: '#f9f9fd'\n  surface-dim: '#d9dade'\n  surface-bright: '#f9f9fd'\n  surface-container-lowest: '#ffffff'\n  surface-container-low: '#f3f3f8'\n  surface-container: '#ededf2'\n  surface-container-high: '#e8e8ec'\n  surface-container-highest: '#e2e2e6'\n  on-surface: '#1a1c1f'\n  on-surface-variant: '#42474f'\n  inverse-surface: '#2f3034'\n  inverse-on-surface: '#f0f0f5'\n  outline: '#727780'\n  outline-variant: '#c2c7d0'\n  surface-tint: '#34618f'\n  primary: '#134673'\n  on-primary: '#ffffff'\n  primary-container: '#315e8c'\n  on-primary-container: '#b8d7ff'\n  inverse-primary: '#9fcafe'\n  secondary: '#4d6077'\n  on-secondary: '#ffffff'\n  secondary-container: '#cde1fd'\n  on-secondary-container: '#51647c'\n  tertiary: '#5b3f00'\n  on-tertiary: '#ffffff'\n  tertiary-container: '#785506'\n  on-tertiary-container: '#fdcc77'\n  error: '#ba1a1a'\n  on-error: '#ffffff'\n  error-container: '#ffdad6'\n  on-error-container: '#93000a'\n  primary-fixed: '#d1e4ff'\n  primary-fixed-dim: '#9fcafe'\n  on-primary-fixed: '#001d36'\n  on-primary-fixed-variant: '#174976'\n  secondary-fixed: '#d1e4ff'\n  secondary-fixed-dim: '#b4c8e3'\n  on-secondary-fixed: '#071d31'\n  on-secondary-fixed-variant: '#35485f'\n  tertiary-fixed: '#ffdea9'\n  tertiary-fixed-dim: '#efbf6b'\n  on-tertiary-fixed: '#271900'\n  on-tertiary-fixed-variant: '#5e4100'\n  background: '#F7F5EF'\n  on-background: '#1a1c1f'\n  surface-variant: '#e2e2e6'\n  card: '#FFFDF8'\n  card-border: '#E5E2DA'\n  text-main: '#252D32'\n  text-secondary: '#71808A'\n  accent-sage: '#879B84'\n  accent-sandstone: '#C9B79D'\n  severity-red: '#B84A39'\n  severity-amber: '#C47D15'\n  severity-green: '#3D7A5D'\ntypography:\n  headline-lg:\n    fontFamily: Inter\n    fontSize: 24px\n    fontWeight: '600'\n    lineHeight: 32px\n  body-md:\n    fontFamily: Inter\n    fontSize: 15px\n    fontWeight: '400'\n    lineHeight: 24px\n  caption-sm:\n    fontFamily: JetBrains Mono\n    fontSize: 12px\n    fontWeight: '400'\n    lineHeight: 16px\nrounded:\n  sm: 0.125rem\n  DEFAULT: 0.25rem\n  md: 0.375rem\n  lg: 0.5rem\n  xl: 0.75rem\n  full: 9999px\nspacing:\n  gutter: 2rem\n  margin: 2.5rem\n  space-xs: 0.5rem\n  space-sm: 1rem\n  space-md: 1.5rem\n  space-lg: 2rem\n  space-xl: 3rem\n---\n\nDesign a minimalist web app called \"War-Room\", an incident response tool for small engineering teams. Desktop-first, 1440px.\nStyle: calm, editorial, quiet. Think Linear meets a well-designed paper notebook. Lots of whitespace, few elements per screen, one clear focal point per screen. Information density is LOW. If in doubt, remove it.\nColors:\n- Background: warm ivory #F7F5EF\n- Cards: #FFFDF8 with 1px border #E5E2DA, 8px radius, no shadows\n- Primary: cobalt blue #315E8C (buttons, links, active nav only)\n- Deep navy #172B40 for headings\n- Text: #252D32, secondary text #71808A\n- Accents (sparingly): sage #879B84, sandstone #C9B79D\n- Status colors only for incident severity: muted red, amber, green\nTypography: Inter for UI, JetBrains Mono for timestamps and IDs. Few sizes: one heading, one body, one caption.\nLayout rules: slim left sidebar (icons plus labels, 5 items max), generous 32px+ spacing, max 2 columns, no more than 3 cards per screen, no dense tables (max 5 rows).\nDecoration: at most one faint topographic contour line pattern in an empty corner at 5% opacity. Nothing else.\nAvoid: gradients, glass effects, neon, pill-shaped everything, charts unless requested, clutter, tiny text, multiple competing sections.\nSample data used throughout: INC-1042 \"API latency elevated\", service Payments API, SEV-1, commander Asha Sharma, responder Rohan Kumar.",
+          "colorVariant": "FIDELITY",
+          "overridePrimaryColor": "#315e8c",
+          "overrideSecondaryColor": "#172b40",
+          "spacingScale": 2,
+          "typography": {
+            "caption-sm": {
+              "fontFamily": "JetBrains Mono",
+              "fontSize": "12px",
+              "fontWeight": "400",
+              "lineHeight": "16px"
+            },
+            "body-md": {
+              "fontFamily": "Inter",
+              "fontSize": "15px",
+              "fontWeight": "400",
+              "lineHeight": "24px"
+            },
+            "headline-lg": {
+              "fontFamily": "Inter",
+              "fontSize": "24px",
+              "fontWeight": "600",
+              "lineHeight": "32px"
+            }
+          },
+          "spacing": {
+            "space-sm": "1rem",
+            "space-xl": "3rem",
+            "gutter": "2rem",
+            "space-lg": "2rem",
+            "margin": "2.5rem",
+            "space-md": "1.5rem",
+            "space-xs": "0.5rem"
+          },
+          "headlineFontFamily": "Inter",
+          "bodyFontFamily": "Inter",
+          "labelFontFamily": "JetBrains Mono"
+        }
+      },
+      "version": "1"
+    }
+  ]
+}

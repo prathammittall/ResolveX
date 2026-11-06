@@ -1,0 +1,174 @@
+{
+  "name": "projects/4112902916951081564",
+  "title": "Design System Generator",
+  "visibility": "PUBLIC",
+  "createTime": "2026-10-25T14:46:47.686884Z",
+  "updateTime": "2026-10-26T04:46:59.636836Z",
+  "projectType": "TEXT_TO_UI_PRO",
+  "thumbnailScreenshot": {
+    "name": "projects/4112902916951081564/screens/c3d6affceb9d4f27a55d892e22661e2c/fileEntries/screenshot",
+    "downloadUrl": "https://lh3.googleusercontent.com/aida/AEtjO1Xq6iJW5GU1XTBg3PFWmPw-bmDqj30gHqESErcgwVNu7QuYrDqzu9c93CH7qyRGvKYtyhvczRttnDlsbFLdu13OsL7xjkyc9tDoseqHyIcGQgTd9iVMmlrMSgq47NLZtlUPQx62stvDGsT3VCmvMoGBfd4V4ySKOgrynjKAUA-wbtL25vXnM3CzCWamLColSXXpt_qGQ4GjeoWks8gf55Z7MVcax5SKg3Nb0RtpO70"
+  },
+  "origin": "STITCH",
+  "deviceType": "DESKTOP",
+  "designTheme": {
+    "colorMode": "LIGHT",
+    "font": "INTER",
+    "roundness": "ROUND_FOUR",
+    "customColor": "#315e8c",
+    "headlineFont": "INTER",
+    "bodyFont": "INTER",
+    "labelFont": "JETBRAINS_MONO",
+    "namedColors": {
+      "on_tertiary_container": "#fdcc77",
+      "secondary_container": "#cde1fd",
+      "on_secondary_fixed": "#071d31",
+      "on_primary_fixed_variant": "#174976",
+      "on_tertiary": "#ffffff",
+      "inverse_on_surface": "#f0f0f5",
+      "surface_container_lowest": "#ffffff",
+      "on_primary_fixed": "#001d36",
+      "secondary": "#4d6077",
+      "severity-red": "#B84A39",
+      "on_secondary_container": "#51647c",
+      "surface_variant": "#e2e2e6",
+      "surface_container_high": "#e8e8ec",
+      "primary": "#134673",
+      "primary_container": "#315e8c",
+      "on_secondary": "#ffffff",
+      "on_error": "#ffffff",
+      "outline_variant": "#c2c7d0",
+      "on_background": "#1a1c1f",
+      "surface_tint": "#34618f",
+      "error": "#ba1a1a",
+      "surface_container": "#ededf2",
+      "on_primary": "#ffffff",
+      "error_container": "#ffdad6",
+      "card": "#FFFDF8",
+      "accent-sage": "#879B84",
+      "tertiary_fixed": "#ffdea9",
+      "on_tertiary_fixed": "#271900",
+      "text-secondary": "#71808A",
+      "on_surface": "#1a1c1f",
+      "on_error_container": "#93000a",
+      "tertiary_fixed_dim": "#efbf6b",
+      "primary_fixed_dim": "#9fcafe",
+      "surface_bright": "#f9f9fd",
+      "background": "#F7F5EF",
+      "secondary_fixed_dim": "#b4c8e3",
+      "on_secondary_fixed_variant": "#35485f",
+      "surface_container_low": "#f3f3f8",
+      "severity-amber": "#C47D15",
+      "severity-green": "#3D7A5D",
+      "inverse_primary": "#9fcafe",
+      "surface_container_highest": "#e2e2e6",
+      "secondary_fixed": "#d1e4ff",
+      "tertiary": "#5b3f00",
+      "outline": "#727780",
+      "on_surface_variant": "#42474f",
+      "on_primary_container": "#b8d7ff",
+      "on_tertiary_fixed_variant": "#5e4100",
+      "card-border": "#E5E2DA",
+      "accent-sandstone": "#C9B79D",
+      "text-main": "#252D32",
+      "tertiary_container": "#785506",
+      "primary_fixed": "#d1e4ff",
+      "surface_dim": "#d9dade",
+      "inverse_surface": "#2f3034",
+      "surface": "#f9f9fd"
+    },
+    "designMd": "---\nname: War-Room\ncolors:\n  surface: '#f9f9fd'\n  surface-dim: '#d9dade'\n  surface-bright: '#f9f9fd'\n  surface-container-lowest: '#ffffff'\n  surface-container-low: '#f3f3f8'\n  surface-container: '#ededf2'\n  surface-container-high: '#e8e8ec'\n  surface-container-highest: '#e2e2e6'\n  on-surface: '#1a1c1f'\n  on-surface-variant: '#42474f'\n  inverse-surface: '#2f3034'\n  inverse-on-surface: '#f0f0f5'\n  outline: '#727780'\n  outline-variant: '#c2c7d0'\n  surface-tint: '#34618f'\n  primary: '#134673'\n  on-primary: '#ffffff'\n  primary-container: '#315e8c'\n  on-primary-container: '#b8d7ff'\n  inverse-primary: '#9fcafe'\n  secondary: '#4d6077'\n  on-secondary: '#ffffff'\n  secondary-container: '#cde1fd'\n  on-secondary-container: '#51647c'\n  tertiary: '#5b3f00'\n  on-tertiary: '#ffffff'\n  tertiary-container: '#785506'\n  on-tertiary-container: '#fdcc77'\n  error: '#ba1a1a'\n  on-error: '#ffffff'\n  error-container: '#ffdad6'\n  on-error-container: '#93000a'\n  primary-fixed: '#d1e4ff'\n  primary-fixed-dim: '#9fcafe'\n  on-primary-fixed: '#001d36'\n  on-primary-fixed-variant: '#174976'\n  secondary-fixed: '#d1e4ff'\n  secondary-fixed-dim: '#b4c8e3'\n  on-secondary-fixed: '#071d31'\n  on-secondary-fixed-variant: '#35485f'\n  tertiary-fixed: '#ffdea9'\n  tertiary-fixed-dim: '#efbf6b'\n  on-tertiary-fixed: '#271900'\n  on-tertiary-fixed-variant: '#5e4100'\n  background: '#F7F5EF'\n  on-background: '#1a1c1f'\n  surface-variant: '#e2e2e6'\n  card: '#FFFDF8'\n  card-border: '#E5E2DA'\n  text-main: '#252D32'\n  text-secondary: '#71808A'\n  accent-sage: '#879B84'\n  accent-sandstone: '#C9B79D'\n  severity-red: '#B84A39'\n  severity-amber: '#C47D15'\n  severity-green: '#3D7A5D'\ntypography:\n  headline-lg:\n    fontFamily: Inter\n    fontSize: 24px\n    fontWeight: '600'\n    lineHeight: 32px\n  body-md:\n    fontFamily: Inter\n    fontSize: 15px\n    fontWeight: '400'\n    lineHeight: 24px\n  caption-sm:\n    fontFamily: JetBrains Mono\n    fontSize: 12px\n    fontWeight: '400'\n    lineHeight: 16px\nrounded:\n  sm: 0.125rem\n  DEFAULT: 0.25rem\n  md: 0.375rem\n  lg: 0.5rem\n  xl: 0.75rem\n  full: 9999px\nspacing:\n  gutter: 2rem\n  margin: 2.5rem\n  space-xs: 0.5rem\n  space-sm: 1rem\n  space-md: 1.5rem\n  space-lg: 2rem\n  space-xl: 3rem\n---\n\nDesign a minimalist web app called \"War-Room\", an incident response tool for small engineering teams. Desktop-first, 1440px.\nStyle: calm, editorial, quiet. Think Linear meets a well-designed paper notebook. Lots of whitespace, few elements per screen, one clear focal point per screen. Information density is LOW. If in doubt, remove it.\nColors:\n- Background: warm ivory #F7F5EF\n- Cards: #FFFDF8 with 1px border #E5E2DA, 8px radius, no shadows\n- Primary: cobalt blue #315E8C (buttons, links, active nav only)\n- Deep navy #172B40 for headings\n- Text: #252D32, secondary text #71808A\n- Accents (sparingly): sage #879B84, sandstone #C9B79D\n- Status colors only for incident severity: muted red, amber, green\nTypography: Inter for UI, JetBrains Mono for timestamps and IDs. Few sizes: one heading, one body, one caption.\nLayout rules: slim left sidebar (icons plus labels, 5 items max), generous 32px+ spacing, max 2 columns, no more than 3 cards per screen, no dense tables (max 5 rows).\nDecoration: at most one faint topographic contour line pattern in an empty corner at 5% opacity. Nothing else.\nAvoid: gradients, glass effects, neon, pill-shaped everything, charts unless requested, clutter, tiny text, multiple competing sections.\nSample data used throughout: INC-1042 \"API latency elevated\", service Payments API, SEV-1, commander Asha Sharma, responder Rohan Kumar.",
+    "colorVariant": "FIDELITY",
+    "overridePrimaryColor": "#315e8c",
+    "overrideSecondaryColor": "#172b40",
+    "spacingScale": 2,
+    "typography": {
+      "body-md": {
+        "fontFamily": "Inter",
+        "fontSize": "15px",
+        "fontWeight": "400",
+        "lineHeight": "24px"
+      },
+      "caption-sm": {
+        "fontFamily": "JetBrains Mono",
+        "fontSize": "12px",
+        "fontWeight": "400",
+        "lineHeight": "16px"
+      },
+      "headline-lg": {
+        "fontFamily": "Inter",
+        "fontSize": "24px",
+        "fontWeight": "600",
+        "lineHeight": "32px"
+      }
+    },
+    "spacing": {
+      "margin": "2.5rem",
+      "space-sm": "1rem",
+      "gutter": "2rem",
+      "space-lg": "2rem",
+      "space-xl": "3rem",
+      "space-md": "1.5rem",
+      "space-xs": "0.5rem"
+    },
+    "headlineFontFamily": "Inter",
+    "bodyFontFamily": "Inter",
+    "labelFontFamily": "JetBrains Mono"
+  },
+  "screenInstances": [
+    {
+      "id": "4883cb45-354c-4dab-918b-eb30bb9036db",
+      "sourceScreen": "projects/4112902916951081564/screens/10223222307406309875",
+      "width": 780,
+      "height": 1768,
+      "label": "DESIGN.md",
+      "type": "SCREEN_INSTANCE"
+    },
+    {
+      "id": "7ce71d2fdd1041caa412219a3a4a41dc",
+      "sourceScreen": "projects/4112902916951081564/screens/7ce71d2fdd1041caa412219a3a4a41dc",
+      "x": 2237,
+      "y": 2919,
+      "width": 1280,
+      "height": 1040,
+      "label": "Generating Screen..."
+    },
+    {
+      "id": "ac2a010cc0194176b2b57c4342e5288a",
+      "sourceScreen": "projects/4112902916951081564/screens/ac2a010cc0194176b2b57c4342e5288a",
+      "y": 4215,
+      "width": 1280,
+      "height": 879,
+      "label": "Acme Co \u2014 Public Status Page"
+    },
+    {
+      "id": "assets_14f3a662d50341a18fe33f233e193da6",
+      "y": 2024,
+      "width": 960,
+      "height": 540,
+      "sourceAsset": "assets/14f3a662d50341a18fe33f233e193da6",
+      "type": "DESIGN_SYSTEM_INSTANCE"
+    },
+    {
+      "id": "bcee5c2ce21f4c65b5017c606c8a2d58",
+      "sourceScreen": "projects/4112902916951081564/screens/bcee5c2ce21f4c65b5017c606c8a2d58",
+      "x": 878,
+      "y": 2919,
+      "width": 1280,
+      "height": 1024,
+      "label": "Generating Screen..."
+    },
+    {
+      "id": "c3d6affceb9d4f27a55d892e22661e2c",
+      "sourceScreen": "projects/4112902916951081564/screens/c3d6affceb9d4f27a55d892e22661e2c",
+      "x": -447,
+      "y": 2844,
+      "width": 1280,
+      "height": 1099,
+      "label": "Generating Screen..."
+    }
+  ],
+  "metadata": {
+    "userRole": "OWNER"
+  }
+}
