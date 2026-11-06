@@ -1,4 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap');
+@import "tailwindcss";
+
 :root {
+  /* Typography Tokens */
+  --font-serif: 'Newsreader', 'Instrument Serif', Georgia, serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
   /* Locked Stitch Color Palette (DESIGN.md & DESIGN_SYSTEM.md) */
   --bg-canvas: #F7F5EF;
   --bg-card: #FFFDF8;
@@ -65,6 +72,10 @@ body {
   line-height: 24px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.font-serif-title {
+  font-family: 'Newsreader', 'Instrument Serif', Georgia, serif;
 }
 
 ::selection {

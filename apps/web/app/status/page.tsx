@@ -155,7 +155,7 @@ export default function PublicStatusPage() {
               : "Subscribe to updates →"}
           </button>
 
-          <Link href="/" className="wr-meta-mono">
+          <Link href="/dashboard" className="wr-meta-mono">
             War-Room Console
           </Link>
         </div>

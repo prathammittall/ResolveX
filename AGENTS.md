@@ -16,7 +16,7 @@ This block is written and re-added by `turbo` before repository-scoped commands 
 ## 1. Source of Truth & Design Assets
 All original Stitch reference exports live in [`stitch_design/`](./stitch_design):
 - **Design System Spec**: [`stitch_design/DESIGN_SYSTEM.md`](./stitch_design/DESIGN_SYSTEM.md) & [`stitch_design/04_DESIGN_md_10223222/code.md`](./stitch_design/04_DESIGN_md_10223222/code.md)
-- **Screen 1 — Overview Dashboard**: [`stitch_design/03_War-Room___Overview_c3d6affc/code.html`](./stitch_design/03_War-Room___Overview_c3d6affc/code.html) (Route: `/`)
+- **Screen 1 — Overview Dashboard**: [`stitch_design/03_War-Room___Overview_c3d6affc/code.html`](./stitch_design/03_War-Room___Overview_c3d6affc/code.html) (Route: `/dashboard`)
 - **Screen 2 — Incident Summary (`INC-1042`)**: [`stitch_design/05_War-Room___Incident_INC-1042_bcee5c2c/code.html`](./stitch_design/05_War-Room___Incident_INC-1042_bcee5c2c/code.html) (Route: `/incidents/[id]`)
 - **Screen 3 — Incident Live War-Room (`INC-1042`)**: [`stitch_design/01_War-Room___Incident_War_Room_INC-1042_7ce71d2f/code.html`](./stitch_design/01_War-Room___Incident_War_Room_INC-1042_7ce71d2f/code.html) (Route: `/incidents/[id]/war-room`)
 - **Screen 4 — Public Status Page (`Acme Co`)**: [`stitch_design/02_Acme_Co___Public_Status_Page_ac2a010c/code.html`](./stitch_design/02_Acme_Co___Public_Status_Page_ac2a010c/code.html) (Route: `/status`)

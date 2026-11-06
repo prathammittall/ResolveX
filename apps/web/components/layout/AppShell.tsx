@@ -17,8 +17,8 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   {
     label: "Overview",
-    href: "/",
-    matchPrefix: "/",
+    href: "/dashboard",
+    matchPrefix: "/dashboard",
     icon: "dashboard",
   },
   {
@@ -60,7 +60,7 @@ export function AppShell({ children, fullHeightStream = false }: AppShellProps) 
     <div className="wr-shell">
       <aside className="wr-sidebar" aria-label="Primary Navigation">
         <div className="wr-sidebar-top">
-          <Link href="/" className="wr-brand">
+          <Link href="/dashboard" className="wr-brand">
             <span className="wr-brand-mark" aria-hidden="true">
               <svg
                 width="18"
@@ -85,8 +85,8 @@ export function AppShell({ children, fullHeightStream = false }: AppShellProps) 
           <nav className="wr-nav">
             {NAV_ITEMS.map((item) => {
               const isActive =
-                item.matchPrefix === "/"
-                  ? pathname === "/"
+                item.matchPrefix === "/dashboard"
+                  ? pathname === "/dashboard"
                   : pathname.startsWith(item.matchPrefix);
 
               return (

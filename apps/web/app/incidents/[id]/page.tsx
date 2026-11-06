@@ -74,7 +74,7 @@ export default function IncidentSummaryPage() {
     <AppShell>
       {/* Breadcrumb Navigation */}
       <nav className="wr-breadcrumb" aria-label="Breadcrumb">
-        <Link href="/" className="wr-breadcrumb-link">
+        <Link href="/dashboard" className="wr-breadcrumb-link">
           <Icon name="arrow_back" size={14} />
           <span>Incidents</span>
         </Link>

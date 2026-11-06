@@ -1,6 +1,20 @@
 import type { Metadata } from "next";
+import localFont from "next/font/local";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "../lib/auth-context";
+
+const geistSans = localFont({
+  src: "./fonts/GeistVF.woff",
+  variable: "--font-geist-sans",
+  weight: "100 900",
+});
+
+const geistMono = localFont({
+  src: "./fonts/GeistMonoVF.woff",
+  variable: "--font-geist-mono",
+  weight: "100 900",
+});
 
 const inter = Inter({
   subsets: ["latin"],
@@ -17,8 +31,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "War-Room — Incident Response",
-  description: "Minimalist incident response and system status command center.",
+  title: "ResolveX — Intelligent Engineering Operations in One Workspace",
+  description: "Intelligent incident response, monitoring, and engineering telemetry.",
 };
 
 export default function RootLayout({
@@ -28,7 +42,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
-      <body>{children}</body>
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }
