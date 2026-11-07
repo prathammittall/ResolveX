@@ -1,6 +1,7 @@
 import { and } from '@prisma/orm-postgres/orm-client';
 import { db as defaultDb } from '../../prisma/db.js';
-import { assertWebhookAuthorized, type WebhookAuthHeaders } from './auth.js';
+import type { WebhookAuthHeaders } from './auth.js';
+import { authenticateWebhookKey } from './webhook-keys.js';
 import {
   ALERT_WEBHOOK_PROVIDER,
   AUTO_RESOLVE_ON_RECOVERY,
@@ -14,15 +15,13 @@ type DbClient = typeof defaultDb;
 export type ProcessAlertInput = {
   rawBody: string;
   headers: WebhookAuthHeaders;
-  /** Override for tests; defaults to process.env.ALERT_WEBHOOK_SECRET */
-  webhookSecret?: string;
   /** Override for tests */
   db?: DbClient;
 };
 
 /**
  * Ingest a monitoring alert:
- * 1) Verify webhook secret/signature (never logs secrets).
+ * 1) Authenticate the per-service webhook key (only its hash is stored; never logged).
  * 2) Validate payload with Zod.
  * 3) Claim AlertEvent via unique (serviceId, provider, providerEventId).
  * 4) Group firing alerts by unresolved incident for the same service.
@@ -34,7 +33,7 @@ export type ProcessAlertInput = {
 export async function processAlertWebhook(input: ProcessAlertInput): Promise<AlertProcessResult> {
   const client = input.db ?? defaultDb;
 
-  assertWebhookAuthorized(input.headers, input.rawBody, input.webhookSecret);
+  const key = await authenticateWebhookKey(client, input.headers.authorization);
 
   const json = parseJsonBody(input.rawBody);
   const payload = parseAlertWebhookPayload(json);
@@ -48,8 +47,13 @@ export async function processAlertWebhook(input: ProcessAlertInput): Promise<Ale
     );
   }
 
+  // A key authorises exactly one service. Same answer whether the service exists or not (no probing).
+  if (payload.serviceId !== key.serviceId) {
+    throw new AlertProcessingError('FORBIDDEN', 'This webhook key is not valid for the requested service', 403);
+  }
+
   const service = await client.orm.public.Service.where({ id: payload.serviceId }).first();
-  if (!service) {
+  if (!service || service.companyId !== key.companyId) {
     throw new AlertProcessingError('SERVICE_NOT_FOUND', 'Service not found', 404);
   }
 

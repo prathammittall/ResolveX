@@ -73,6 +73,31 @@ export async function handleRefreshToken(req: Request, options?: AuthControllerO
   }
 }
 
+/** POST /auth/switch-org {organizationId}: re-issue the session for another organization the user belongs to. */
+export async function handleSwitchOrg(req: Request, options?: AuthControllerOptions): Promise<Response> {
+  try {
+    let body: Record<string, unknown> = {};
+    try {
+      body = await req.json();
+    } catch {
+      body = {};
+    }
+    const organizationId = body.organizationId;
+    if (typeof organizationId !== 'string' || !/^[0-9a-f-]{36}$/i.test(organizationId)) {
+      return Response.json(
+        { ok: false, error: { code: 'VALIDATION_ERROR', message: 'organizationId is required' } },
+        { status: 400 },
+      );
+    }
+    const cookies = parseCookies(req.headers.get('cookie'));
+    const refreshToken = cookies['refreshToken'] || cookies['refresh_token'];
+    const result = await refresh({ refreshToken }, options, { organizationId });
+    return jsonWithCookies(result, buildAuthCookies(result.tokens, options), { status: 200 });
+  } catch (err) {
+    return handleError(err);
+  }
+}
+
 export async function handleLogout(req: Request, options?: AuthControllerOptions): Promise<Response> {
   try {
     let data: Record<string, unknown> = {};
@@ -111,7 +136,7 @@ export async function handleGetMe(req: Request, options?: AuthControllerOptions)
       );
     }
     const payload = verifyAccessToken(token, options?.accessSecret);
-    return Response.json(await getMe(payload.userId, options));
+    return Response.json(await getMe(payload.userId, options, payload.orgId));
   } catch (err) {
     if (isAuthError(err)) return handleError(err);
     return Response.json(
@@ -130,6 +155,7 @@ export async function authRouter(req: Request, options?: AuthControllerOptions):
     if (pathname.endsWith('/login')) return handleLogin(req, options);
     if (pathname.endsWith('/refresh')) return handleRefreshToken(req, options);
     if (pathname.endsWith('/logout')) return handleLogout(req, options);
+    if (pathname.endsWith('/switch-org')) return handleSwitchOrg(req, options);
   }
   if (method === 'GET' && pathname.endsWith('/me')) {
     return handleGetMe(req, options);

@@ -18,7 +18,6 @@
     "postcss": "^8.5.23",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "server": "*",
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {

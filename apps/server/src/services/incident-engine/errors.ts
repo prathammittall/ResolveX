@@ -1,5 +1,6 @@
 export type AlertErrorCode =
   | 'UNAUTHORIZED'
+  | 'FORBIDDEN'
   | 'VALIDATION_ERROR'
   | 'SERVICE_NOT_FOUND'
   | 'MISCONFIGURED'

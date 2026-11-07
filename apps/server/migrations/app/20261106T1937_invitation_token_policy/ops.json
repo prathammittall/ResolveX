@@ -1,0 +1,45 @@
+[
+  {
+    "id": "rlsPolicy.public.Invitation.invitation_by_token_815ba959",
+    "label": "Create RLS policy \"invitation_by_token_815ba959\" on \"Invitation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rlsPolicy",
+        "name": "invitation_by_token_815ba959",
+        "table": "Invitation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure RLS policy \"invitation_by_token_815ba959\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Invitation",
+          "invitation_by_token_815ba959"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create RLS policy \"invitation_by_token_815ba959\"",
+        "sql": "CREATE POLICY \"invitation_by_token_815ba959\" ON \"public\".\"Invitation\" AS PERMISSIVE FOR SELECT TO PUBLIC USING (\"tokenHash\" = NULLIF(current_setting('app.invite_hash', true), ''))",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify RLS policy \"invitation_by_token_815ba959\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_policies\" WHERE (\"schemaname\" = $1 AND \"tablename\" = $2 AND \"policyname\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Invitation",
+          "invitation_by_token_815ba959"
+        ]
+      }
+    ]
+  }
+]

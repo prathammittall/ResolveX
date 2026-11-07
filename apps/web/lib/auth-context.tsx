@@ -1,5 +1,6 @@
 'use client';
 
+import { refreshSession } from './api';
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 
 export type UserRole = 'owner' | 'admin' | 'responder' | 'member' | 'viewer';
@@ -11,174 +12,132 @@ export interface AuthUser {
   username: string | null;
   role: UserRole;
   companyId: number;
+  orgId: string;
   createdAt?: string;
   updatedAt?: string;
 }
 
+type AuthResult = { ok: boolean; error?: string; user?: AuthUser };
+
 interface AuthContextType {
   user: AuthUser | null;
-  token: string | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<{ ok: boolean; error?: string; user?: AuthUser }>;
+  login: (email: string, password: string) => Promise<AuthResult>;
   register: (data: {
     email: string;
     password: string;
     name?: string;
     companyName?: string;
-  }) => Promise<{ ok: boolean; error?: string; user?: AuthUser }>;
+  }) => Promise<AuthResult>;
   logout: () => Promise<void>;
+  /** Re-issue the session for another organization the user belongs to. */
+  switchOrg: (organizationId: string) => Promise<{ ok: boolean; error?: string }>;
   refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const USER_STORAGE_KEY = 'resolvex_auth_user';
-const TOKEN_STORAGE_KEY = 'resolvex_auth_token';
+/**
+ * Session model: the API sets httpOnly `accessToken` / `refreshToken` cookies, which JavaScript
+ * cannot read. Nothing secret is kept in localStorage; the user profile is always re-fetched
+ * from /api/auth/me (refreshing the access token once if it has expired).
+ */
+async function fetchMe(): Promise<AuthUser | null> {
+  const attempt = async () => fetch('/api/auth/me', { credentials: 'same-origin' });
+  let res = await attempt();
+  if (res.status === 401) {
+    // Shared with the API client so concurrent callers never spend the same refresh token twice.
+    if (!(await refreshSession())) return null;
+    res = await attempt();
+  }
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.ok && data.user ? (data.user as AuthUser) : null;
+}
+
+function registrationErrorMessage(data: {
+  error?: { message?: string; code?: string; details?: { fieldErrors?: Record<string, string[]> } };
+}): string {
+  let errorMsg = data?.error?.message || 'Registration failed';
+  if (data?.error?.code === 'EMAIL_ALREADY_EXISTS') {
+    errorMsg = 'An account with this email already exists. Please sign in instead.';
+  } else if (data?.error?.details?.fieldErrors) {
+    const firstKey = Object.keys(data.error.details.fieldErrors)[0];
+    if (firstKey) {
+      errorMsg = data.error.details.fieldErrors[firstKey]?.[0] || errorMsg;
+    }
+  }
+  return errorMsg;
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize from localStorage and verify with /api/auth/me
   useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem(USER_STORAGE_KEY);
-      const storedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      }
-      if (storedToken) {
-        setToken(storedToken);
-      }
-    } catch (e) {
-      console.warn('Failed to parse stored auth session', e);
-    } finally {
-      setIsLoading(false);
-    }
-
-    // Background verify session with server /api/auth/me
-    fetch('/api/auth/me', { credentials: 'same-origin' })
-      .then(async (res) => {
-        if (res.ok) {
-          const data = await res.json();
-          if (data.ok && data.user) {
-            setUser(data.user);
-            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data.user));
-          }
-        }
+    let cancelled = false;
+    fetchMe()
+      .then((me) => {
+        if (!cancelled) setUser(me);
       })
       .catch(() => {
-        // Ignore network or offline errors during initial verification
+        // Offline or backend unreachable: treat as signed out.
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
       });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const refreshUser = useCallback(async () => {
     try {
-      const headers: Record<string, string> = {};
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-      const res = await fetch('/api/auth/me', { headers, credentials: 'same-origin' });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.ok && data.user) {
-          setUser(data.user);
-          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data.user));
-        }
-      }
+      setUser(await fetchMe());
     } catch (e) {
       console.warn('Failed to refresh user', e);
     }
-  }, [token]);
+  }, []);
 
-  const login = useCallback(
-    async (email: string, password: string): Promise<{ ok: boolean; error?: string; user?: AuthUser }> => {
+  const authRequest = useCallback(
+    async (path: string, payload: unknown, fallbackError: string, mapError?: typeof registrationErrorMessage) => {
       try {
-        const res = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'same-origin',
-          body: JSON.stringify({ email, password }),
-        });
-
-        const data = await res.json();
-
-        if (!res.ok || !data.ok) {
-          const errorMsg =
-            data?.error?.message ||
-            (res.status === 401 ? 'Invalid email or password' : 'Login failed. Please try again.');
-          return { ok: false, error: errorMsg };
-        }
-
-        const authUser: AuthUser = data.user;
-        const accessToken: string = data.tokens?.accessToken || '';
-
-        setUser(authUser);
-        setToken(accessToken);
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(authUser));
-        if (accessToken) {
-          localStorage.setItem(TOKEN_STORAGE_KEY, accessToken);
-        }
-
-        return { ok: true, user: authUser };
-      } catch (err) {
-        return {
-          ok: false,
-          error: err instanceof Error ? err.message : 'Network error occurred. Please try again.',
-        };
-      }
-    },
-    [],
-  );
-
-  const register = useCallback(
-    async (payload: {
-      email: string;
-      password: string;
-      name?: string;
-      companyName?: string;
-    }): Promise<{ ok: boolean; error?: string; user?: AuthUser }> => {
-      try {
-        const res = await fetch('/api/auth/register', {
+        const res = await fetch(path, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'same-origin',
           body: JSON.stringify(payload),
         });
-
         const data = await res.json();
-
         if (!res.ok || !data.ok) {
-          let errorMsg = data?.error?.message || 'Registration failed';
-          if (data?.error?.code === 'EMAIL_ALREADY_EXISTS') {
-            errorMsg = 'An account with this email already exists. Please sign in instead.';
-          } else if (data?.error?.details?.fieldErrors) {
-            const firstKey = Object.keys(data.error.details.fieldErrors)[0];
-            if (firstKey) {
-              errorMsg = data.error.details.fieldErrors[firstKey][0] || errorMsg;
-            }
-          }
-          return { ok: false, error: errorMsg };
+          const message = mapError ? mapError(data) : data?.error?.message || fallbackError;
+          return { ok: false, error: message } satisfies AuthResult;
         }
-
         const authUser: AuthUser = data.user;
-        const accessToken: string = data.tokens?.accessToken || '';
-
         setUser(authUser);
-        setToken(accessToken);
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(authUser));
-        if (accessToken) {
-          localStorage.setItem(TOKEN_STORAGE_KEY, accessToken);
-        }
-
-        return { ok: true, user: authUser };
+        return { ok: true, user: authUser } satisfies AuthResult;
       } catch (err) {
         return {
           ok: false,
           error: err instanceof Error ? err.message : 'Network error occurred. Please try again.',
-        };
+        } satisfies AuthResult;
       }
     },
     [],
+  );
+
+  const login = useCallback(
+    (email: string, password: string) =>
+      authRequest('/api/auth/login', { email, password }, 'Login failed. Please try again.', (data) =>
+        data?.error?.code === 'INVALID_CREDENTIALS' ? 'Invalid email or password' : data?.error?.message || 'Login failed. Please try again.',
+      ),
+    [authRequest],
+  );
+
+  const register = useCallback(
+    (payload: { email: string; password: string; name?: string; companyName?: string }) =>
+      authRequest('/api/auth/register', payload, 'Registration failed', registrationErrorMessage),
+    [authRequest],
   );
 
   const logout = useCallback(async () => {
@@ -187,29 +146,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
+        body: '{}',
       });
     } catch {
       // Ignore network errors on logout
     } finally {
       setUser(null);
-      setToken(null);
-      localStorage.removeItem(USER_STORAGE_KEY);
-      localStorage.removeItem(TOKEN_STORAGE_KEY);
+    }
+  }, []);
+
+  const switchOrg = useCallback(async (organizationId: string) => {
+    try {
+      const res = await fetch('/api/auth/switch-org', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ organizationId }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) return { ok: false, error: data?.error?.message || 'Could not switch organization' };
+      setUser(data.user as AuthUser);
+      return { ok: true };
+    } catch {
+      return { ok: false, error: 'Network error. Please try again.' };
     }
   }, []);
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        token,
-        isLoading,
-        login,
-        register,
-        logout,
-        refreshUser,
-      }}
-    >
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout, switchOrg, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

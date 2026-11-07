@@ -1,0 +1,245 @@
+[
+  {
+    "id": "table.WebhookKey",
+    "label": "Create table \"WebhookKey\"",
+    "summary": "Creates table \"WebhookKey\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "WebhookKey"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"WebhookKey\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WebhookKey\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"WebhookKey\"",
+        "sql": "CREATE TABLE \"public\".\"WebhookKey\" (\n  \"companyId\" int4 NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdById\" int4,\n  \"id\" SERIAL NOT NULL,\n  \"keyHash\" text NOT NULL,\n  \"keyPrefix\" text NOT NULL,\n  \"lastUsedAt\" timestamptz,\n  \"name\" text NOT NULL,\n  \"revokedAt\" timestamptz,\n  \"serviceId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"WebhookKey\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WebhookKey\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.WebhookKey.WebhookKey_keyHash_key",
+    "label": "Add unique constraint on \"WebhookKey\" (keyHash)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "WebhookKey_keyHash_key",
+        "table": "WebhookKey"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"WebhookKey_keyHash_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "WebhookKey_keyHash_key",
+          "public",
+          "\"public\".\"WebhookKey\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"WebhookKey_keyHash_key\"",
+        "sql": "ALTER TABLE \"public\".\"WebhookKey\" ADD CONSTRAINT \"WebhookKey_keyHash_key\" UNIQUE (\"keyHash\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"WebhookKey_keyHash_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "WebhookKey_keyHash_key",
+          "public",
+          "\"public\".\"WebhookKey\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.WebhookKey.WebhookKey_companyId_idx_33acc5ed",
+    "label": "Create index \"WebhookKey_companyId_idx_33acc5ed\" on \"WebhookKey\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "WebhookKey_companyId_idx_33acc5ed",
+        "table": "WebhookKey"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"WebhookKey_companyId_idx_33acc5ed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WebhookKey_companyId_idx_33acc5ed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"WebhookKey_companyId_idx_33acc5ed\"",
+        "sql": "CREATE INDEX \"WebhookKey_companyId_idx_33acc5ed\" ON \"public\".\"WebhookKey\" (\"companyId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"WebhookKey_companyId_idx_33acc5ed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WebhookKey_companyId_idx_33acc5ed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.WebhookKey.WebhookKey_serviceId_idx_b5d9acbf",
+    "label": "Create index \"WebhookKey_serviceId_idx_b5d9acbf\" on \"WebhookKey\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "WebhookKey_serviceId_idx_b5d9acbf",
+        "table": "WebhookKey"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"WebhookKey_serviceId_idx_b5d9acbf\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WebhookKey_serviceId_idx_b5d9acbf\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"WebhookKey_serviceId_idx_b5d9acbf\"",
+        "sql": "CREATE INDEX \"WebhookKey_serviceId_idx_b5d9acbf\" ON \"public\".\"WebhookKey\" (\"serviceId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"WebhookKey_serviceId_idx_b5d9acbf\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WebhookKey_serviceId_idx_b5d9acbf\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.WebhookKey.WebhookKey_companyId_fkey",
+    "label": "Add foreign key \"WebhookKey_companyId_fkey\" on \"WebhookKey\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "WebhookKey_companyId_fkey",
+        "table": "WebhookKey"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"WebhookKey_companyId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "WebhookKey_companyId_fkey",
+          "public",
+          "\"public\".\"WebhookKey\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"WebhookKey_companyId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"WebhookKey\"\nADD CONSTRAINT \"WebhookKey_companyId_fkey\"\nFOREIGN KEY (\"companyId\")\nREFERENCES \"public\".\"Company\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"WebhookKey_companyId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "WebhookKey_companyId_fkey",
+          "public",
+          "\"public\".\"WebhookKey\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.WebhookKey.WebhookKey_serviceId_fkey",
+    "label": "Add foreign key \"WebhookKey_serviceId_fkey\" on \"WebhookKey\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "WebhookKey_serviceId_fkey",
+        "table": "WebhookKey"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"WebhookKey_serviceId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "WebhookKey_serviceId_fkey",
+          "public",
+          "\"public\".\"WebhookKey\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"WebhookKey_serviceId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"WebhookKey\"\nADD CONSTRAINT \"WebhookKey_serviceId_fkey\"\nFOREIGN KEY (\"serviceId\")\nREFERENCES \"public\".\"Service\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"WebhookKey_serviceId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "WebhookKey_serviceId_fkey",
+          "public",
+          "\"public\".\"WebhookKey\""
+        ]
+      }
+    ]
+  }
+]

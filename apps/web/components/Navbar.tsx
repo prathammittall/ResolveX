@@ -72,6 +72,12 @@ const Navbar = () => {
                   {user.role}
                 </span>
               </div>
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#25396e] px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#1c2c56]"
+              >
+                Open dashboard
+              </Link>
               <button
                 onClick={() => logout()}
                 title="Sign Out"
@@ -106,6 +112,9 @@ const Navbar = () => {
               <span className="w-7 h-7 rounded-full bg-[#25396e] text-white flex items-center justify-center text-xs font-bold">
                 {initial}
               </span>
+              <Link href="/dashboard" className="text-xs font-semibold text-white px-2 py-1 rounded bg-[#25396e]">
+                Dashboard
+              </Link>
               <button
                 onClick={() => logout()}
                 className="text-xs text-rose-600 font-medium px-2 py-1 rounded bg-rose-50"

@@ -1,8 +1,8 @@
 import { db as defaultDb } from '../../prisma/db.js';
+import { resolveMembership } from '../org/memberships.js';
 import {
-  clearUserRefreshToken,
   comparePassword,
-  createUserWithCompany,
+  createAccount,
   findUserByEmail,
   findUserById,
   formatAuthUser,
@@ -12,7 +12,10 @@ import {
   logoutSchema,
   refreshTokenSchema,
   registerSchema,
-  updateUserRefreshToken,
+  createSession,
+  hashRefreshToken,
+  newSessionFamilyId,
+  revokeSessionFamily,
   verifyRefreshToken,
   type AuthUser,
   type DbClient,
@@ -23,6 +26,11 @@ import {
   type TokenPair,
 } from './model.js';
 
+async function toMembership(user: { id: number; companyId: number; role: string }, preferredOrgId?: string) {
+  const m = await resolveMembership(user, preferredOrgId);
+  return { organizationId: m.organizationId, role: m.role };
+}
+
 export type AuthErrorCode =
   | 'VALIDATION_ERROR'
   | 'EMAIL_ALREADY_EXISTS'
@@ -31,6 +39,7 @@ export type AuthErrorCode =
   | 'USER_NOT_FOUND'
   | 'COMPANY_NOT_FOUND'
   | 'UNAUTHORIZED'
+  | 'FORBIDDEN'
   | 'INTERNAL';
 
 export class AuthError extends Error {
@@ -107,22 +116,15 @@ export async function register(
     throw new AuthError('EMAIL_ALREADY_EXISTS', 'Email is already registered', 409);
   }
 
-  if (data.companyId) {
-    const company = await client.orm.public.Company.where({ id: data.companyId }).first();
-    if (!company) {
-      throw new AuthError('COMPANY_NOT_FOUND', 'Company not found', 404);
-    }
-  }
-
   const hashedPassword = await hashPassword(data.password);
 
-  const newUser = await createUserWithCompany(client, {
+  // Public registration always creates a new tenant owned by this user.
+  // Joining an existing organization goes through an invitation.
+  const { user: newUser, membership } = await createAccount(client, {
     email: data.email,
     passwordHash: hashedPassword,
     name: data.name,
     username: data.username,
-    role: data.role,
-    companyId: data.companyId,
     companyName: data.companyName,
   });
 
@@ -130,8 +132,9 @@ export async function register(
     {
       id: newUser.id,
       email: newUser.email,
-      role: newUser.role,
+      role: membership.role,
       companyId: newUser.companyId,
+      orgId: membership.organizationId,
     },
     {
       accessSecret: options.accessSecret,
@@ -141,11 +144,11 @@ export async function register(
     },
   );
 
-  await updateUserRefreshToken(client, newUser.id, tokens.refreshToken);
+  await createSession(client, { userId: newUser.id, familyId: newSessionFamilyId(), refreshToken: tokens.refreshToken });
 
   return {
     ok: true,
-    user: formatAuthUser(newUser),
+    user: formatAuthUser(newUser, membership),
     tokens,
   };
 }
@@ -185,12 +188,14 @@ export async function login(
     throw new AuthError('INVALID_CREDENTIALS', 'Invalid email or password', 401);
   }
 
+  const membership = await toMembership(user);
   const tokens = generateTokenPair(
     {
       id: user.id,
       email: user.email,
-      role: user.role,
+      role: membership.role,
       companyId: user.companyId,
+      orgId: membership.organizationId,
     },
     {
       accessSecret: options.accessSecret,
@@ -200,11 +205,11 @@ export async function login(
     },
   );
 
-  await updateUserRefreshToken(client, user.id, tokens.refreshToken);
+  await createSession(client, { userId: user.id, familyId: newSessionFamilyId(), refreshToken: tokens.refreshToken });
 
   return {
     ok: true,
-    user: formatAuthUser(user),
+    user: formatAuthUser(user, membership),
     tokens,
   };
 }
@@ -213,55 +218,44 @@ export async function login(
  * Refresh access token using a valid refresh token:
  * 1. Validates refresh token presence.
  * 2. Verifies token signature and expiration.
- * 3. Compares with token stored in user's record (prevents replay/revoked tokens).
- * 4. Issues rotated access and refresh tokens.
+ * 3. Rotates the hashed session; reuse of a spent token revokes the whole family.
+ * 4. Issues new access and refresh tokens.
  */
 export async function refresh(
   input: RefreshTokenInput | unknown,
   options: AuthControllerOptions = {},
+  switchTo?: { organizationId: string },
 ): Promise<AuthSuccessResult> {
   const client = options.db ?? defaultDb;
 
   const parseResult = refreshTokenSchema.safeParse(input);
   if (!parseResult.success) {
-    throw new AuthError(
-      'VALIDATION_ERROR',
-      'Refresh token is required',
-      400,
-      parseResult.error.flatten(),
-    );
+    // A missing token is simply "no session" (401), not a malformed request: anonymous visitors hit this.
+    throw new AuthError('INVALID_REFRESH_TOKEN', 'Refresh token is required', 401);
   }
 
   const { refreshToken: incomingToken } = parseResult.data;
 
-  let decoded: { userId: number; email?: string };
+  let decoded: { userId: number; email?: string; orgId?: string };
   try {
     decoded = verifyRefreshToken(incomingToken, options.refreshSecret);
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Invalid refresh token';
-    throw new AuthError('INVALID_REFRESH_TOKEN', `Invalid or expired refresh token: ${message}`, 401);
+    throw new AuthError('INVALID_REFRESH_TOKEN', 'Invalid or expired refresh token', 401);
   }
 
   const user = await findUserById(client, decoded.userId);
   if (!user) {
-    throw new AuthError('USER_NOT_FOUND', 'User associated with token not found', 404);
+    throw new AuthError('INVALID_REFRESH_TOKEN', 'Invalid or expired refresh token', 401);
   }
 
-  if (!user.refreshToken || user.refreshToken !== incomingToken) {
-    throw new AuthError(
-      'INVALID_REFRESH_TOKEN',
-      'Refresh token has been revoked or already used',
-      401,
-    );
+  // A refresh keeps the organization the session was in; an explicit switch must target an organization
+  // the user actually belongs to.
+  const membership = await toMembership(user, switchTo?.organizationId ?? decoded.orgId);
+  if (switchTo && membership.organizationId !== switchTo.organizationId) {
+    throw new AuthError('FORBIDDEN', 'You are not a member of that organization', 403);
   }
-
   const tokens = generateTokenPair(
-    {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      companyId: user.companyId,
-    },
+    { id: user.id, email: user.email, role: membership.role, companyId: user.companyId, orgId: membership.organizationId },
     {
       accessSecret: options.accessSecret,
       refreshSecret: options.refreshSecret,
@@ -270,18 +264,38 @@ export async function refresh(
     },
   );
 
-  await updateUserRefreshToken(client, user.id, tokens.refreshToken);
+  // Rotate atomically: lock the presented session, mark it used, issue its successor in the same family.
+  // A token that was already used means it was stolen or replayed: revoke the whole family.
+  const outcome = await client.transaction(async (tx) => {
+    const session = await tx.orm.public.Session.where({ tokenHash: hashRefreshToken(incomingToken) })
+      .forUpdate()
+      .first();
+    if (!session || session.userId !== user.id) return 'invalid' as const;
+    if (session.revokedAt) {
+      await revokeSessionFamily(tx, session.familyId);
+      return 'reuse' as const;
+    }
+    if (new Date(session.expiresAt).getTime() <= Date.now()) return 'invalid' as const;
+
+    await tx.orm.public.Session.where({ id: session.id }).update({ revokedAt: new Date().toISOString() });
+    await createSession(tx, { userId: user.id, familyId: session.familyId, refreshToken: tokens.refreshToken });
+    return 'rotated' as const;
+  });
+
+  if (outcome !== 'rotated') {
+    throw new AuthError('INVALID_REFRESH_TOKEN', 'Invalid or expired refresh token', 401);
+  }
 
   return {
     ok: true,
-    user: formatAuthUser(user),
+    user: formatAuthUser(user, membership),
     tokens,
   };
 }
 
 /**
- * Log out user by clearing the stored refresh token:
- * Accepts { refreshToken?: string, userId?: number }.
+ * Log out by revoking the session family of the presented refresh token:
+ * Accepts { refreshToken?: string }.
  */
 export async function logout(
   input: LogoutInput | unknown,
@@ -292,25 +306,12 @@ export async function logout(
   const parseResult = logoutSchema.safeParse(input ?? {});
   const data = parseResult.success ? parseResult.data : {};
 
-  let targetUserId = data.userId;
-
-  if (!targetUserId && data.refreshToken) {
-    try {
-      const decoded = verifyRefreshToken(data.refreshToken, options.refreshSecret);
-      targetUserId = decoded.userId;
-    } catch {
-      // If refresh token cannot be decoded, search user by exact token string match
-      const matchingUser = await client.orm.public.User.where({
-        refreshToken: data.refreshToken,
-      }).first();
-      if (matchingUser) {
-        targetUserId = matchingUser.id;
-      }
-    }
-  }
-
-  if (targetUserId) {
-    await clearUserRefreshToken(client, targetUserId);
+  // The session is identified only by the presented token's hash; a client-supplied userId is never trusted.
+  if (data.refreshToken) {
+    const session = await client.orm.public.Session.where({
+      tokenHash: hashRefreshToken(data.refreshToken),
+    }).first();
+    if (session) await revokeSessionFamily(client, session.familyId);
   }
 
   return {
@@ -325,6 +326,7 @@ export async function logout(
 export async function getMe(
   userId: number,
   options: AuthControllerOptions = {},
+  organizationId?: string,
 ): Promise<GetMeSuccessResult> {
   const client = options.db ?? defaultDb;
 
@@ -335,6 +337,7 @@ export async function getMe(
 
   return {
     ok: true,
-    user: formatAuthUser(user),
+    // Report the organization/role the session is actually acting in (from the access token).
+    user: formatAuthUser(user, await toMembership(user, organizationId)),
   };
 }

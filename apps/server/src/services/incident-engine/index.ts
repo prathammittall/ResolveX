@@ -1,5 +1,13 @@
 export { processAlertWebhook, type ProcessAlertInput } from './process-alert.js';
-export { assertWebhookAuthorized, type WebhookAuthHeaders } from './auth.js';
+export type { WebhookAuthHeaders } from './auth.js';
+export {
+  authenticateWebhookKey,
+  createWebhookKey,
+  hashWebhookToken,
+  listWebhookKeys,
+  revokeWebhookKey,
+  type WebhookKeyView,
+} from './webhook-keys.js';
 export {
   AlertProcessingError,
   isAlertProcessingError,

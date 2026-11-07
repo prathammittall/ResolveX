@@ -21,11 +21,17 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
 
+/** Only same-site relative paths are honoured, so `?next=` cannot be used as an open redirect. */
+function safeNext(value: string | null): string {
+  return value && value.startsWith('/') && !value.startsWith('//') && !value.includes('\\') ? value : '/dashboard';
+}
+
 function LoginContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isRegisterRoute = pathname === '/register' || pathname.endsWith('/register');
+  const nextPath = safeNext(searchParams.get('next'));
   const initialTab = searchParams.get('tab') === 'register' || isRegisterRoute ? 'register' : 'login';
 
   const { user, login, register: registerUser } = useAuth();
@@ -58,13 +64,13 @@ function LoginContent() {
   // If already logged in, show welcome and redirect option
   useEffect(() => {
     if (user && !successMessage) {
-      setSuccessMessage(`Signed in as ${user.email}. Redirecting...`);
+      setSuccessMessage(`Signed in as ${user.email}. Taking you to your workspace...`);
       const timer = setTimeout(() => {
-        router.push('/');
+        router.push(nextPath);
       }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [user, router, successMessage]);
+  }, [user, router, successMessage, nextPath]);
 
   const handleTabSwitch = (newMode: 'login' | 'register') => {
     setMode(newMode);
@@ -95,7 +101,7 @@ function LoginContent() {
         if (res.ok) {
           setSuccessMessage(`Welcome back${res.user?.name ? `, ${res.user.name}` : ''}! Redirecting to workspace...`);
           setTimeout(() => {
-            router.push('/');
+            router.push(nextPath);
           }, 1200);
         } else {
           setErrorMessage(res.error || 'Invalid credentials. Please try again.');
@@ -110,7 +116,7 @@ function LoginContent() {
         if (res.ok) {
           setSuccessMessage(`Account created successfully! Welcome to ResolveX.`);
           setTimeout(() => {
-            router.push('/');
+            router.push(nextPath);
           }, 1200);
         } else {
           setErrorMessage(res.error || 'Failed to create account. Please try again.');

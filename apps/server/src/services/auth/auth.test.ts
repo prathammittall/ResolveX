@@ -12,6 +12,7 @@ import {
 import {
   comparePassword,
   generateTokenPair,
+  hashRefreshToken,
   hashPassword,
   signAccessToken,
   signRefreshToken,
@@ -62,6 +63,7 @@ describe('Auth Service', () => {
       email: 'test@example.com',
       role: 'member',
       companyId: 10,
+      orgId: '00000000-0000-4000-8000-000000000010',
     };
 
     it('generates and verifies access tokens', () => {
@@ -88,6 +90,7 @@ describe('Auth Service', () => {
         email: 'test@example.com',
         role: 'member',
         companyId: 10,
+      orgId: '00000000-0000-4000-8000-000000000010',
       });
 
       expect(pair.accessToken).toBeDefined();
@@ -121,7 +124,6 @@ describe('Auth Service', () => {
         name: 'Test User',
         username: `user_${suffix}`,
         companyName: `Test Company ${suffix}`,
-        role: 'owner',
       });
 
       expect(result.ok).toBe(true);
@@ -141,7 +143,11 @@ describe('Auth Service', () => {
       const dbUser = await db.orm.public.User.where({ id: createdUserId }).first();
       expect(dbUser).toBeDefined();
       expect(dbUser?.passwordHash).not.toBe(password);
-      expect(dbUser?.refreshToken).toBe(currentRefreshToken);
+      // The refresh token is stored only as a hash, never in plaintext.
+      expect(dbUser?.refreshToken ?? null).toBeNull();
+      const session = await db.orm.public.Session.where({ tokenHash: hashRefreshToken(currentRefreshToken) }).first();
+      expect(session?.userId).toBe(createdUserId);
+      expect(session?.revokedAt ?? null).toBeNull();
     });
 
     it('rejects registering with an already existing email', async () => {
@@ -167,9 +173,8 @@ describe('Auth Service', () => {
       currentRefreshToken = result.tokens.refreshToken;
       currentAccessToken = result.tokens.accessToken;
 
-      // Verify db was updated with new refresh token
-      const dbUser = await db.orm.public.User.where({ id: createdUserId }).first();
-      expect(dbUser?.refreshToken).toBe(currentRefreshToken);
+      const session = await db.orm.public.Session.where({ tokenHash: hashRefreshToken(currentRefreshToken) }).first();
+      expect(session?.userId).toBe(createdUserId);
     });
 
     it('rejects login with an incorrect password', async () => {
@@ -220,15 +225,27 @@ describe('Auth Service', () => {
       expect(result.user.email).toBe(email.toLowerCase());
     });
 
-    it('logs out and clears the stored refresh token', async () => {
+    it('reuse of a spent refresh token revokes the whole family', async () => {
+      const first = await login({ email, password });
+      const rotated = await refresh({ refreshToken: first.tokens.refreshToken });
+
+      // Replaying the spent token is treated as theft...
+      await expect(refresh({ refreshToken: first.tokens.refreshToken })).rejects.toThrow(AuthError);
+      // ...so the legitimately rotated successor is dead too.
+      await expect(refresh({ refreshToken: rotated.tokens.refreshToken })).rejects.toThrow(AuthError);
+    });
+
+    it('logs out by revoking the session', async () => {
+      const fresh = await login({ email, password });
+      currentRefreshToken = fresh.tokens.refreshToken;
       const result = await logout({
         refreshToken: currentRefreshToken,
       });
 
       expect(result.ok).toBe(true);
 
-      const dbUser = await db.orm.public.User.where({ id: createdUserId }).first();
-      expect(dbUser?.refreshToken).toBeNull();
+      const session = await db.orm.public.Session.where({ tokenHash: hashRefreshToken(currentRefreshToken) }).first();
+      expect(session?.revokedAt).toBeTruthy();
 
       // Refreshing after logout must fail
       await expect(

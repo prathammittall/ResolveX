@@ -1,12 +1,11 @@
-import { createHmac, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import nodeProcess from 'node:process';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { db } from '../../prisma/db.js';
 import { ALERT_WEBHOOK_PROVIDER } from './constants.js';
 import { AlertProcessingError } from './errors.js';
 import { processAlertWebhook } from './process-alert.js';
-
-const WEBHOOK_SECRET = 'test-webhook-secret-do-not-use-in-prod';
+import { createWebhookKey, hashWebhookToken, revokeWebhookKey } from './webhook-keys.js';
 
 type Fixture = {
   companyId: number;
@@ -73,25 +72,29 @@ function buildBody(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function authorize(rawBody: string, mode: 'bearer' | 'signature' = 'bearer') {
-  if (mode === 'bearer') {
-    return {
-      authorization: `Bearer ${WEBHOOK_SECRET}`,
-      signature: null as string | null,
-    };
+const tokens = new Map<number, string>();
+
+/** One real per-service key per test service, created through the production code path. */
+async function tokenFor(serviceId: number): Promise<string> {
+  let token = tokens.get(serviceId);
+  if (!token) {
+    const created = await createWebhookKey(db, { companyId: fixture.companyId, serviceId, name: 'test key' });
+    if (!created) throw new Error('could not create webhook key for test service');
+    token = created.token;
+    tokens.set(serviceId, token);
   }
-  const signature = `sha256=${createHmac('sha256', WEBHOOK_SECRET)
-    .update(rawBody, 'utf8')
-    .digest('hex')}`;
-  return { authorization: null as string | null, signature };
+  return token;
 }
 
-async function process(body: Record<string, unknown>, mode: 'bearer' | 'signature' = 'bearer') {
+async function authorize(serviceId: number) {
+  return { authorization: `Bearer ${await tokenFor(serviceId)}` };
+}
+
+async function process(body: Record<string, unknown>) {
   const rawBody = JSON.stringify(body);
   return processAlertWebhook({
     rawBody,
-    headers: authorize(rawBody, mode),
-    webhookSecret: WEBHOOK_SECRET,
+    headers: await authorize(body.serviceId as number),
     db,
   });
 }
@@ -139,18 +142,71 @@ describe('processAlertWebhook', () => {
     await expect(
       processAlertWebhook({
         rawBody,
-        headers: { authorization: 'Bearer wrong-secret', signature: null },
-        webhookSecret: WEBHOOK_SECRET,
+        headers: { authorization: 'Bearer rxwh_wrong-secret' },
         db,
       }),
     ).rejects.toMatchObject({ code: 'UNAUTHORIZED', status: 401 });
+
+    await expect(
+      processAlertWebhook({ rawBody, headers: { authorization: null }, db }),
+    ).rejects.toMatchObject({ code: 'UNAUTHORIZED', status: 401 });
   });
 
-  it('rejects a nonexistent service', async () => {
-    await expect(process(buildBody({ serviceId: 2_147_483_646 }))).rejects.toMatchObject({
-      code: 'SERVICE_NOT_FOUND',
-      status: 404,
+  it('rejects a service the key is not valid for, whether it exists or not (no probing)', async () => {
+    const keyForA = await authorize(fixture.serviceAId);
+    for (const serviceId of [fixture.serviceBId, 2_147_483_646]) {
+      await expect(
+        processAlertWebhook({
+          rawBody: JSON.stringify(buildBody({ serviceId })),
+          headers: keyForA,
+          db,
+        }),
+      ).rejects.toMatchObject({ code: 'FORBIDDEN', status: 403 });
+    }
+  });
+
+  it('stores only a hash of the key, never the token', async () => {
+    const token = await tokenFor(fixture.serviceAId);
+    const row = await db.orm.public.WebhookKey.where({ keyHash: hashWebhookToken(token) }).first();
+    expect(row?.serviceId).toBe(fixture.serviceAId);
+    expect(JSON.stringify(row)).not.toContain(token);
+  });
+
+  it('rejects a revoked key immediately', async () => {
+    const suffix = randomUUID().slice(0, 8);
+    const service = await db.orm.public.Service.create({
+      companyId: fixture.companyId,
+      name: `revoke-${suffix}`,
+      serviceType: 'api',
+      environment: 'production',
+      criticality: 'low',
+      healthStatus: 'unknown',
     });
+    const created = await createWebhookKey(db, {
+      companyId: fixture.companyId,
+      serviceId: service.id,
+      name: 'to revoke',
+    });
+    const send = () =>
+      processAlertWebhook({
+        rawBody: JSON.stringify(buildBody({ serviceId: service.id })),
+        headers: { authorization: `Bearer ${created!.token}` },
+        db,
+      });
+
+    expect((await send()).ok).toBe(true);
+    expect(
+      await revokeWebhookKey(db, { companyId: fixture.companyId, serviceId: service.id, keyId: created!.key.id }),
+    ).toBe(true);
+    await expect(send()).rejects.toMatchObject({ code: 'UNAUTHORIZED', status: 401 });
+  });
+
+  it("another company cannot create or revoke a key for this company's service", async () => {
+    expect(await createWebhookKey(db, { companyId: -1, serviceId: fixture.serviceAId, name: 'x' })).toBeNull();
+    const created = await createWebhookKey(db, { companyId: fixture.companyId, serviceId: fixture.serviceAId, name: 'y' });
+    expect(
+      await revokeWebhookKey(db, { companyId: -1, serviceId: fixture.serviceAId, keyId: created!.key.id }),
+    ).toBe(false);
   });
 
   it('does not duplicate processing for repeated delivery of the same event', async () => {
@@ -283,7 +339,6 @@ describe('processAlertWebhook', () => {
         eventType: 'recovery',
         severity: 'sev4',
       }),
-      'signature',
     );
 
     expect(recovery.outcome).toBe('recovery_recorded');
@@ -369,8 +424,7 @@ describe('processAlertWebhook', () => {
     await expect(
       processAlertWebhook({
         rawBody: JSON.stringify(body),
-        headers: authorize(JSON.stringify(body)),
-        webhookSecret: WEBHOOK_SECRET,
+        headers: await authorize(fixture.serviceAId),
         db: sabotaged,
       }),
     ).rejects.toThrow(/simulated database failure/);
