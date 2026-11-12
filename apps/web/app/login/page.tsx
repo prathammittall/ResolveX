@@ -16,7 +16,6 @@ import {
   EyeOff,
   AlertCircle,
   Loader2,
-  KeyRound,
   Check,
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
@@ -264,7 +263,7 @@ function LoginContent() {
               <div className="w-full border-t border-slate-200/80" />
             </div>
             <span className="relative bg-white px-2.5 font-medium uppercase tracking-wider text-[10px]">
-              or with work email
+              or with email
             </span>
           </div>
 
@@ -310,7 +309,7 @@ function LoginContent() {
             {/* Email Field */}
             <div>
               <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                Work Email
+                Email
               </label>
               <div className="relative">
                 <Mail className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -322,7 +321,7 @@ function LoginContent() {
                     setEmail(e.target.value);
                     if (errorMessage) setErrorMessage(null);
                   }}
-                  placeholder="alex.chen@company.com"
+                  placeholder="alex.chen@example.com"
                   className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 text-xs sm:text-[13px] bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
                 />
               </div>
@@ -430,20 +429,8 @@ function LoginContent() {
             </button>
           </form>
 
-          {/* Bottom Card Footer: SSO & Mode Switch */}
+          {/* Bottom Card Footer: Mode Switch */}
           <div className="mt-3.5 pt-3 border-t border-slate-100 flex flex-col gap-2 text-center">
-            <Link
-              href="#sso"
-              onClick={(e) => {
-                e.preventDefault();
-                setErrorMessage('Enterprise Single Sign-On (SAML/Okta) is enabled for configured corporate domains.');
-              }}
-              className="text-[11px] text-slate-500 hover:text-slate-800 font-medium flex items-center justify-center gap-1.5 transition"
-            >
-              <KeyRound className="w-3 h-3 text-slate-400" />
-              Sign in with Enterprise SAML / SSO
-            </Link>
-
             <p className="text-[11px] text-slate-500">
               {mode === 'login' ? (
                 <>
@@ -492,7 +479,7 @@ function LoginContent() {
           <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
             <h3 className="font-serif-title text-xl font-bold text-slate-900">Reset Password</h3>
             <p className="mt-1 text-xs text-slate-500">
-              Enter your work email address and we will dispatch a secure recovery token.
+              Enter your email address and we will dispatch a secure recovery token.
             </p>
 
             {forgotSuccess ? (
@@ -504,14 +491,14 @@ function LoginContent() {
               <form onSubmit={handleForgotPassword} className="mt-4 space-y-3">
                 <div>
                   <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                    Work Email
+                    Email
                   </label>
                   <input
                     type="email"
                     required
                     value={forgotEmail}
                     onChange={(e) => setForgotEmail(e.target.value)}
-                    placeholder="alex@company.com"
+                    placeholder="alex@example.com"
                     className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
                   />
                 </div>
