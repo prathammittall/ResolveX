@@ -155,8 +155,8 @@ export default function TeamPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="font-serif-title text-2xl font-semibold text-slate-900">Team</h1>
-          <p className="mt-1 text-sm text-slate-500">People in this organization and what they can do.</p>
+          <h1 className="font-serif-title text-2xl font-semibold text-[#171a1f] dark:text-white">Team</h1>
+          <p className="mt-1 text-sm text-[#574f47] dark:text-zinc-400">People in this organization and what they can do.</p>
         </div>
         {admin && (
           <button
@@ -165,7 +165,7 @@ export default function TeamPage() {
               setIssued(null);
               setInviteOpen(true);
             }}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#25396e] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1b2b57]"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#171a1f] dark:bg-[#ff5414] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#2b2f38] dark:hover:bg-[#ff6830] transition shadow-xs"
           >
             <UserPlus className="h-4 w-4" />
             Add teammate
@@ -174,7 +174,7 @@ export default function TeamPage() {
       </div>
 
       {!admin && (
-        <div role="note" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <div role="note" className="rounded-xl border border-amber-300 dark:border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
           You’re a <strong>{ROLE_LABEL[user?.role ?? 'viewer']}</strong> in this organization. Only owners and admins can
           add teammates or change roles. Ask an owner to promote you if you need to.
         </div>
@@ -182,21 +182,21 @@ export default function TeamPage() {
 
       {error && <ErrorBanner message={error} />}
       {notice && (
-        <div role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+        <div role="status" className="rounded-xl border border-emerald-300 dark:border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-200">
           {notice}
         </div>
       )}
 
       {admin && inviteOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Add teammate">
-          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs" onClick={() => setInviteOpen(false)} />
-          <div className="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-xs" onClick={() => setInviteOpen(false)} />
+          <div className="relative w-full max-w-lg rounded-2xl border border-[#cbbaa9] dark:border-white/10 bg-[#eedccb] dark:bg-[#12131a] p-6 shadow-2xl">
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="font-serif-title text-lg font-semibold text-slate-900">Add teammate</h2>
-                <p className="mt-0.5 text-sm text-slate-500">They join with the role you pick once they accept.</p>
+                <h2 className="font-serif-title text-lg font-semibold text-[#171a1f] dark:text-white">Add teammate</h2>
+                <p className="mt-0.5 text-sm text-[#574f47] dark:text-zinc-400">They join with the role you pick once they accept.</p>
               </div>
-              <button type="button" onClick={() => setInviteOpen(false)} aria-label="Close" className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
+              <button type="button" onClick={() => setInviteOpen(false)} aria-label="Close" className="rounded-lg p-1.5 text-[#574f47] dark:text-zinc-400 hover:bg-[#cbbaa9]/30 dark:hover:bg-white/10 transition">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -204,7 +204,7 @@ export default function TeamPage() {
             <div className="mt-5">
           <form onSubmit={invite} className="flex flex-col gap-4">
             <div className="flex-1">
-              <label htmlFor="invite-email" className="mb-1 block text-sm font-medium text-slate-700">
+              <label htmlFor="invite-email" className="mb-1 block text-sm font-medium text-[#171a1f] dark:text-zinc-200">
                 Email address
               </label>
               <input
@@ -214,21 +214,21 @@ export default function TeamPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="teammate@company.com"
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#25396e] focus:ring-2 focus:ring-[#25396e]/20"
+                className="w-full rounded-xl border border-[#cbbaa9] dark:border-white/10 bg-[#e2cfc0]/50 dark:bg-zinc-900 px-3 py-2.5 text-sm text-[#171a1f] dark:text-white outline-none focus:border-[#ff5414] focus:ring-2 focus:ring-[#ff5414]/20 placeholder-[#574f47]/50 dark:placeholder-zinc-500"
               />
             </div>
             <div>
-              <label htmlFor="invite-role" className="mb-1 block text-sm font-medium text-slate-700">
+              <label htmlFor="invite-role" className="mb-1 block text-sm font-medium text-[#171a1f] dark:text-zinc-200">
                 Role
               </label>
               <select
                 id="invite-role"
                 value={inviteRole}
                 onChange={(e) => setInviteRole(e.target.value as OrgRole)}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#25396e] focus:ring-2 focus:ring-[#25396e]/20"
+                className="w-full rounded-xl border border-[#cbbaa9] dark:border-white/10 bg-[#e2cfc0]/50 dark:bg-zinc-900 px-3 py-2.5 text-sm text-[#171a1f] dark:text-white outline-none focus:border-[#ff5414] focus:ring-2 focus:ring-[#ff5414]/20"
               >
                 {roles.map((r) => (
-                  <option key={r} value={r}>
+                  <option key={r} value={r} className="bg-[#eedccb] dark:bg-zinc-900 text-[#171a1f] dark:text-white">
                     {ROLE_LABEL[r]}
                   </option>
                 ))}
@@ -237,18 +237,18 @@ export default function TeamPage() {
             <button
               type="submit"
               disabled={inviting}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#25396e] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1c2c56] disabled:opacity-60"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#171a1f] dark:bg-[#ff5414] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#2b2f38] dark:hover:bg-[#ff6830] transition shadow-xs disabled:opacity-60"
             >
               <MailPlus className="h-4 w-4" />
               {inviting ? 'Creating…' : 'Create invitation'}
             </button>
           </form>
-          <p className="mt-2 text-xs text-slate-400">{ROLE_HELP[inviteRole]}</p>
+          <p className="mt-2 text-xs text-[#574f47] dark:text-zinc-400">{ROLE_HELP[inviteRole]}</p>
 
           {issued && (
-            <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4" role="status">
-              <p className="text-sm font-medium text-amber-900">Invitation created for {issued.email}</p>
-              <p className="mt-1 text-xs text-amber-800">
+            <div className="mt-4 rounded-xl border border-amber-300 dark:border-amber-500/30 bg-amber-500/10 p-4" role="status">
+              <p className="text-sm font-medium text-amber-900 dark:text-amber-200">Invitation created for {issued.email}</p>
+              <p className="mt-1 text-xs text-amber-800 dark:text-amber-300">
                 Email delivery is not set up yet, so share this link yourself. It is shown only once and expires in 7
                 days.
               </p>
@@ -258,12 +258,12 @@ export default function TeamPage() {
                   value={inviteLink}
                   aria-label="Invitation link"
                   onFocus={(e) => e.currentTarget.select()}
-                  className="min-w-0 flex-1 rounded-lg border border-amber-200 bg-white px-3 py-2 font-mono text-xs text-slate-700"
+                  className="min-w-0 flex-1 rounded-lg border border-amber-300 dark:border-amber-500/30 bg-[#faefe3] dark:bg-zinc-900 px-3 py-2 font-mono text-xs text-[#171a1f] dark:text-white"
                 />
                 <button
                   type="button"
                   onClick={copyLink}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-inset ring-amber-200 hover:bg-amber-100"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-[#171a1f] dark:bg-[#ff5414] text-white px-3 py-2 text-xs font-semibold hover:bg-[#2b2f38] dark:hover:bg-[#ff6830] transition shadow-xs"
                 >
                   {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                   {copied ? 'Copied' : 'Copy'}
@@ -283,26 +283,26 @@ export default function TeamPage() {
           <div className="-mx-5 overflow-x-auto">
             <table className="w-full min-w-[560px] text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
+                <tr className="border-b border-[#cbbaa9]/30 dark:border-white/10 text-xs uppercase tracking-wide text-[#574f47] dark:text-zinc-400">
                   <th className="px-5 py-2 font-medium">Member</th>
                   <th className="px-5 py-2 font-medium">Role</th>
                   <th className="px-5 py-2 font-medium">Joined</th>
                   <th className="px-5 py-2" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-[#cbbaa9]/20 dark:divide-white/5">
                 {members.map((m) => {
                   const self = m.userId === user?.id;
                   // Admins cannot edit owners; only owners can.
                   const editable = admin && (user?.role === 'owner' || m.role !== 'owner');
                   return (
-                    <tr key={m.userId}>
+                    <tr key={m.userId} className="hover:bg-[#cbbaa9]/20 dark:hover:bg-white/5 transition">
                       <td className="px-5 py-3">
-                        <p className="font-medium text-slate-800">
+                        <p className="font-medium text-[#171a1f] dark:text-white">
                           {m.name || m.email.split('@')[0]}
-                          {self && <span className="ml-2 text-xs font-normal text-slate-400">(you)</span>}
+                          {self && <span className="ml-2 text-xs font-normal text-[#574f47] dark:text-zinc-400">(you)</span>}
                         </p>
-                        <p className="text-xs text-slate-400">{m.email}</p>
+                        <p className="text-xs text-[#574f47] dark:text-zinc-400">{m.email}</p>
                       </td>
                       <td className="px-5 py-3">
                         {editable ? (
@@ -311,10 +311,10 @@ export default function TeamPage() {
                             value={m.role}
                             disabled={busyId === String(m.userId)}
                             onChange={(e) => changeRole(m, e.target.value as OrgRole)}
-                            className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm"
+                            className="rounded-lg border border-[#cbbaa9] dark:border-white/10 bg-[#e2cfc0]/50 dark:bg-zinc-900 px-2 py-1.5 text-sm text-[#171a1f] dark:text-white outline-none focus:border-[#ff5414]"
                           >
                             {roles.map((r) => (
-                              <option key={r} value={r}>
+                              <option key={r} value={r} className="bg-[#eedccb] dark:bg-zinc-900 text-[#171a1f] dark:text-white">
                                 {ROLE_LABEL[r]}
                               </option>
                             ))}
@@ -323,7 +323,7 @@ export default function TeamPage() {
                           <RoleBadge role={m.role} />
                         )}
                       </td>
-                      <td className="px-5 py-3 text-slate-500" title={formatDateTime(m.joinedAt)}>
+                      <td className="px-5 py-3 text-[#574f47] dark:text-zinc-400" title={formatDateTime(m.joinedAt)}>
                         {timeAgo(m.joinedAt)}
                       </td>
                       <td className="px-5 py-3 text-right">
@@ -332,7 +332,7 @@ export default function TeamPage() {
                             type="button"
                             onClick={() => remove(m)}
                             disabled={busyId === String(m.userId)}
-                            className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium text-slate-500 hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50"
+                            className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium text-[#574f47] dark:text-zinc-400 hover:bg-rose-500/10 hover:text-rose-600 transition disabled:opacity-50"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                             {self ? 'Leave' : 'Remove'}
@@ -351,14 +351,14 @@ export default function TeamPage() {
       {admin && (
         <SectionCard title={`Pending invitations (${pending.length})`}>
           {pending.length === 0 ? (
-            <p className="text-sm text-slate-500">No pending invitations.</p>
+            <p className="text-sm text-[#574f47] dark:text-zinc-400">No pending invitations.</p>
           ) : (
-            <ul className="divide-y divide-slate-100">
+            <ul className="divide-y divide-[#cbbaa9]/20 dark:divide-white/5">
               {pending.map((inv) => (
                 <li key={inv.id} className="flex items-center justify-between gap-3 py-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-slate-800">{inv.email}</p>
-                    <p className="text-xs text-slate-400">
+                    <p className="truncate text-sm font-medium text-[#171a1f] dark:text-white">{inv.email}</p>
+                    <p className="text-xs text-[#574f47] dark:text-zinc-400">
                       {ROLE_LABEL[inv.role]} · expires {formatDateTime(inv.expiresAt)}
                     </p>
                   </div>
@@ -366,7 +366,7 @@ export default function TeamPage() {
                     type="button"
                     onClick={() => revoke(inv)}
                     disabled={busyId === inv.id}
-                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50"
+                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-[#574f47] dark:text-zinc-400 hover:bg-rose-500/10 hover:text-rose-600 transition disabled:opacity-50"
                   >
                     Revoke
                   </button>

@@ -50,7 +50,7 @@ export function PriorityIcon({ priority, withLabel }: { priority: TaskPriority; 
 export function Avatar({ name, size = 24 }: { name: string; size?: number }) {
   return (
     <span
-      className="inline-flex shrink-0 items-center justify-center rounded-full bg-[#25396e] font-semibold text-white"
+      className="inline-flex shrink-0 items-center justify-center rounded-full bg-[#ff5414] font-semibold text-white shadow-xs"
       style={{ width: size, height: size, fontSize: Math.max(10, size * 0.42) }}
       title={name}
       aria-label={name}
@@ -145,15 +145,15 @@ export function CreateTaskModal({
   }
 
   const input =
-    'w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#25396e] focus:ring-2 focus:ring-[#25396e]/20';
+    'w-full rounded-xl border border-[#c4b19f] dark:border-zinc-800 bg-[#dfcebe]/80 dark:bg-zinc-900 px-3 py-2 text-sm text-[#171a1f] dark:text-white outline-none focus:border-[#ff5414] focus:ring-2 focus:ring-[#ff5414]/20';
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4" role="dialog" aria-modal="true" aria-label="Create ticket">
-      <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs" onClick={onClose} />
-      <form onSubmit={submit} className="relative my-8 w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-xs" onClick={onClose} />
+      <form onSubmit={submit} className="relative my-8 w-full max-w-2xl rounded-2xl border border-[#cbbaa9] dark:border-zinc-800 bg-[#eedccb] dark:bg-[#101117] text-[#171a1f] dark:text-white p-6 shadow-2xl">
         <div className="flex items-start justify-between">
-          <h2 className="font-serif-title text-lg font-semibold text-slate-900">Create ticket</h2>
-          <button type="button" onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
+          <h2 className="font-sans text-lg font-bold text-[#171a1f] dark:text-white">Create ticket</h2>
+          <button type="button" onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 opacity-60 hover:opacity-100 transition cursor-pointer">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -162,34 +162,34 @@ export function CreateTaskModal({
 
         <div className="mt-5 space-y-4">
           <div>
-            <label htmlFor="t-title" className="mb-1 block text-sm font-medium text-slate-700">Title</label>
+            <label htmlFor="t-title" className="mb-1 block text-sm font-semibold text-[#171a1f] dark:text-zinc-200">Title</label>
             <input id="t-title" required maxLength={200} autoFocus value={title} onChange={(e) => setTitle(e.target.value)} className={input} placeholder="What needs to be done?" />
           </div>
           <div>
-            <label htmlFor="t-desc" className="mb-1 block text-sm font-medium text-slate-700">Description <span className="font-normal text-slate-400">(optional)</span></label>
+            <label htmlFor="t-desc" className="mb-1 block text-sm font-semibold text-[#171a1f] dark:text-zinc-200">Description <span className="font-normal opacity-60">(optional)</span></label>
             <textarea id="t-desc" rows={4} value={description} onChange={(e) => setDescription(e.target.value)} className={input} />
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
-              <label htmlFor="t-type" className="mb-1 block text-sm font-medium text-slate-700">Type</label>
+              <label htmlFor="t-type" className="mb-1 block text-sm font-semibold text-[#171a1f] dark:text-zinc-200">Type</label>
               <select id="t-type" value={type} onChange={(e) => setType(e.target.value as TaskType)} className={input}>
                 {TASK_TYPES.map((t) => <option key={t} value={t}>{TYPE_META[t].label}</option>)}
               </select>
             </div>
             <div>
-              <label htmlFor="t-priority" className="mb-1 block text-sm font-medium text-slate-700">Priority</label>
+              <label htmlFor="t-priority" className="mb-1 block text-sm font-semibold text-[#171a1f] dark:text-zinc-200">Priority</label>
               <select id="t-priority" value={priority} onChange={(e) => setPriority(e.target.value as TaskPriority)} className={input}>
                 {PRIORITIES.map((p) => <option key={p} value={p}>{PRIORITY_META[p].label}</option>)}
               </select>
             </div>
             <div>
-              <label htmlFor="t-status" className="mb-1 block text-sm font-medium text-slate-700">Status</label>
+              <label htmlFor="t-status" className="mb-1 block text-sm font-semibold text-[#171a1f] dark:text-zinc-200">Status</label>
               <select id="t-status" value={statusId} onChange={(e) => setStatusId(e.target.value)} className={input}>
                 {statuses.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
             </div>
             <div>
-              <label htmlFor="t-assignee" className="mb-1 block text-sm font-medium text-slate-700">Assignee</label>
+              <label htmlFor="t-assignee" className="mb-1 block text-sm font-semibold text-[#171a1f] dark:text-zinc-200">Assignee</label>
               <select id="t-assignee" value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)} className={input}>
                 <option value="">Unassigned</option>
                 {assignable.map((m) => (
@@ -198,17 +198,17 @@ export function CreateTaskModal({
               </select>
             </div>
             <div>
-              <label htmlFor="t-due" className="mb-1 block text-sm font-medium text-slate-700">Due date</label>
+              <label htmlFor="t-due" className="mb-1 block text-sm font-semibold text-[#171a1f] dark:text-zinc-200">Due date</label>
               <input id="t-due" type="date" value={due} onChange={(e) => setDue(e.target.value)} className={input} />
             </div>
             <div>
-              <label htmlFor="t-labels" className="mb-1 block text-sm font-medium text-slate-700">Labels</label>
+              <label htmlFor="t-labels" className="mb-1 block text-sm font-semibold text-[#171a1f] dark:text-zinc-200">Labels</label>
               <input id="t-labels" value={labels} onChange={(e) => setLabels(e.target.value)} placeholder="backend, urgent" className={input} />
             </div>
           </div>
           {type !== 'epic' && type !== 'subtask' && epics.length > 0 && (
             <div>
-              <label htmlFor="t-epic" className="mb-1 block text-sm font-medium text-slate-700">Epic <span className="font-normal text-slate-400">(optional)</span></label>
+              <label htmlFor="t-epic" className="mb-1 block text-sm font-semibold text-[#171a1f] dark:text-zinc-200">Epic <span className="font-normal opacity-60">(optional)</span></label>
               <select id="t-epic" value={parentId} onChange={(e) => setParentId(e.target.value)} className={input}>
                 <option value="">No epic</option>
                 {epics.map((ep) => <option key={ep.id} value={ep.id}>{ep.ref} · {ep.title}</option>)}
@@ -216,15 +216,15 @@ export function CreateTaskModal({
             </div>
           )}
           {type === 'subtask' && (
-            <p className="rounded-xl bg-slate-50 p-3 text-xs text-slate-500">
+            <p className="rounded-xl border border-[#cbbaa9] dark:border-zinc-800 bg-[#dfcebe]/60 dark:bg-zinc-900 p-3 text-xs text-[#574f47] dark:text-zinc-400">
               Subtasks are created from their parent ticket’s page.
             </p>
           )}
         </div>
 
         <div className="mt-6 flex justify-end gap-2">
-          <button type="button" onClick={onClose} className="rounded-xl px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100">Cancel</button>
-          <button type="submit" disabled={saving || type === 'subtask'} className="rounded-xl bg-[#25396e] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#1c2c56] disabled:opacity-60">
+          <button type="button" onClick={onClose} className="rounded-xl px-4 py-2.5 text-sm font-medium text-[#574f47] dark:text-zinc-400 hover:bg-[#dfcebe] dark:hover:bg-zinc-800 cursor-pointer">Cancel</button>
+          <button type="submit" disabled={saving || type === 'subtask'} className="rounded-xl bg-[#171a1f] dark:bg-[#f5e6d3] px-5 py-2.5 text-sm font-bold text-white dark:text-zinc-950 hover:bg-black dark:hover:bg-[#faebd7] disabled:opacity-60 cursor-pointer shadow-sm">
             {saving ? 'Creating…' : 'Create ticket'}
           </button>
         </div>

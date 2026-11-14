@@ -125,7 +125,7 @@ export default function IncidentDetailPage() {
   if (error || !data) {
     return (
       <div className="space-y-4">
-        <Link href="/dashboard/incidents" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-800">
+        <Link href="/dashboard/incidents" className="inline-flex items-center gap-1.5 text-sm font-medium text-[#574f47] dark:text-zinc-400 hover:text-[#171a1f] dark:hover:text-white transition">
           <ArrowLeft className="h-4 w-4" /> Back to incidents
         </Link>
         <ErrorBanner message={error || 'Incident not found'} />
@@ -140,7 +140,7 @@ export default function IncidentDetailPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <Link href="/dashboard/incidents" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-800">
+        <Link href="/dashboard/incidents" className="inline-flex items-center gap-1.5 text-sm font-medium text-[#574f47] dark:text-zinc-400 hover:text-[#171a1f] dark:hover:text-white transition">
           <ArrowLeft className="h-4 w-4" /> Back to incidents
         </Link>
       </div>
@@ -148,18 +148,18 @@ export default function IncidentDetailPage() {
       {actionError && <ErrorBanner message={actionError} />}
 
       {/* Header card */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
+      <div className="rounded-2xl border border-[#cbbaa9] dark:border-white/10 bg-[#eedccb]/70 dark:bg-[#101117] p-6 shadow-xs">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <SeverityBadge severity={incident.severity} />
               <StatusBadge status={incident.status} />
             </div>
-            <h1 className="mt-3 font-serif-title text-2xl font-semibold text-slate-900">{incident.title}</h1>
-            <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-500">
+            <h1 className="mt-3 font-serif-title text-2xl font-semibold text-[#171a1f] dark:text-white">{incident.title}</h1>
+            <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-[#574f47] dark:text-zinc-400">
               <span className="inline-flex items-center gap-1.5">
                 <Server className="h-3.5 w-3.5" />
-                <Link href="/dashboard/services" className="font-medium text-slate-700 hover:underline">{incident.serviceName}</Link>
+                <Link href="/dashboard/services" className="font-medium text-[#171a1f] dark:text-zinc-200 hover:text-[#ff5414] hover:underline transition">{incident.serviceName}</Link>
               </span>
               {incident.assignedResponderName && (
                 <span className="inline-flex items-center gap-1.5">
@@ -174,7 +174,7 @@ export default function IncidentDetailPage() {
               <button
                 onClick={handleAcknowledge}
                 disabled={acting !== null}
-                className="inline-flex items-center gap-2 rounded-xl bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:opacity-60"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#171a1f] dark:bg-white/10 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-[#2b2f38] dark:hover:bg-white/15 disabled:opacity-60 shadow-xs"
               >
                 {acting === 'acknowledge' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Hand className="h-4 w-4" />}
                 Acknowledge
@@ -184,7 +184,7 @@ export default function IncidentDetailPage() {
               <button
                 onClick={handleResolve}
                 disabled={acting !== null}
-                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60 shadow-xs"
               >
                 {acting === 'resolve' ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                 Resolve
@@ -194,10 +194,10 @@ export default function IncidentDetailPage() {
         </div>
 
         {incident.description && (
-          <p className="mt-4 border-t border-slate-100 pt-4 text-sm text-slate-600">{incident.description}</p>
+          <p className="mt-4 border-t border-[#cbbaa9]/30 dark:border-white/10 pt-4 text-sm text-[#574f47] dark:text-zinc-300">{incident.description}</p>
         )}
 
-        <dl className="mt-4 grid grid-cols-2 gap-4 border-t border-slate-100 pt-4 sm:grid-cols-3">
+        <dl className="mt-4 grid grid-cols-2 gap-4 border-t border-[#cbbaa9]/30 dark:border-white/10 pt-4 sm:grid-cols-3">
           <DetailItem label="Detected" value={formatDateTime(incident.detectedAt)} sub={timeAgo(incident.detectedAt)} />
           <DetailItem
             label="Acknowledged"
@@ -215,36 +215,36 @@ export default function IncidentDetailPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Timeline */}
         <div className="lg:col-span-2">
-          <div className="rounded-2xl border border-slate-200 bg-white shadow-xs">
-            <div className="border-b border-slate-100 px-5 py-4">
-              <h3 className="font-serif-title text-base font-semibold text-slate-900">Activity Timeline</h3>
+          <div className="rounded-2xl border border-[#cbbaa9] dark:border-white/10 bg-[#eedccb]/70 dark:bg-[#101117] shadow-xs">
+            <div className="border-b border-[#cbbaa9]/30 dark:border-white/10 px-5 py-4">
+              <h3 className="font-serif-title text-base font-semibold text-[#171a1f] dark:text-white">Activity Timeline</h3>
             </div>
             <div className="p-5">
-              <ol className="relative space-y-5 border-l border-slate-200 pl-6">
+              <ol className="relative space-y-5 border-l border-[#cbbaa9]/50 dark:border-white/10 pl-6">
                 {events.map((ev) => {
                   const raw = eventTypeMeta[ev.eventType];
                   const Icon = raw?.icon ?? Info;
                   const color = raw?.color ?? 'bg-slate-100 text-slate-500';
                   return (
                     <li key={ev.id} className="relative">
-                      <span className={cn('absolute -left-[31px] flex h-6 w-6 items-center justify-center rounded-full ring-4 ring-white', color)}>
+                      <span className={cn('absolute -left-[31px] flex h-6 w-6 items-center justify-center rounded-full ring-4 ring-[#eedccb] dark:ring-[#101117]', color)}>
                         <Icon className="h-3 w-3" />
                       </span>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium capitalize text-slate-800">
+                        <span className="text-sm font-medium capitalize text-[#171a1f] dark:text-white">
                           {ev.eventType.replace('_', ' ')}
                         </span>
-                        <span className="text-xs text-slate-400">{timeAgo(ev.occurredAt)}</span>
+                        <span className="text-xs text-[#574f47] dark:text-zinc-400">{timeAgo(ev.occurredAt)}</span>
                       </div>
-                      <p className="mt-0.5 text-sm text-slate-600">{ev.message}</p>
+                      <p className="mt-0.5 text-sm text-[#574f47] dark:text-zinc-300">{ev.message}</p>
                       {ev.actorName && (
-                        <p className="mt-0.5 text-xs text-slate-400">by {ev.actorName}</p>
+                        <p className="mt-0.5 text-xs text-[#574f47]/80 dark:text-zinc-400">by {ev.actorName}</p>
                       )}
                     </li>
                   );
                 })}
                 {events.length === 0 && (
-                  <li className="text-sm text-slate-400">No activity recorded yet.</li>
+                  <li className="text-sm text-[#574f47] dark:text-zinc-400">No activity recorded yet.</li>
                 )}
               </ol>
 
@@ -257,12 +257,12 @@ export default function IncidentDetailPage() {
                     onChange={(e) => setComment(e.target.value)}
                     placeholder="Add a comment…"
                     rows={2}
-                    className="flex-1 resize-none rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#25396e] focus:bg-white focus:ring-2 focus:ring-[#25396e]/15"
+                    className="flex-1 resize-none rounded-xl border border-[#cbbaa9] dark:border-white/10 bg-[#e2cfc0]/50 dark:bg-zinc-900 px-3 py-2 text-sm text-[#171a1f] dark:text-white placeholder-[#574f47]/50 dark:placeholder-zinc-500 outline-none transition focus:border-[#ff5414] focus:ring-2 focus:ring-[#ff5414]/20"
                   />
                   <button
                     type="submit"
                     disabled={postingComment || !comment.trim()}
-                    className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#25396e] text-white transition hover:bg-[#1b2b57] disabled:opacity-50"
+                    className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#171a1f] dark:bg-[#ff5414] text-white transition hover:bg-[#2b2f38] dark:hover:bg-[#ff6830] shadow-xs disabled:opacity-50"
                   >
                     {postingComment ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   </button>
@@ -275,20 +275,20 @@ export default function IncidentDetailPage() {
 
         {/* Linked alerts */}
         <div>
-          <div className="rounded-2xl border border-slate-200 bg-white shadow-xs">
-            <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-4">
-              <Bell className="h-4 w-4 text-slate-400" />
-              <h3 className="font-serif-title text-base font-semibold text-slate-900">Linked Alerts</h3>
+          <div className="rounded-2xl border border-[#cbbaa9] dark:border-white/10 bg-[#eedccb]/70 dark:bg-[#101117] shadow-xs">
+            <div className="flex items-center gap-2 border-b border-[#cbbaa9]/30 dark:border-white/10 px-5 py-4">
+              <Bell className="h-4 w-4 text-[#574f47] dark:text-zinc-400" />
+              <h3 className="font-serif-title text-base font-semibold text-[#171a1f] dark:text-white">Linked Alerts</h3>
             </div>
             <div className="p-5">
               {alerts.length === 0 ? (
-                <p className="text-sm text-slate-400">No alerts linked to this incident.</p>
+                <p className="text-sm text-[#574f47] dark:text-zinc-400">No alerts linked to this incident.</p>
               ) : (
                 <ul className="space-y-3">
                   {alerts.map((a) => (
-                    <li key={a.id} className="rounded-xl border border-slate-100 bg-slate-50/50 px-3 py-2.5">
-                      <p className="truncate font-mono text-xs text-slate-600">{a.providerEventId}</p>
-                      <p className="mt-0.5 text-xs text-slate-400">
+                    <li key={a.id} className="rounded-xl border border-[#cbbaa9]/50 dark:border-white/10 bg-[#e2cfc0]/50 dark:bg-zinc-900/60 px-3 py-2.5">
+                      <p className="truncate font-mono text-xs text-[#171a1f] dark:text-zinc-300">{a.providerEventId}</p>
+                      <p className="mt-0.5 text-xs text-[#574f47] dark:text-zinc-400">
                         {a.provider} · {timeAgo(a.receivedAt)}
                       </p>
                     </li>
@@ -298,13 +298,13 @@ export default function IncidentDetailPage() {
             </div>
           </div>
 
-          <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+          <div className="mt-4 rounded-2xl border border-[#cbbaa9] dark:border-white/10 bg-[#eedccb]/70 dark:bg-[#101117] p-5 shadow-xs">
             <div className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-slate-400" />
-              <h3 className="font-serif-title text-sm font-semibold text-slate-900">Lifecycle</h3>
+              <ShieldCheck className="h-4 w-4 text-[#574f47] dark:text-zinc-400" />
+              <h3 className="font-serif-title text-sm font-semibold text-[#171a1f] dark:text-white">Lifecycle</h3>
             </div>
-            <p className="mt-2 text-xs leading-relaxed text-slate-500">
-              Recovery alerts move an incident to <span className="font-medium text-amber-600">mitigated</span> but never auto-resolve it.
+            <p className="mt-2 text-xs leading-relaxed text-[#574f47] dark:text-zinc-400">
+              Recovery alerts move an incident to <span className="font-medium text-amber-600 dark:text-amber-400">mitigated</span> but never auto-resolve it.
               Resolving manually marks the service healthy and frees it to accept new alerts.
             </p>
           </div>
@@ -317,9 +317,9 @@ export default function IncidentDetailPage() {
 function DetailItem({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div>
-      <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</dt>
-      <dd className="mt-0.5 text-sm font-medium text-slate-800">{value}</dd>
-      {sub && <p className="text-xs text-slate-400">{sub}</p>}
+      <dt className="text-xs font-semibold uppercase tracking-wide text-[#574f47] dark:text-zinc-400">{label}</dt>
+      <dd className="mt-0.5 text-sm font-medium text-[#171a1f] dark:text-white">{value}</dd>
+      {sub && <p className="text-xs text-[#574f47] dark:text-zinc-400">{sub}</p>}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700;800;900&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -8,12 +8,52 @@
 
 body {
   font-family: var(--font-sans);
-  background-color: #fafaf9;
-  color: #0f172a;
+  background-color: #e2cfc0;
+  color: #171a1f;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+html.dark body,
+body.dark {
+  background-color: #08080a;
+  color: #ffffff;
 }
 
 .font-serif-title {
-  font-family: 'Newsreader', 'Instrument Serif', Georgia, serif;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Perspective Mockup Utilities */
+.perspective-container {
+  perspective: 1300px;
+}
+
+.tilted-mockup {
+  transform: rotateX(15deg) scale(0.98);
+  transform-origin: center top;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease;
+}
+
+.tilted-mockup:hover {
+  transform: rotateX(11deg) scale(0.99);
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 5s ease-in-out infinite;
 }

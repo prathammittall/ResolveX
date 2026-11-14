@@ -21,10 +21,13 @@ import {
   X,
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
+import { useTheme } from '../../lib/theme-context';
 import { api } from '../../lib/api';
 import { isAdmin, ROLE_LABEL } from '../../lib/permissions';
 import type { OrganizationSummary } from '../../lib/types';
 import { Spinner, cn } from './_components/ui';
+import { ResolveXLogoMark } from '../../components/ResolveXLanding';
+import ThemeToggle from '../../components/ThemeToggle';
 
 type NavItem = {
   href: string;
@@ -68,6 +71,7 @@ function isActive(pathname: string, href: string, exact?: boolean): boolean {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading, logout, switchOrg } = useAuth();
+  const { isDark } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -77,7 +81,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     if (!isLoading && !user) {
-      // Keep where the user was heading so login can bring them back (e.g. an invitation link).
       const here = pathname + (typeof window !== 'undefined' ? window.location.search : '');
       router.replace(`/login?next=${encodeURIComponent(here)}`);
     }
@@ -88,7 +91,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setSwitcherOpen(false);
   }, [pathname]);
 
-  // Load the organizations the user belongs to (for the switcher and the current org name).
+  // Load the organizations the user belongs to
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
@@ -98,7 +101,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         if (!cancelled) setOrgs(res.organizations);
       })
       .catch(() => {
-        // The switcher is optional; the rest of the dashboard still works.
+        // Optional
       });
     return () => {
       cancelled = true;
@@ -107,8 +110,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (isLoading || !user) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#fafaf9]" role="status" aria-label="Loading">
-        <Spinner className="h-8 w-8" />
+      <div className={`flex h-screen items-center justify-center ${isDark ? 'bg-[#08080a]' : 'bg-[#e2cfc0]'}`} role="status" aria-label="Loading">
+        <Spinner className="h-8 w-8 text-[#ff5414]" />
       </div>
     );
   }
@@ -122,7 +125,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setSwitching(organizationId);
     const res = await switchOrg(organizationId);
     if (res.ok) {
-      // Full reload so no data from the previous organization stays in memory.
       window.location.assign('/dashboard');
     } else {
       setSwitching(null);
@@ -131,37 +133,50 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const sidebarContent = (
     <div className="flex h-full flex-col">
-      <div className="flex h-16 items-center px-5">
-        <Link href="/dashboard" className="font-serif-title text-xl font-semibold tracking-tight text-slate-900">
-          ResolveX
+      {/* Brand Header */}
+      <div className={`flex h-16 items-center px-5 border-b ${isDark ? 'border-zinc-800/80' : 'border-[#cbbaa9]'}`}>
+        <Link href="/dashboard" className="flex items-center gap-2.5 group">
+          <ResolveXLogoMark className="w-6 h-6 transition-transform group-hover:scale-105 duration-200" />
+          <span className={`font-sans font-bold text-lg tracking-tight transition-colors ${
+            isDark ? 'text-white' : 'text-[#171a1f]'
+          }`}>
+            ResolveX
+          </span>
         </Link>
       </div>
 
       {/* Organization switcher */}
-      <div className="relative px-3 pb-2">
+      <div className="relative px-3 pt-3 pb-2">
         <button
           type="button"
           onClick={() => orgs.length > 1 && setSwitcherOpen((v) => !v)}
           aria-haspopup="listbox"
           aria-expanded={switcherOpen}
           className={cn(
-            'flex w-full items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-left',
-            orgs.length > 1 ? 'hover:bg-slate-50' : 'cursor-default',
+            'flex w-full items-center gap-2.5 rounded-xl border px-3 py-2 text-left transition cursor-pointer',
+            isDark
+              ? 'border-zinc-800 bg-[#12131b] hover:bg-[#181924] text-white'
+              : 'border-[#cbbaa9] bg-[#dfcebe] hover:bg-[#d5c2b0] text-[#171a1f]',
+            orgs.length <= 1 && 'cursor-default'
           )}
         >
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+          <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+            isDark ? 'bg-zinc-800 text-zinc-300' : 'bg-[#eedccb] text-[#574f47]'
+          }`}>
             <Building2 className="h-4 w-4" />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm font-medium text-slate-800">{currentOrg?.name ?? 'Workspace'}</span>
-            <span className="block text-xs text-slate-400">{ROLE_LABEL[user.role]}</span>
+            <span className="block truncate text-sm font-semibold">{currentOrg?.name ?? 'Workspace'}</span>
+            <span className={`block text-xs ${isDark ? 'text-zinc-400' : 'text-[#675d54]'}`}>{ROLE_LABEL[user.role]}</span>
           </span>
-          {orgs.length > 1 && <ChevronsUpDown className="h-4 w-4 text-slate-400" />}
+          {orgs.length > 1 && <ChevronsUpDown className="h-4 w-4 opacity-50" />}
         </button>
         {switcherOpen && (
           <ul
             role="listbox"
-            className="absolute left-3 right-3 top-full z-10 mt-1 max-h-64 overflow-auto rounded-xl border border-slate-200 bg-white p-1 shadow-lg"
+            className={`absolute left-3 right-3 top-full z-10 mt-1 max-h-64 overflow-auto rounded-xl border p-1 shadow-2xl ${
+              isDark ? 'border-zinc-800 bg-[#101117] text-white' : 'border-[#cbbaa9] bg-[#eedccb] text-[#171a1f]'
+            }`}
           >
             {orgs.map((o) => (
               <li key={o.id} role="option" aria-selected={o.current}>
@@ -169,10 +184,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   type="button"
                   disabled={o.current || switching !== null}
                   onClick={() => handleSwitch(o.id)}
-                  className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-50 disabled:opacity-60"
+                  className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition cursor-pointer disabled:opacity-60 ${
+                    isDark ? 'hover:bg-zinc-800 text-zinc-200' : 'hover:bg-[#dfcebe] text-[#171a1f]'
+                  }`}
                 >
-                  <span className="truncate text-slate-800">{o.name}</span>
-                  <span className="ml-2 shrink-0 text-xs text-slate-400">
+                  <span className="truncate font-medium">{o.name}</span>
+                  <span className={`ml-2 shrink-0 text-xs ${isDark ? 'text-zinc-500' : 'text-[#675d54]'}`}>
                     {switching === o.id ? 'Switching…' : o.current ? 'Current' : ROLE_LABEL[o.role]}
                   </span>
                 </button>
@@ -182,13 +199,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         )}
       </div>
 
+      {/* Navigation */}
       <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-2" aria-label="Main">
         {NAV_GROUPS.map((group) => {
           const items = group.items.filter((i) => !i.adminOnly || admin);
           if (items.length === 0) return null;
           return (
             <div key={group.title}>
-              <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              <p className={`px-3 pb-1 text-[11px] font-mono font-semibold uppercase tracking-wider ${
+                isDark ? 'text-zinc-500' : 'text-[#675d54]'
+              }`}>
                 {group.title}
               </p>
               <div className="space-y-1">
@@ -203,11 +223,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       className={cn(
                         'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition',
                         active
-                          ? 'bg-[#25396e] text-white shadow-sm'
-                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
+                          ? isDark
+                            ? 'bg-[#ff5414] text-white shadow-sm font-semibold'
+                            : 'bg-[#171a1f] text-white shadow-sm font-semibold'
+                          : isDark
+                            ? 'text-zinc-400 hover:bg-zinc-800/80 hover:text-white'
+                            : 'text-[#574f47] hover:bg-[#dfcebe] hover:text-[#171a1f]'
                       )}
                     >
-                      <Icon className={cn('h-4.5 w-4.5', active ? 'text-white' : 'text-slate-400')} />
+                      <Icon className={cn('h-4.5 w-4.5', active ? (isDark ? 'text-white' : 'text-[#ff5414]') : 'opacity-60')} />
                       {item.label}
                     </Link>
                   );
@@ -218,27 +242,35 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         })}
       </nav>
 
-      <div className="border-t border-slate-200/70 p-3">
+      {/* Bottom Controls: Theme Toggle & User Info */}
+      <div className={`border-t p-3 space-y-2 ${isDark ? 'border-zinc-800/80' : 'border-[#cbbaa9]'}`}>
+        <ThemeToggle className="w-full justify-center" />
+
         <Link
           href="/"
-          className="mb-2 flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+          className={`flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium transition ${
+            isDark ? 'text-zinc-400 hover:bg-zinc-800 hover:text-white' : 'text-[#574f47] hover:bg-[#dfcebe] hover:text-[#171a1f]'
+          }`}
         >
           <ExternalLink className="h-3.5 w-3.5" />
           Back to website
         </Link>
-        <div className="flex items-center gap-3 rounded-xl bg-slate-50 px-3 py-2.5">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#25396e] text-sm font-bold text-white">
+
+        <div className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 ${
+          isDark ? 'bg-zinc-900 border-zinc-800' : 'bg-[#dfcebe] border-[#cbbaa9]'
+        }`}>
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#ff5414] text-sm font-bold text-white shadow-xs">
             {initial}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-slate-800">{displayName}</p>
-            <p className="truncate text-xs text-slate-400">{user.email}</p>
+            <p className={`truncate text-sm font-bold ${isDark ? 'text-white' : 'text-[#171a1f]'}`}>{displayName}</p>
+            <p className={`truncate text-xs ${isDark ? 'text-zinc-400' : 'text-[#675d54]'}`}>{user.email}</p>
           </div>
           <button
             onClick={() => logout().then(() => router.replace('/login'))}
             title="Sign out"
             aria-label="Sign out"
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+            className="rounded-lg p-1.5 text-zinc-400 hover:bg-rose-500/15 hover:text-rose-500 transition cursor-pointer"
           >
             <LogOut className="h-4 w-4" />
           </button>
@@ -248,18 +280,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   );
 
   return (
-    <div className="min-h-screen bg-[#fafaf9] text-slate-900">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-slate-200 bg-white md:block">
+    <div className={`min-h-screen transition-colors duration-300 ${
+      isDark ? 'bg-[#08080a] text-white' : 'bg-[#e2cfc0] text-[#171a1f]'
+    }`}>
+      {/* Desktop Sidebar */}
+      <aside className={`fixed inset-y-0 left-0 z-30 hidden w-64 border-r md:block transition-colors duration-300 ${
+        isDark ? 'border-zinc-800 bg-[#0e0f14]' : 'border-[#cbbaa9] bg-[#eedccb]'
+      }`}>
         {sidebarContent}
       </aside>
 
-      <div className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 md:hidden">
-        <Link href="/dashboard" className="font-serif-title text-lg font-semibold text-slate-900">
-          ResolveX
+      {/* Mobile Sticky Topbar */}
+      <div className={`sticky top-0 z-20 flex h-14 items-center justify-between border-b px-4 md:hidden transition-colors duration-300 ${
+        isDark ? 'border-zinc-800 bg-[#0e0f14]' : 'border-[#cbbaa9] bg-[#eedccb]'
+      }`}>
+        <Link href="/dashboard" className="flex items-center gap-2 font-bold text-lg">
+          <ResolveXLogoMark className="w-5 h-5" />
+          <span>ResolveX</span>
         </Link>
         <button
           onClick={() => setMobileOpen((v) => !v)}
-          className="rounded-lg p-2 text-slate-600 hover:bg-slate-100"
+          className={`rounded-lg p-2 transition ${isDark ? 'text-zinc-400 hover:bg-zinc-800' : 'text-[#574f47] hover:bg-[#dfcebe]'}`}
           aria-label="Toggle navigation"
           aria-expanded={mobileOpen}
         >
@@ -267,13 +308,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </button>
       </div>
 
+      {/* Mobile Drawer */}
       {mobileOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
-          <div className="absolute inset-0 bg-slate-900/30" onClick={() => setMobileOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 w-64 bg-white shadow-xl">{sidebarContent}</aside>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-xs" onClick={() => setMobileOpen(false)} />
+          <aside className={`absolute inset-y-0 left-0 w-64 shadow-2xl border-r ${
+            isDark ? 'bg-[#0e0f14] border-zinc-800' : 'bg-[#eedccb] border-[#cbbaa9]'
+          }`}>
+            {sidebarContent}
+          </aside>
         </div>
       )}
 
+      {/* Main Page Content */}
       <div className="md:pl-64">
         <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">{children}</main>
       </div>

@@ -37,9 +37,9 @@ function AcceptInvite() {
   if (!token) {
     return (
       <SectionCard title="Join an organization">
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-[#574f47] dark:text-zinc-300">
           Open the invitation link you were sent, or paste the invitation code in{' '}
-          <button className="font-medium text-[#25396e] underline" onClick={() => router.push('/dashboard/settings')}>
+          <button className="font-semibold text-[#ff5414] underline hover:text-[#e0450a] transition" onClick={() => router.push('/dashboard/settings')}>
             Settings
           </button>
           .
@@ -56,8 +56,8 @@ function AcceptInvite() {
           <div className="flex items-start gap-3" role="status">
             <CheckCircle2 className="mt-0.5 h-6 w-6 text-emerald-600" />
             <div>
-              <h1 className="font-serif-title text-lg font-semibold text-slate-900">You’ve joined the organization</h1>
-              <p className="mt-1 text-sm text-slate-500">Taking you to your new workspace…</p>
+              <h1 className="font-serif-title text-lg font-semibold text-[#171a1f] dark:text-white">You’ve joined the organization</h1>
+              <p className="mt-1 text-sm text-[#574f47] dark:text-zinc-400">Taking you to your new workspace…</p>
             </div>
           </div>
         </SectionCard>
@@ -67,9 +67,9 @@ function AcceptInvite() {
           <div className="flex items-start gap-3">
             <MailWarning className="mt-0.5 h-6 w-6 text-rose-600" />
             <div className="space-y-3">
-              <h1 className="font-serif-title text-lg font-semibold text-slate-900">Invitation can’t be used</h1>
+              <h1 className="font-serif-title text-lg font-semibold text-[#171a1f] dark:text-white">Invitation can’t be used</h1>
               {error && <ErrorBanner message={error} />}
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-[#574f47] dark:text-zinc-400">
                 Invitations are tied to one email address{user ? ` — you’re signed in as ${user.email}` : ''}. Ask the
                 person who invited you to send a new one, or sign in with the invited address.
               </p>

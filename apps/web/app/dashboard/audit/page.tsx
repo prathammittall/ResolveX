@@ -83,26 +83,26 @@ export default function AuditPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif-title text-2xl font-semibold text-slate-900">Audit log</h1>
-        <p className="mt-1 text-sm text-slate-500">A record of who changed what in this organization.</p>
+        <h1 className="font-serif-title text-2xl font-semibold text-[#171a1f] dark:text-white">Audit log</h1>
+        <p className="mt-1 text-sm text-[#574f47] dark:text-zinc-400">A record of who changed what in this organization.</p>
       </div>
       {error && <ErrorBanner message={error} />}
       <SectionCard>
         {logs.length === 0 ? (
           <EmptyState icon={ScrollText} title="Nothing recorded yet" description="Member and invitation changes appear here." />
         ) : (
-          <ul className="-my-3 divide-y divide-slate-100">
+          <ul className="-my-3 divide-y divide-[#cbbaa9]/20 dark:divide-white/5">
             {logs.map((l) => (
               <li key={l.id} className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-slate-800">{ACTION_LABEL[l.action] ?? l.action}</p>
-                  <p className="truncate text-xs text-slate-500">
+                  <p className="text-sm font-medium text-[#171a1f] dark:text-white">{ACTION_LABEL[l.action] ?? l.action}</p>
+                  <p className="truncate text-xs text-[#574f47] dark:text-zinc-400">
                     {describe(l)}
-                    {l.actorId !== null && <span className="text-slate-400"> · by user #{l.actorId}</span>}
-                    {l.requestId && <span className="text-slate-300"> · {l.requestId.slice(0, 8)}</span>}
+                    {l.actorId !== null && <span className="opacity-70"> · by user #{l.actorId}</span>}
+                    {l.requestId && <span className="opacity-50"> · {l.requestId.slice(0, 8)}</span>}
                   </p>
                 </div>
-                <time dateTime={l.createdAt} title={formatDateTime(l.createdAt)} className="shrink-0 text-xs text-slate-400">
+                <time dateTime={l.createdAt} title={formatDateTime(l.createdAt)} className="shrink-0 text-xs text-[#574f47] dark:text-zinc-400">
                   {timeAgo(l.createdAt)}
                 </time>
               </li>
@@ -115,7 +115,7 @@ export default function AuditPage() {
               type="button"
               onClick={more}
               disabled={loadingMore}
-              className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+              className="rounded-xl border border-[#cbbaa9] dark:border-white/10 bg-[#eedccb]/70 dark:bg-zinc-900 px-4 py-2 text-sm font-medium text-[#171a1f] dark:text-zinc-200 hover:bg-[#cbbaa9]/30 dark:hover:bg-white/10 transition disabled:opacity-60"
             >
               {loadingMore ? 'Loading…' : 'Load older entries'}
             </button>

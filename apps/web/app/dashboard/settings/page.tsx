@@ -10,8 +10,8 @@ import { ErrorBanner, PageLoader, SectionCard, formatDateTime } from '../_compon
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-0.5 py-3 sm:flex-row sm:items-center sm:justify-between">
-      <dt className="text-sm text-slate-500">{label}</dt>
-      <dd className="text-sm font-medium text-slate-800">{children}</dd>
+      <dt className="text-sm text-[#574f47] dark:text-zinc-400">{label}</dt>
+      <dd className="text-sm font-medium text-[#171a1f] dark:text-white">{children}</dd>
     </div>
   );
 }
@@ -48,28 +48,28 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif-title text-2xl font-semibold text-slate-900">Settings</h1>
-        <p className="mt-1 text-sm text-slate-500">Your organization and account.</p>
+        <h1 className="font-serif-title text-2xl font-semibold text-[#171a1f] dark:text-white">Settings</h1>
+        <p className="mt-1 text-sm text-[#574f47] dark:text-zinc-400">Your organization and account.</p>
       </div>
       {error && <ErrorBanner message={error} />}
 
       <SectionCard title="Organization">
-        <dl className="-my-3 divide-y divide-slate-100">
+        <dl className="-my-3 divide-y divide-[#cbbaa9]/20 dark:divide-white/5">
           <Row label="Name">{org?.name ?? '—'}</Row>
           <Row label="Identifier">
-            <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">{org?.slug ?? '—'}</code>
+            <code className="rounded bg-[#e2cfc0] dark:bg-white/10 px-1.5 py-0.5 text-xs text-[#171a1f] dark:text-zinc-200">{org?.slug ?? '—'}</code>
           </Row>
           <Row label="Created">{org ? formatDateTime(org.createdAt) : '—'}</Row>
         </dl>
       </SectionCard>
 
       <SectionCard title="Your account">
-        <dl className="-my-3 divide-y divide-slate-100">
+        <dl className="-my-3 divide-y divide-[#cbbaa9]/20 dark:divide-white/5">
           <Row label="Name">{user.name || user.username || '—'}</Row>
           <Row label="Email">{user.email}</Row>
           <Row label="Role in this organization">
             {ROLE_LABEL[user.role]}
-            <span className="ml-2 text-xs font-normal text-slate-400">{ROLE_HELP[user.role]}</span>
+            <span className="ml-2 text-xs font-normal text-[#574f47] dark:text-zinc-400">{ROLE_HELP[user.role]}</span>
           </Row>
         </dl>
       </SectionCard>
@@ -87,18 +87,18 @@ export default function SettingsPage() {
             placeholder="rxinv_…"
             autoComplete="off"
             spellCheck={false}
-            className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2.5 font-mono text-sm outline-none focus:border-[#25396e] focus:ring-2 focus:ring-[#25396e]/20"
+            className="min-w-0 flex-1 rounded-xl border border-[#cbbaa9] dark:border-white/10 bg-[#e2cfc0]/50 dark:bg-zinc-900 px-3 py-2.5 font-mono text-sm text-[#171a1f] dark:text-white outline-none focus:border-[#ff5414] focus:ring-2 focus:ring-[#ff5414]/20 placeholder-[#574f47]/50 dark:placeholder-zinc-500"
           />
           <button
             type="submit"
             disabled={joining}
-            className="rounded-xl bg-[#25396e] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1c2c56] disabled:opacity-60"
+            className="rounded-xl bg-[#171a1f] dark:bg-[#ff5414] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#2b2f38] dark:hover:bg-[#ff6830] transition shadow-xs disabled:opacity-60"
           >
             {joining ? 'Joining…' : 'Join'}
           </button>
         </form>
         {joinError && <div className="mt-3"><ErrorBanner message={joinError} /></div>}
-        <p className="mt-2 text-xs text-slate-400">Invitations only work for the email address they were sent to.</p>
+        <p className="mt-2 text-xs text-[#574f47] dark:text-zinc-400">Invitations only work for the email address they were sent to.</p>
       </SectionCard>
     </div>
   );

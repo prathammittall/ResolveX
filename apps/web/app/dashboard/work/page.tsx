@@ -33,11 +33,11 @@ export default function MyWorkPage() {
     <div className="space-y-6">
       <div className="flex items-end justify-between gap-3">
         <div>
-          <h1 className="font-serif-title text-2xl font-semibold text-slate-900">My work</h1>
-          <p className="mt-1 text-sm text-slate-500">Tickets assigned to you across all projects.</p>
+          <h1 className="font-serif-title text-2xl font-semibold text-[#171a1f] dark:text-white">My work</h1>
+          <p className="mt-1 text-sm text-[#574f47] dark:text-zinc-400">Tickets assigned to you across all projects.</p>
         </div>
-        <label className="flex items-center gap-2 text-sm text-slate-500">
-          <input type="checkbox" checked={showDone} onChange={(e) => setShowDone(e.target.checked)} />
+        <label className="flex items-center gap-2 text-sm text-[#574f47] dark:text-zinc-400">
+          <input type="checkbox" checked={showDone} onChange={(e) => setShowDone(e.target.checked)} className="accent-[#ff5414]" />
           Include finished
         </label>
       </div>
@@ -52,19 +52,19 @@ export default function MyWorkPage() {
       ) : (
         [...byProject.entries()].map(([key, list]) => (
           <SectionCard key={key} title={key} subtitle={`${list.length} ticket${list.length === 1 ? '' : 's'}`}>
-            <ul className="-my-2 divide-y divide-slate-100">
+            <ul className="-my-2 divide-y divide-[#cbbaa9]/20 dark:divide-white/5">
               {list.map((t) => (
                 <li key={t.id}>
-                  <Link href={`/dashboard/tasks/${t.ref}`} className="flex items-center justify-between gap-3 py-3 hover:bg-slate-50">
+                  <Link href={`/dashboard/tasks/${t.ref}`} className="flex items-center justify-between gap-3 py-3 hover:bg-[#cbbaa9]/20 dark:hover:bg-white/5 transition rounded-lg px-2">
                     <span className="flex min-w-0 items-center gap-2">
                       <TypeIcon type={t.type} />
-                      <span className="font-mono text-xs text-slate-400">{t.ref}</span>
-                      <span className="truncate text-sm font-medium text-slate-800">{t.title}</span>
+                      <span className="font-mono text-xs text-[#574f47] dark:text-zinc-400">{t.ref}</span>
+                      <span className="truncate text-sm font-medium text-[#171a1f] dark:text-white hover:text-[#ff5414] transition">{t.title}</span>
                     </span>
                     <span className="flex shrink-0 items-center gap-3">
                       <DueDate iso={t.dueDate} done={t.status.category === 'done'} />
                       <PriorityIcon priority={t.priority} />
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{t.status.name}</span>
+                      <span className="rounded-full bg-[#e2cfc0] dark:bg-white/10 px-2 py-0.5 text-xs text-[#171a1f] dark:text-zinc-300 font-medium">{t.status.name}</span>
                     </span>
                   </Link>
                 </li>

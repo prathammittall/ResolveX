@@ -55,8 +55,8 @@ export default function AlertsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif-title text-2xl font-semibold text-slate-900">Alerts</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="font-serif-title text-2xl font-semibold text-[#171a1f] dark:text-white">Alerts</h1>
+        <p className="mt-1 text-sm text-[#574f47] dark:text-zinc-400">
           Raw alert events ingested across your services.
         </p>
       </div>
@@ -71,8 +71,8 @@ export default function AlertsPage() {
             className={cn(
               'rounded-lg px-3 py-1.5 text-xs font-medium capitalize transition',
               status === s
-                ? 'bg-[#25396e] text-white'
-                : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50',
+                ? 'bg-[#171a1f] dark:bg-[#ff5414] text-white shadow-xs'
+                : 'bg-[#eedccb]/70 dark:bg-white/5 text-[#574f47] dark:text-zinc-300 border border-[#cbbaa9] dark:border-white/10 hover:bg-[#cbbaa9]/40 dark:hover:bg-white/10',
             )}
           >
             {s}
@@ -91,10 +91,10 @@ export default function AlertsPage() {
           }
         />
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs">
+        <div className="overflow-hidden rounded-2xl border border-[#cbbaa9] dark:border-white/10 bg-[#eedccb]/70 dark:bg-[#101117] shadow-xs">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/60 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <tr className="border-b border-[#cbbaa9]/40 dark:border-white/10 bg-[#e2cfc0]/40 dark:bg-white/5 text-left text-xs font-semibold uppercase tracking-wide text-[#574f47] dark:text-zinc-400">
                 <th className="px-5 py-3">Service</th>
                 <th className="px-5 py-3">Event ID</th>
                 <th className="px-5 py-3">Status</th>
@@ -102,14 +102,14 @@ export default function AlertsPage() {
                 <th className="hidden px-5 py-3 md:table-cell">Received</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[#cbbaa9]/25 dark:divide-white/5">
               {filtered.map((a) => (
-                <tr key={a.id} className="transition hover:bg-slate-50/60">
+                <tr key={a.id} className="transition hover:bg-[#cbbaa9]/20 dark:hover:bg-white/5">
                   <td className="px-5 py-3.5">
-                    <span className="text-sm font-medium text-slate-800">{a.serviceName}</span>
+                    <span className="text-sm font-medium text-[#171a1f] dark:text-white">{a.serviceName}</span>
                   </td>
                   <td className="px-5 py-3.5">
-                    <span className="font-mono text-xs text-slate-500">{a.providerEventId}</span>
+                    <span className="font-mono text-xs text-[#574f47] dark:text-zinc-400">{a.providerEventId}</span>
                   </td>
                   <td className="px-5 py-3.5">
                     <AlertStatusBadge status={a.processingStatus} />
@@ -118,17 +118,17 @@ export default function AlertsPage() {
                     {a.incidentId ? (
                       <Link
                         href={`/dashboard/incidents/${a.incidentId}`}
-                        className="text-xs font-medium text-[#25396e] hover:underline"
+                        className="text-xs font-medium text-[#ff5414] hover:underline"
                       >
                         #{a.incidentId}
                       </Link>
                     ) : (
-                      <span className="text-xs text-slate-400">—</span>
+                      <span className="text-xs text-[#574f47]/60 dark:text-zinc-500">—</span>
                     )}
                   </td>
                   <td className="hidden px-5 py-3.5 md:table-cell">
-                    <span className="text-sm text-slate-500">{timeAgo(a.receivedAt)}</span>
-                    <span className="block text-xs text-slate-400">{formatDateTime(a.receivedAt)}</span>
+                    <span className="text-sm text-[#574f47] dark:text-zinc-300">{timeAgo(a.receivedAt)}</span>
+                    <span className="block text-xs text-[#574f47]/70 dark:text-zinc-400">{formatDateTime(a.receivedAt)}</span>
                   </td>
                 </tr>
               ))}
