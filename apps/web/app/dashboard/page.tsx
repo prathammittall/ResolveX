@@ -102,6 +102,51 @@ export default function OverviewPage() {
           accent="violet"
           sub={`${metrics?.alerts.processed ?? 0} processed`}
         />
+        <MetricCard
+          label="Average MTTA"
+          value={metrics?.mtta.averageSeconds == null ? '—' : `${Math.round(metrics.mtta.averageSeconds / 60)}m`}
+          icon={Gauge}
+          accent="blue"
+          sub={`${metrics?.mtta.acknowledgedIncidents ?? 0} incidents acknowledged`}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+          <h3 className="font-serif-title text-base font-semibold text-slate-900">Escalation health</h3>
+          <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+            <div className="rounded-lg bg-rose-50 px-3 py-2">
+              <p className="text-xs text-rose-700">Awaiting acknowledgment</p>
+              <p className="mt-1 text-xl font-semibold text-rose-800">
+                {metrics?.escalation.unacknowledgedActiveIncidents ?? 0}
+              </p>
+            </div>
+            <div className="rounded-lg bg-amber-50 px-3 py-2">
+              <p className="text-xs text-amber-700">Exhausted</p>
+              <p className="mt-1 text-xl font-semibold text-amber-800">{metrics?.escalation.exhausted ?? 0}</p>
+            </div>
+          </div>
+          <p className="mt-4 text-xs text-slate-500">
+            Queue: {metrics?.queue.pending ?? 0} pending · {metrics?.queue.failed ?? 0} failed
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs lg:col-span-2">
+          <h3 className="font-serif-title text-base font-semibold text-slate-900">MTTA by severity</h3>
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {(['sev1', 'sev2', 'sev3', 'sev4'] as const).map((severity) => {
+              const seconds = metrics?.mtta[`${severity}Seconds`];
+              return (
+                <div key={severity} className="rounded-lg bg-slate-50 px-3 py-3">
+                  <p className="text-xs font-medium uppercase text-slate-500">{severity}</p>
+                  <p className="mt-1 text-lg font-semibold text-slate-800">
+                    {seconds == null ? '—' : `${Math.round(seconds / 60)}m`}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

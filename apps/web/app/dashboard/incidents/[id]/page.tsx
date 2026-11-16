@@ -17,6 +17,8 @@ import {
   Server,
   Bell,
   ShieldCheck,
+  Clock3,
+  ListChecks,
 } from 'lucide-react';
 import { api, ApiError } from '../../../../lib/api';
 import { useAuth } from '../../../../lib/auth-context';
@@ -60,9 +62,10 @@ export default function IncidentDetailPage() {
   const [postingComment, setPostingComment] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [acting, setActing] = useState<'acknowledge' | 'resolve' | null>(null);
+  const [now, setNow] = useState(() => Date.now());
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (showLoader = true) => {
+    if (showLoader) setLoading(true);
     setError(null);
     try {
       const res = await api.get<IncidentDetailResponse>(`/api/incidents/${id}`);
@@ -75,8 +78,15 @@ export default function IncidentDetailPage() {
   }, [id]);
 
   useEffect(() => {
-    load();
+    void load();
+    const refresh = window.setInterval(() => void load(false), 5000);
+    return () => window.clearInterval(refresh);
   }, [load]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   async function handleAcknowledge() {
     setActionError(null);
@@ -134,6 +144,10 @@ export default function IncidentDetailPage() {
   }
 
   const { incident, events, alerts } = data;
+  const escalation = data.escalation;
+  const remainingMs = escalation?.nextEscalationAt
+    ? Math.max(0, Date.parse(escalation.nextEscalationAt) - now)
+    : null;
   const canAcknowledge = responder && incident.status === 'open';
   const canResolve = responder && incident.status !== 'resolved';
 
@@ -205,12 +219,83 @@ export default function IncidentDetailPage() {
             sub={incident.acknowledgedAt ? timeAgo(incident.acknowledgedAt) : undefined}
           />
           <DetailItem
+            label="MTTA"
+            value={incident.mttaSeconds == null ? '—' : `${Math.round(incident.mttaSeconds / 60)} min`}
+            sub={incident.escalationStatus ? `Escalation ${incident.escalationStatus}` : undefined}
+          />
+          <DetailItem
+            label="Acknowledgment due"
+            value={incident.acknowledgmentDueAt ? formatDateTime(incident.acknowledgmentDueAt) : '—'}
+            sub={incident.acknowledgmentDueAt ? timeAgo(incident.acknowledgmentDueAt) : undefined}
+          />
+          <DetailItem
             label="Resolved"
             value={incident.resolvedAt ? formatDateTime(incident.resolvedAt) : '—'}
             sub={incident.resolvedAt ? timeAgo(incident.resolvedAt) : undefined}
           />
         </dl>
       </div>
+
+      {escalation && (
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Clock3 className="h-4 w-4 text-amber-600" />
+              <div>
+                <h2 className="font-serif-title text-base font-semibold text-slate-900">Escalation monitor</h2>
+                <p className="text-xs text-slate-500">
+                  Step {escalation.currentStep} · {escalation.status}
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-xs uppercase tracking-wide text-slate-400">Next timer</p>
+              <p className="font-mono text-lg font-semibold text-slate-800">
+                {remainingMs === null ? '—' : remainingMs === 0 ? 'Due now' : formatDuration(remainingMs)}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <div className="rounded-xl bg-slate-50 p-3">
+              <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <ListChecks className="h-3.5 w-3.5" /> Hierarchy
+              </div>
+              <ol className="space-y-2">
+                {escalation.steps.map((step) => (
+                  <li key={step.position} className="flex items-center justify-between gap-3 text-sm">
+                    <span className={cn(step.position === escalation.currentStep ? 'font-semibold text-[#25396e]' : 'text-slate-600')}>
+                      {step.position}. {step.targetType} · {step.targetId}
+                    </span>
+                    <span className="text-xs text-slate-400">{formatDelay(step.delaySeconds)}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+            <div className="rounded-xl bg-slate-50 p-3">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Queue and delivery</p>
+              {escalation.queue.length === 0 && escalation.deliveries.length === 0 ? (
+                <p className="text-sm text-slate-400">No queue activity yet.</p>
+              ) : (
+                <ul className="space-y-2 text-xs text-slate-600">
+                  {escalation.queue.map((job) => (
+                    <li key={job.id} className="flex justify-between gap-3">
+                      <span>{job.type} #{job.id}</span>
+                      <span className="font-medium">{job.status}</span>
+                    </li>
+                  ))}
+                  {escalation.deliveries.map((delivery) => (
+                    <li key={delivery.id} className="flex justify-between gap-3">
+                      <span>{delivery.channel} · {delivery.recipient}</span>
+                      <span className="font-medium">{delivery.status}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Timeline */}
@@ -322,4 +407,20 @@ function DetailItem({ label, value, sub }: { label: string; value: string; sub?:
       {sub && <p className="text-xs text-slate-400">{sub}</p>}
     </div>
   );
+}
+
+function formatDuration(milliseconds: number): string {
+  const totalSeconds = Math.ceil(milliseconds / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return hours > 0
+    ? `${hours}h ${String(minutes).padStart(2, '0')}m`
+    : `${minutes}m ${String(seconds).padStart(2, '0')}s`;
+}
+
+function formatDelay(seconds: number): string {
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  return minutes < 60 ? `${minutes}m` : `${Math.floor(minutes / 60)}h`;
 }

@@ -6,6 +6,7 @@ import { recordAudit } from './audit.js';
 import { OrgError } from './errors.js';
 import type { Actor } from './members.js';
 import { canAssignRole, isRole, type Role } from './permissions.js';
+import { sendInvitationEmail } from '../email/mailer.js';
 
 const TOKEN_PREFIX = 'rxinv_';
 const INVITATION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -30,13 +31,7 @@ function toView(row: {
   acceptedAt: string | null;
   revokedAt: string | null;
 }): InvitationView {
-  const status = row.acceptedAt
-    ? 'accepted'
-    : row.revokedAt
-      ? 'revoked'
-      : Date.parse(row.expiresAt) <= Date.now()
-        ? 'expired'
-        : 'pending';
+  const status = row.acceptedAt ? 'accepted' : row.revokedAt ? 'revoked' : Date.parse(row.expiresAt) <= Date.now() ? 'expired' : 'pending';
   return {
     id: row.id,
     email: row.email,
@@ -49,12 +44,13 @@ function toView(row: {
 
 /**
  * Create an invitation. The secret token is returned once; only its hash is stored. (Delivering it by
- * email is the Integrations phase; until then the inviter shares the link themselves.)
+ * email delivery is attempted after the invitation is committed; a mail outage must not roll back
+ * the invitation or expose the token again.
  */
 export async function createInvitation(
   actor: Actor,
   input: { email: string; role: Role },
-): Promise<{ invitation: InvitationView; token: string }> {
+): Promise<{ invitation: InvitationView; token: string; emailSent: boolean }> {
   const email = input.email.trim().toLowerCase();
   if (!canAssignRole(actor.role, input.role)) {
     throw new OrgError('FORBIDDEN', 'You cannot invite someone with that role', 403);
@@ -65,9 +61,12 @@ export async function createInvitation(
   const expiresAt = new Date(Date.now() + INVITATION_TTL_MS).toISOString();
 
   try {
-    return await withTenant(actor.orgId, async (tx) => {
+    const result = await withTenant(actor.orgId, async (tx) => {
       if (existingUser) {
-        const already = await tx.orm.public.Membership.where({ organizationId: actor.orgId, userId: existingUser.id }).first();
+        const already = await tx.orm.public.Membership.where({
+          organizationId: actor.orgId,
+          userId: existingUser.id,
+        }).first();
         if (already) throw new OrgError('CONFLICT', 'That person is already a member', 409);
       }
       const row = await tx.orm.public.Invitation.create({
@@ -87,8 +86,26 @@ export async function createInvitation(
         metadata: { email, role: input.role },
         requestId: actor.requestId,
       });
-      return { invitation: toView(row), token };
+      return {
+        invitation: toView(row),
+        token,
+        organizationName: (await tx.orm.public.Organization.where({ id: actor.orgId }).first())?.name ?? 'your organization',
+      };
     });
+    let emailSent = false;
+    const baseUrl = process.env.APP_BASE_URL?.trim() || 'http://localhost:3001';
+    try {
+      emailSent = await sendInvitationEmail({
+        to: result.invitation.email,
+        organizationName: result.organizationName,
+        role: result.invitation.role,
+        inviteUrl: `${baseUrl.replace(/\/$/, '')}/dashboard/accept-invite?token=${encodeURIComponent(result.token)}`,
+        expiresAt: result.invitation.expiresAt,
+      });
+    } catch (error) {
+      console.error('[email/invitation] delivery failed:', error instanceof Error ? error.message : 'unknown');
+    }
+    return { invitation: result.invitation, token: result.token, emailSent };
   } catch (error) {
     if (isUniqueViolation(error)) {
       throw new OrgError('CONFLICT', 'A pending invitation for that email already exists', 409);
@@ -104,11 +121,18 @@ export async function listInvitations(orgId: string): Promise<InvitationView[]> 
 
 export async function revokeInvitation(actor: Actor, invitationId: string): Promise<void> {
   await withTenant(actor.orgId, async (tx) => {
-    const row = await tx.orm.public.Invitation.where({ id: invitationId, organizationId: actor.orgId }).forUpdate().first();
+    const row = await tx.orm.public.Invitation.where({
+      id: invitationId,
+      organizationId: actor.orgId,
+    })
+      .forUpdate()
+      .first();
     if (!row) throw new OrgError('NOT_FOUND', 'Invitation not found', 404);
     if (row.acceptedAt) throw new OrgError('CONFLICT', 'Invitation was already accepted', 409);
     if (!row.revokedAt) {
-      await tx.orm.public.Invitation.where({ id: row.id }).update({ revokedAt: new Date().toISOString() });
+      await tx.orm.public.Invitation.where({ id: row.id }).update({
+        revokedAt: new Date().toISOString(),
+      });
       await recordAudit(tx, {
         organizationId: actor.orgId,
         actorId: actor.userId,
@@ -167,7 +191,9 @@ export async function acceptInvitation(
       userId: user.id,
       role: invitation.role,
     });
-    await tx.orm.public.Invitation.where({ id: invitation.id }).update({ acceptedAt: new Date().toISOString() });
+    await tx.orm.public.Invitation.where({ id: invitation.id }).update({
+      acceptedAt: new Date().toISOString(),
+    });
     await recordAudit(tx, {
       organizationId: invitation.organizationId,
       actorId: user.id,

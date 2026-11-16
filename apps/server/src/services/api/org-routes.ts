@@ -1,4 +1,4 @@
-import { z } from 'zod';
+﻿import { z } from 'zod';
 import {
   acceptInvitation,
   can,
@@ -142,7 +142,7 @@ export async function orgRoutes(
         if ('error' in parsed) return parsed.error;
         const created = await createInvitation(actor, parsed.data);
         // The token is shown exactly once, here.
-        return json({ ok: true, invitation: created.invitation, token: created.token }, 201);
+        return json({ ok: true, invitation: created.invitation, token: created.token, emailSent: created.emailSent }, 201);
       }
       if (segments.length === 3 && method === 'DELETE') {
         const denied = require('members:invite');

@@ -1,0 +1,2144 @@
+[
+  {
+    "id": "table.EscalationPolicy",
+    "label": "Create table \"EscalationPolicy\"",
+    "summary": "Creates table \"EscalationPolicy\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "EscalationPolicy"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"EscalationPolicy\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"EscalationPolicy\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"EscalationPolicy\"",
+        "sql": "CREATE TABLE \"public\".\"EscalationPolicy\" (\n  \"companyId\" int4 NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"enabled\" bool DEFAULT true NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"name\" text NOT NULL,\n  \"serviceId\" int4,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"EscalationPolicy\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"EscalationPolicy\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.EscalationStep",
+    "label": "Create table \"EscalationStep\"",
+    "summary": "Creates table \"EscalationStep\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "EscalationStep"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"EscalationStep\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"EscalationStep\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"EscalationStep\"",
+        "sql": "CREATE TABLE \"public\".\"EscalationStep\" (\n  \"acknowledgmentRequired\" bool DEFAULT true NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"delaySeconds\" int4 NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"notificationChannels\" jsonb NOT NULL,\n  \"policyId\" int4 NOT NULL,\n  \"position\" int4 NOT NULL,\n  \"targetId\" text NOT NULL,\n  \"targetType\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"EscalationStep_targetType_check_17501856\" CHECK (\"targetType\" IN ('user', 'team', 'webhook'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"EscalationStep\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"EscalationStep\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.IncidentEscalation",
+    "label": "Create table \"IncidentEscalation\"",
+    "summary": "Creates table \"IncidentEscalation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "IncidentEscalation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"IncidentEscalation\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"IncidentEscalation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"IncidentEscalation\"",
+        "sql": "CREATE TABLE \"public\".\"IncidentEscalation\" (\n  \"acknowledgedAt\" timestamptz,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"currentStep\" int4 DEFAULT 0 NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"incidentId\" int4 NOT NULL,\n  \"nextEscalationAt\" timestamptz,\n  \"policyId\" int4 NOT NULL,\n  \"status\" text DEFAULT 'active' NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"IncidentEscalation_status_check_734f4e01\" CHECK (\"status\" IN ('active', 'acknowledged', 'exhausted', 'cancelled'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"IncidentEscalation\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"IncidentEscalation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.MaintenanceWindow",
+    "label": "Create table \"MaintenanceWindow\"",
+    "summary": "Creates table \"MaintenanceWindow\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "MaintenanceWindow"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"MaintenanceWindow\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"MaintenanceWindow\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"MaintenanceWindow\"",
+        "sql": "CREATE TABLE \"public\".\"MaintenanceWindow\" (\n  \"bypassSeverity\" text,\n  \"companyId\" int4 NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdById\" int4,\n  \"enabled\" bool DEFAULT true NOT NULL,\n  \"endsAt\" timestamptz NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"name\" text NOT NULL,\n  \"serviceId\" int4,\n  \"startsAt\" timestamptz NOT NULL,\n  \"timezone\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"MaintenanceWindow_bypassSeverity_check_e5dcd509\" CHECK (\"bypassSeverity\" IN ('sev1', 'sev2', 'sev3', 'sev4'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"MaintenanceWindow\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"MaintenanceWindow\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.NotificationDelivery",
+    "label": "Create table \"NotificationDelivery\"",
+    "summary": "Creates table \"NotificationDelivery\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "NotificationDelivery"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"NotificationDelivery\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"NotificationDelivery\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"NotificationDelivery\"",
+        "sql": "CREATE TABLE \"public\".\"NotificationDelivery\" (\n  \"acknowledgedAt\" timestamptz,\n  \"channel\" text NOT NULL,\n  \"companyId\" int4 NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"deliveredAt\" timestamptz,\n  \"error\" text,\n  \"id\" SERIAL NOT NULL,\n  \"idempotencyKey\" text NOT NULL,\n  \"incidentId\" int4 NOT NULL,\n  \"queueJobId\" int4,\n  \"recipient\" text NOT NULL,\n  \"sentAt\" timestamptz,\n  \"status\" text DEFAULT 'pending' NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"NotificationDelivery_status_check_bb8816fa\" CHECK (\"status\" IN ('pending', 'sent', 'delivered', 'failed', 'cancelled'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"NotificationDelivery\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"NotificationDelivery\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.QueueJob",
+    "label": "Create table \"QueueJob\"",
+    "summary": "Creates table \"QueueJob\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "QueueJob"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"QueueJob\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"QueueJob\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"QueueJob\"",
+        "sql": "CREATE TABLE \"public\".\"QueueJob\" (\n  \"attempts\" int4 DEFAULT 0 NOT NULL,\n  \"companyId\" int4 NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"idempotencyKey\" text NOT NULL,\n  \"incidentId\" int4,\n  \"lastError\" text,\n  \"lockedUntil\" timestamptz,\n  \"payload\" jsonb NOT NULL,\n  \"runAt\" timestamptz NOT NULL,\n  \"status\" text DEFAULT 'pending' NOT NULL,\n  \"type\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"QueueJob_status_check_d8313f9b\" CHECK (\"status\" IN ('pending', 'processing', 'completed', 'failed', 'cancelled')),\n  CONSTRAINT \"QueueJob_type_check_9fc40b9f\" CHECK (\"type\" IN ('escalate', 'notify'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"QueueJob\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"QueueJob\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Incident.acknowledgmentDueAt",
+    "label": "Add column \"acknowledgmentDueAt\" to \"Incident\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "acknowledgmentDueAt",
+        "table": "Incident"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"acknowledgmentDueAt\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Incident",
+          "acknowledgmentDueAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"acknowledgmentDueAt\"",
+        "sql": "ALTER TABLE \"public\".\"Incident\" ADD COLUMN \"acknowledgmentDueAt\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"acknowledgmentDueAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Incident",
+          "acknowledgmentDueAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Incident.escalationPolicyId",
+    "label": "Add column \"escalationPolicyId\" to \"Incident\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "escalationPolicyId",
+        "table": "Incident"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"escalationPolicyId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Incident",
+          "escalationPolicyId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"escalationPolicyId\"",
+        "sql": "ALTER TABLE \"public\".\"Incident\" ADD COLUMN \"escalationPolicyId\" int4"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"escalationPolicyId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Incident",
+          "escalationPolicyId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Incident.escalationStatus",
+    "label": "Add column \"escalationStatus\" to \"Incident\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "escalationStatus",
+        "table": "Incident"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"escalationStatus\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Incident",
+          "escalationStatus"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"escalationStatus\"",
+        "sql": "ALTER TABLE \"public\".\"Incident\" ADD COLUMN \"escalationStatus\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"escalationStatus\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Incident",
+          "escalationStatus"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Incident.firstAcknowledgedAt",
+    "label": "Add column \"firstAcknowledgedAt\" to \"Incident\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "firstAcknowledgedAt",
+        "table": "Incident"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"firstAcknowledgedAt\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Incident",
+          "firstAcknowledgedAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"firstAcknowledgedAt\"",
+        "sql": "ALTER TABLE \"public\".\"Incident\" ADD COLUMN \"firstAcknowledgedAt\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"firstAcknowledgedAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Incident",
+          "firstAcknowledgedAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Incident.mttaSeconds",
+    "label": "Add column \"mttaSeconds\" to \"Incident\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "mttaSeconds",
+        "table": "Incident"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"mttaSeconds\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Incident",
+          "mttaSeconds"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"mttaSeconds\"",
+        "sql": "ALTER TABLE \"public\".\"Incident\" ADD COLUMN \"mttaSeconds\" int4"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"mttaSeconds\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Incident",
+          "mttaSeconds"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.EscalationPolicy.EscalationPolicy_companyId_name_key",
+    "label": "Add unique constraint on \"EscalationPolicy\" (companyId, name)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "EscalationPolicy_companyId_name_key",
+        "table": "EscalationPolicy"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"EscalationPolicy_companyId_name_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "EscalationPolicy_companyId_name_key",
+          "public",
+          "\"public\".\"EscalationPolicy\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"EscalationPolicy_companyId_name_key\"",
+        "sql": "ALTER TABLE \"public\".\"EscalationPolicy\" ADD CONSTRAINT \"EscalationPolicy_companyId_name_key\" UNIQUE (\"companyId\", \"name\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"EscalationPolicy_companyId_name_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "EscalationPolicy_companyId_name_key",
+          "public",
+          "\"public\".\"EscalationPolicy\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.EscalationStep.EscalationStep_policyId_position_key",
+    "label": "Add unique constraint on \"EscalationStep\" (policyId, position)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "EscalationStep_policyId_position_key",
+        "table": "EscalationStep"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"EscalationStep_policyId_position_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "EscalationStep_policyId_position_key",
+          "public",
+          "\"public\".\"EscalationStep\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"EscalationStep_policyId_position_key\"",
+        "sql": "ALTER TABLE \"public\".\"EscalationStep\" ADD CONSTRAINT \"EscalationStep_policyId_position_key\" UNIQUE (\"policyId\", \"position\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"EscalationStep_policyId_position_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "EscalationStep_policyId_position_key",
+          "public",
+          "\"public\".\"EscalationStep\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.Incident.Incident_escalationStatus_check_d92203ad",
+    "label": "Add check constraint \"Incident_escalationStatus_check_d92203ad\" on \"Incident\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "Incident_escalationStatus_check_d92203ad",
+        "table": "Incident"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Incident_escalationStatus_check_d92203ad\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Incident_escalationStatus_check_d92203ad",
+          "public",
+          "\"public\".\"Incident\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"Incident_escalationStatus_check_d92203ad\"",
+        "sql": "ALTER TABLE \"public\".\"Incident\" ADD CONSTRAINT \"Incident_escalationStatus_check_d92203ad\" CHECK (\"escalationStatus\" IN ('active', 'acknowledged', 'exhausted', 'cancelled'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Incident_escalationStatus_check_d92203ad\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Incident_escalationStatus_check_d92203ad",
+          "public",
+          "\"public\".\"Incident\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.IncidentEscalation.IncidentEscalation_incidentId_key",
+    "label": "Add unique constraint on \"IncidentEscalation\" (incidentId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "IncidentEscalation_incidentId_key",
+        "table": "IncidentEscalation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"IncidentEscalation_incidentId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "IncidentEscalation_incidentId_key",
+          "public",
+          "\"public\".\"IncidentEscalation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"IncidentEscalation_incidentId_key\"",
+        "sql": "ALTER TABLE \"public\".\"IncidentEscalation\" ADD CONSTRAINT \"IncidentEscalation_incidentId_key\" UNIQUE (\"incidentId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"IncidentEscalation_incidentId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "IncidentEscalation_incidentId_key",
+          "public",
+          "\"public\".\"IncidentEscalation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.NotificationDelivery.NotificationDelivery_idempotencyKey_key",
+    "label": "Add unique constraint on \"NotificationDelivery\" (idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "NotificationDelivery_idempotencyKey_key",
+        "table": "NotificationDelivery"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"NotificationDelivery_idempotencyKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "NotificationDelivery_idempotencyKey_key",
+          "public",
+          "\"public\".\"NotificationDelivery\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"NotificationDelivery_idempotencyKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"NotificationDelivery\" ADD CONSTRAINT \"NotificationDelivery_idempotencyKey_key\" UNIQUE (\"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"NotificationDelivery_idempotencyKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "NotificationDelivery_idempotencyKey_key",
+          "public",
+          "\"public\".\"NotificationDelivery\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.QueueJob.QueueJob_idempotencyKey_key",
+    "label": "Add unique constraint on \"QueueJob\" (idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "QueueJob_idempotencyKey_key",
+        "table": "QueueJob"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"QueueJob_idempotencyKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "QueueJob_idempotencyKey_key",
+          "public",
+          "\"public\".\"QueueJob\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"QueueJob_idempotencyKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"QueueJob\" ADD CONSTRAINT \"QueueJob_idempotencyKey_key\" UNIQUE (\"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"QueueJob_idempotencyKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "QueueJob_idempotencyKey_key",
+          "public",
+          "\"public\".\"QueueJob\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.EscalationPolicy.EscalationPolicy_companyId_enabled_idx_0f7516a0",
+    "label": "Create index \"EscalationPolicy_companyId_enabled_idx_0f7516a0\" on \"EscalationPolicy\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "EscalationPolicy_companyId_enabled_idx_0f7516a0",
+        "table": "EscalationPolicy"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"EscalationPolicy_companyId_enabled_idx_0f7516a0\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"EscalationPolicy_companyId_enabled_idx_0f7516a0\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"EscalationPolicy_companyId_enabled_idx_0f7516a0\"",
+        "sql": "CREATE INDEX \"EscalationPolicy_companyId_enabled_idx_0f7516a0\" ON \"public\".\"EscalationPolicy\" (\"companyId\", \"enabled\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"EscalationPolicy_companyId_enabled_idx_0f7516a0\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"EscalationPolicy_companyId_enabled_idx_0f7516a0\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.EscalationPolicy.EscalationPolicy_companyId_idx_33acc5ed",
+    "label": "Create index \"EscalationPolicy_companyId_idx_33acc5ed\" on \"EscalationPolicy\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "EscalationPolicy_companyId_idx_33acc5ed",
+        "table": "EscalationPolicy"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"EscalationPolicy_companyId_idx_33acc5ed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"EscalationPolicy_companyId_idx_33acc5ed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"EscalationPolicy_companyId_idx_33acc5ed\"",
+        "sql": "CREATE INDEX \"EscalationPolicy_companyId_idx_33acc5ed\" ON \"public\".\"EscalationPolicy\" (\"companyId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"EscalationPolicy_companyId_idx_33acc5ed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"EscalationPolicy_companyId_idx_33acc5ed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.EscalationPolicy.EscalationPolicy_serviceId_enabled_idx_71358b09",
+    "label": "Create index \"EscalationPolicy_serviceId_enabled_idx_71358b09\" on \"EscalationPolicy\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "EscalationPolicy_serviceId_enabled_idx_71358b09",
+        "table": "EscalationPolicy"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"EscalationPolicy_serviceId_enabled_idx_71358b09\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"EscalationPolicy_serviceId_enabled_idx_71358b09\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"EscalationPolicy_serviceId_enabled_idx_71358b09\"",
+        "sql": "CREATE INDEX \"EscalationPolicy_serviceId_enabled_idx_71358b09\" ON \"public\".\"EscalationPolicy\" (\"serviceId\", \"enabled\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"EscalationPolicy_serviceId_enabled_idx_71358b09\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"EscalationPolicy_serviceId_enabled_idx_71358b09\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.EscalationPolicy.EscalationPolicy_serviceId_idx_b5d9acbf",
+    "label": "Create index \"EscalationPolicy_serviceId_idx_b5d9acbf\" on \"EscalationPolicy\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "EscalationPolicy_serviceId_idx_b5d9acbf",
+        "table": "EscalationPolicy"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"EscalationPolicy_serviceId_idx_b5d9acbf\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"EscalationPolicy_serviceId_idx_b5d9acbf\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"EscalationPolicy_serviceId_idx_b5d9acbf\"",
+        "sql": "CREATE INDEX \"EscalationPolicy_serviceId_idx_b5d9acbf\" ON \"public\".\"EscalationPolicy\" (\"serviceId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"EscalationPolicy_serviceId_idx_b5d9acbf\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"EscalationPolicy_serviceId_idx_b5d9acbf\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.EscalationStep.EscalationStep_policyId_idx_17c369b7",
+    "label": "Create index \"EscalationStep_policyId_idx_17c369b7\" on \"EscalationStep\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "EscalationStep_policyId_idx_17c369b7",
+        "table": "EscalationStep"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"EscalationStep_policyId_idx_17c369b7\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"EscalationStep_policyId_idx_17c369b7\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"EscalationStep_policyId_idx_17c369b7\"",
+        "sql": "CREATE INDEX \"EscalationStep_policyId_idx_17c369b7\" ON \"public\".\"EscalationStep\" (\"policyId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"EscalationStep_policyId_idx_17c369b7\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"EscalationStep_policyId_idx_17c369b7\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Incident.Incident_escalationPolicyId_idx_b1f620eb",
+    "label": "Create index \"Incident_escalationPolicyId_idx_b1f620eb\" on \"Incident\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Incident_escalationPolicyId_idx_b1f620eb",
+        "table": "Incident"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Incident_escalationPolicyId_idx_b1f620eb\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Incident_escalationPolicyId_idx_b1f620eb\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Incident_escalationPolicyId_idx_b1f620eb\"",
+        "sql": "CREATE INDEX \"Incident_escalationPolicyId_idx_b1f620eb\" ON \"public\".\"Incident\" (\"escalationPolicyId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Incident_escalationPolicyId_idx_b1f620eb\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Incident_escalationPolicyId_idx_b1f620eb\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.IncidentEscalation.IncidentEscalation_policyId_idx_17c369b7",
+    "label": "Create index \"IncidentEscalation_policyId_idx_17c369b7\" on \"IncidentEscalation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "IncidentEscalation_policyId_idx_17c369b7",
+        "table": "IncidentEscalation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"IncidentEscalation_policyId_idx_17c369b7\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"IncidentEscalation_policyId_idx_17c369b7\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"IncidentEscalation_policyId_idx_17c369b7\"",
+        "sql": "CREATE INDEX \"IncidentEscalation_policyId_idx_17c369b7\" ON \"public\".\"IncidentEscalation\" (\"policyId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"IncidentEscalation_policyId_idx_17c369b7\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"IncidentEscalation_policyId_idx_17c369b7\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.IncidentEscalation.IncidentEscalation_status_nextEscalationAt_idx_94a105ce",
+    "label": "Create index \"IncidentEscalation_status_nextEscalationAt_idx_94a105ce\" on \"IncidentEscalation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "IncidentEscalation_status_nextEscalationAt_idx_94a105ce",
+        "table": "IncidentEscalation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"IncidentEscalation_status_nextEscalationAt_idx_94a105ce\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"IncidentEscalation_status_nextEscalationAt_idx_94a105ce\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"IncidentEscalation_status_nextEscalationAt_idx_94a105ce\"",
+        "sql": "CREATE INDEX \"IncidentEscalation_status_nextEscalationAt_idx_94a105ce\" ON \"public\".\"IncidentEscalation\" (\"status\", \"nextEscalationAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"IncidentEscalation_status_nextEscalationAt_idx_94a105ce\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"IncidentEscalation_status_nextEscalationAt_idx_94a105ce\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.MaintenanceWindow.MaintenanceWindow_companyId_idx_33acc5ed",
+    "label": "Create index \"MaintenanceWindow_companyId_idx_33acc5ed\" on \"MaintenanceWindow\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "MaintenanceWindow_companyId_idx_33acc5ed",
+        "table": "MaintenanceWindow"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"MaintenanceWindow_companyId_idx_33acc5ed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"MaintenanceWindow_companyId_idx_33acc5ed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"MaintenanceWindow_companyId_idx_33acc5ed\"",
+        "sql": "CREATE INDEX \"MaintenanceWindow_companyId_idx_33acc5ed\" ON \"public\".\"MaintenanceWindow\" (\"companyId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"MaintenanceWindow_companyId_idx_33acc5ed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"MaintenanceWindow_companyId_idx_33acc5ed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.MaintenanceWindow.MaintenanceWindow_companyId_startsAt_endsAt_idx_52b53cdb",
+    "label": "Create index \"MaintenanceWindow_companyId_startsAt_endsAt_idx_52b53cdb\" on \"MaintenanceWindow\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "MaintenanceWindow_companyId_startsAt_endsAt_idx_52b53cdb",
+        "table": "MaintenanceWindow"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"MaintenanceWindow_companyId_startsAt_endsAt_idx_52b53cdb\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"MaintenanceWindow_companyId_startsAt_endsAt_idx_52b53cdb\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"MaintenanceWindow_companyId_startsAt_endsAt_idx_52b53cdb\"",
+        "sql": "CREATE INDEX \"MaintenanceWindow_companyId_startsAt_endsAt_idx_52b53cdb\" ON \"public\".\"MaintenanceWindow\" (\"companyId\", \"startsAt\", \"endsAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"MaintenanceWindow_companyId_startsAt_endsAt_idx_52b53cdb\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"MaintenanceWindow_companyId_startsAt_endsAt_idx_52b53cdb\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.MaintenanceWindow.MaintenanceWindow_createdById_idx_8bf640ed",
+    "label": "Create index \"MaintenanceWindow_createdById_idx_8bf640ed\" on \"MaintenanceWindow\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "MaintenanceWindow_createdById_idx_8bf640ed",
+        "table": "MaintenanceWindow"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"MaintenanceWindow_createdById_idx_8bf640ed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"MaintenanceWindow_createdById_idx_8bf640ed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"MaintenanceWindow_createdById_idx_8bf640ed\"",
+        "sql": "CREATE INDEX \"MaintenanceWindow_createdById_idx_8bf640ed\" ON \"public\".\"MaintenanceWindow\" (\"createdById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"MaintenanceWindow_createdById_idx_8bf640ed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"MaintenanceWindow_createdById_idx_8bf640ed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.MaintenanceWindow.MaintenanceWindow_serviceId_idx_b5d9acbf",
+    "label": "Create index \"MaintenanceWindow_serviceId_idx_b5d9acbf\" on \"MaintenanceWindow\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "MaintenanceWindow_serviceId_idx_b5d9acbf",
+        "table": "MaintenanceWindow"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"MaintenanceWindow_serviceId_idx_b5d9acbf\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"MaintenanceWindow_serviceId_idx_b5d9acbf\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"MaintenanceWindow_serviceId_idx_b5d9acbf\"",
+        "sql": "CREATE INDEX \"MaintenanceWindow_serviceId_idx_b5d9acbf\" ON \"public\".\"MaintenanceWindow\" (\"serviceId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"MaintenanceWindow_serviceId_idx_b5d9acbf\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"MaintenanceWindow_serviceId_idx_b5d9acbf\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.MaintenanceWindow.MaintenanceWindow_serviceId_startsAt_endsAt_idx_e4925605",
+    "label": "Create index \"MaintenanceWindow_serviceId_startsAt_endsAt_idx_e4925605\" on \"MaintenanceWindow\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "MaintenanceWindow_serviceId_startsAt_endsAt_idx_e4925605",
+        "table": "MaintenanceWindow"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"MaintenanceWindow_serviceId_startsAt_endsAt_idx_e4925605\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"MaintenanceWindow_serviceId_startsAt_endsAt_idx_e4925605\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"MaintenanceWindow_serviceId_startsAt_endsAt_idx_e4925605\"",
+        "sql": "CREATE INDEX \"MaintenanceWindow_serviceId_startsAt_endsAt_idx_e4925605\" ON \"public\".\"MaintenanceWindow\" (\"serviceId\", \"startsAt\", \"endsAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"MaintenanceWindow_serviceId_startsAt_endsAt_idx_e4925605\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"MaintenanceWindow_serviceId_startsAt_endsAt_idx_e4925605\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.NotificationDelivery.NotificationDelivery_companyId_idx_33acc5ed",
+    "label": "Create index \"NotificationDelivery_companyId_idx_33acc5ed\" on \"NotificationDelivery\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "NotificationDelivery_companyId_idx_33acc5ed",
+        "table": "NotificationDelivery"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"NotificationDelivery_companyId_idx_33acc5ed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"NotificationDelivery_companyId_idx_33acc5ed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"NotificationDelivery_companyId_idx_33acc5ed\"",
+        "sql": "CREATE INDEX \"NotificationDelivery_companyId_idx_33acc5ed\" ON \"public\".\"NotificationDelivery\" (\"companyId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"NotificationDelivery_companyId_idx_33acc5ed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"NotificationDelivery_companyId_idx_33acc5ed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.NotificationDelivery.NotificationDelivery_companyId_incidentId_idx_5b953ff6",
+    "label": "Create index \"NotificationDelivery_companyId_incidentId_idx_5b953ff6\" on \"NotificationDelivery\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "NotificationDelivery_companyId_incidentId_idx_5b953ff6",
+        "table": "NotificationDelivery"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"NotificationDelivery_companyId_incidentId_idx_5b953ff6\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"NotificationDelivery_companyId_incidentId_idx_5b953ff6\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"NotificationDelivery_companyId_incidentId_idx_5b953ff6\"",
+        "sql": "CREATE INDEX \"NotificationDelivery_companyId_incidentId_idx_5b953ff6\" ON \"public\".\"NotificationDelivery\" (\"companyId\", \"incidentId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"NotificationDelivery_companyId_incidentId_idx_5b953ff6\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"NotificationDelivery_companyId_incidentId_idx_5b953ff6\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.NotificationDelivery.NotificationDelivery_incidentId_idx_20b6f3c9",
+    "label": "Create index \"NotificationDelivery_incidentId_idx_20b6f3c9\" on \"NotificationDelivery\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "NotificationDelivery_incidentId_idx_20b6f3c9",
+        "table": "NotificationDelivery"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"NotificationDelivery_incidentId_idx_20b6f3c9\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"NotificationDelivery_incidentId_idx_20b6f3c9\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"NotificationDelivery_incidentId_idx_20b6f3c9\"",
+        "sql": "CREATE INDEX \"NotificationDelivery_incidentId_idx_20b6f3c9\" ON \"public\".\"NotificationDelivery\" (\"incidentId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"NotificationDelivery_incidentId_idx_20b6f3c9\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"NotificationDelivery_incidentId_idx_20b6f3c9\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.NotificationDelivery.NotificationDelivery_incidentId_status_idx_da8bb603",
+    "label": "Create index \"NotificationDelivery_incidentId_status_idx_da8bb603\" on \"NotificationDelivery\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "NotificationDelivery_incidentId_status_idx_da8bb603",
+        "table": "NotificationDelivery"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"NotificationDelivery_incidentId_status_idx_da8bb603\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"NotificationDelivery_incidentId_status_idx_da8bb603\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"NotificationDelivery_incidentId_status_idx_da8bb603\"",
+        "sql": "CREATE INDEX \"NotificationDelivery_incidentId_status_idx_da8bb603\" ON \"public\".\"NotificationDelivery\" (\"incidentId\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"NotificationDelivery_incidentId_status_idx_da8bb603\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"NotificationDelivery_incidentId_status_idx_da8bb603\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.NotificationDelivery.NotificationDelivery_queueJobId_idx_1f5ee8c1",
+    "label": "Create index \"NotificationDelivery_queueJobId_idx_1f5ee8c1\" on \"NotificationDelivery\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "NotificationDelivery_queueJobId_idx_1f5ee8c1",
+        "table": "NotificationDelivery"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"NotificationDelivery_queueJobId_idx_1f5ee8c1\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"NotificationDelivery_queueJobId_idx_1f5ee8c1\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"NotificationDelivery_queueJobId_idx_1f5ee8c1\"",
+        "sql": "CREATE INDEX \"NotificationDelivery_queueJobId_idx_1f5ee8c1\" ON \"public\".\"NotificationDelivery\" (\"queueJobId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"NotificationDelivery_queueJobId_idx_1f5ee8c1\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"NotificationDelivery_queueJobId_idx_1f5ee8c1\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.QueueJob.QueueJob_companyId_idx_33acc5ed",
+    "label": "Create index \"QueueJob_companyId_idx_33acc5ed\" on \"QueueJob\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "QueueJob_companyId_idx_33acc5ed",
+        "table": "QueueJob"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"QueueJob_companyId_idx_33acc5ed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"QueueJob_companyId_idx_33acc5ed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"QueueJob_companyId_idx_33acc5ed\"",
+        "sql": "CREATE INDEX \"QueueJob_companyId_idx_33acc5ed\" ON \"public\".\"QueueJob\" (\"companyId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"QueueJob_companyId_idx_33acc5ed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"QueueJob_companyId_idx_33acc5ed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.QueueJob.QueueJob_companyId_status_runAt_idx_3c51a5a7",
+    "label": "Create index \"QueueJob_companyId_status_runAt_idx_3c51a5a7\" on \"QueueJob\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "QueueJob_companyId_status_runAt_idx_3c51a5a7",
+        "table": "QueueJob"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"QueueJob_companyId_status_runAt_idx_3c51a5a7\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"QueueJob_companyId_status_runAt_idx_3c51a5a7\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"QueueJob_companyId_status_runAt_idx_3c51a5a7\"",
+        "sql": "CREATE INDEX \"QueueJob_companyId_status_runAt_idx_3c51a5a7\" ON \"public\".\"QueueJob\" (\"companyId\", \"status\", \"runAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"QueueJob_companyId_status_runAt_idx_3c51a5a7\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"QueueJob_companyId_status_runAt_idx_3c51a5a7\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.QueueJob.QueueJob_incidentId_idx_20b6f3c9",
+    "label": "Create index \"QueueJob_incidentId_idx_20b6f3c9\" on \"QueueJob\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "QueueJob_incidentId_idx_20b6f3c9",
+        "table": "QueueJob"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"QueueJob_incidentId_idx_20b6f3c9\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"QueueJob_incidentId_idx_20b6f3c9\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"QueueJob_incidentId_idx_20b6f3c9\"",
+        "sql": "CREATE INDEX \"QueueJob_incidentId_idx_20b6f3c9\" ON \"public\".\"QueueJob\" (\"incidentId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"QueueJob_incidentId_idx_20b6f3c9\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"QueueJob_incidentId_idx_20b6f3c9\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.QueueJob.QueueJob_status_runAt_idx_97459e4a",
+    "label": "Create index \"QueueJob_status_runAt_idx_97459e4a\" on \"QueueJob\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "QueueJob_status_runAt_idx_97459e4a",
+        "table": "QueueJob"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"QueueJob_status_runAt_idx_97459e4a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"QueueJob_status_runAt_idx_97459e4a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"QueueJob_status_runAt_idx_97459e4a\"",
+        "sql": "CREATE INDEX \"QueueJob_status_runAt_idx_97459e4a\" ON \"public\".\"QueueJob\" (\"status\", \"runAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"QueueJob_status_runAt_idx_97459e4a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"QueueJob_status_runAt_idx_97459e4a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.EscalationPolicy.EscalationPolicy_companyId_fkey",
+    "label": "Add foreign key \"EscalationPolicy_companyId_fkey\" on \"EscalationPolicy\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "EscalationPolicy_companyId_fkey",
+        "table": "EscalationPolicy"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"EscalationPolicy_companyId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "EscalationPolicy_companyId_fkey",
+          "public",
+          "\"public\".\"EscalationPolicy\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"EscalationPolicy_companyId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"EscalationPolicy\"\nADD CONSTRAINT \"EscalationPolicy_companyId_fkey\"\nFOREIGN KEY (\"companyId\")\nREFERENCES \"public\".\"Company\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"EscalationPolicy_companyId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "EscalationPolicy_companyId_fkey",
+          "public",
+          "\"public\".\"EscalationPolicy\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.EscalationPolicy.EscalationPolicy_serviceId_fkey",
+    "label": "Add foreign key \"EscalationPolicy_serviceId_fkey\" on \"EscalationPolicy\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "EscalationPolicy_serviceId_fkey",
+        "table": "EscalationPolicy"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"EscalationPolicy_serviceId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "EscalationPolicy_serviceId_fkey",
+          "public",
+          "\"public\".\"EscalationPolicy\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"EscalationPolicy_serviceId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"EscalationPolicy\"\nADD CONSTRAINT \"EscalationPolicy_serviceId_fkey\"\nFOREIGN KEY (\"serviceId\")\nREFERENCES \"public\".\"Service\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"EscalationPolicy_serviceId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "EscalationPolicy_serviceId_fkey",
+          "public",
+          "\"public\".\"EscalationPolicy\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.EscalationStep.EscalationStep_policyId_fkey",
+    "label": "Add foreign key \"EscalationStep_policyId_fkey\" on \"EscalationStep\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "EscalationStep_policyId_fkey",
+        "table": "EscalationStep"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"EscalationStep_policyId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "EscalationStep_policyId_fkey",
+          "public",
+          "\"public\".\"EscalationStep\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"EscalationStep_policyId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"EscalationStep\"\nADD CONSTRAINT \"EscalationStep_policyId_fkey\"\nFOREIGN KEY (\"policyId\")\nREFERENCES \"public\".\"EscalationPolicy\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"EscalationStep_policyId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "EscalationStep_policyId_fkey",
+          "public",
+          "\"public\".\"EscalationStep\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Incident.Incident_escalationPolicyId_fkey",
+    "label": "Add foreign key \"Incident_escalationPolicyId_fkey\" on \"Incident\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Incident_escalationPolicyId_fkey",
+        "table": "Incident"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Incident_escalationPolicyId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Incident_escalationPolicyId_fkey",
+          "public",
+          "\"public\".\"Incident\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Incident_escalationPolicyId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Incident\"\nADD CONSTRAINT \"Incident_escalationPolicyId_fkey\"\nFOREIGN KEY (\"escalationPolicyId\")\nREFERENCES \"public\".\"EscalationPolicy\" (\"id\")\nON DELETE SET NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Incident_escalationPolicyId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Incident_escalationPolicyId_fkey",
+          "public",
+          "\"public\".\"Incident\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.IncidentEscalation.IncidentEscalation_incidentId_fkey",
+    "label": "Add foreign key \"IncidentEscalation_incidentId_fkey\" on \"IncidentEscalation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "IncidentEscalation_incidentId_fkey",
+        "table": "IncidentEscalation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"IncidentEscalation_incidentId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "IncidentEscalation_incidentId_fkey",
+          "public",
+          "\"public\".\"IncidentEscalation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"IncidentEscalation_incidentId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"IncidentEscalation\"\nADD CONSTRAINT \"IncidentEscalation_incidentId_fkey\"\nFOREIGN KEY (\"incidentId\")\nREFERENCES \"public\".\"Incident\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"IncidentEscalation_incidentId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "IncidentEscalation_incidentId_fkey",
+          "public",
+          "\"public\".\"IncidentEscalation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.IncidentEscalation.IncidentEscalation_policyId_fkey",
+    "label": "Add foreign key \"IncidentEscalation_policyId_fkey\" on \"IncidentEscalation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "IncidentEscalation_policyId_fkey",
+        "table": "IncidentEscalation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"IncidentEscalation_policyId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "IncidentEscalation_policyId_fkey",
+          "public",
+          "\"public\".\"IncidentEscalation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"IncidentEscalation_policyId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"IncidentEscalation\"\nADD CONSTRAINT \"IncidentEscalation_policyId_fkey\"\nFOREIGN KEY (\"policyId\")\nREFERENCES \"public\".\"EscalationPolicy\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"IncidentEscalation_policyId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "IncidentEscalation_policyId_fkey",
+          "public",
+          "\"public\".\"IncidentEscalation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.MaintenanceWindow.MaintenanceWindow_companyId_fkey",
+    "label": "Add foreign key \"MaintenanceWindow_companyId_fkey\" on \"MaintenanceWindow\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "MaintenanceWindow_companyId_fkey",
+        "table": "MaintenanceWindow"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"MaintenanceWindow_companyId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "MaintenanceWindow_companyId_fkey",
+          "public",
+          "\"public\".\"MaintenanceWindow\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"MaintenanceWindow_companyId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"MaintenanceWindow\"\nADD CONSTRAINT \"MaintenanceWindow_companyId_fkey\"\nFOREIGN KEY (\"companyId\")\nREFERENCES \"public\".\"Company\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"MaintenanceWindow_companyId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "MaintenanceWindow_companyId_fkey",
+          "public",
+          "\"public\".\"MaintenanceWindow\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.MaintenanceWindow.MaintenanceWindow_serviceId_fkey",
+    "label": "Add foreign key \"MaintenanceWindow_serviceId_fkey\" on \"MaintenanceWindow\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "MaintenanceWindow_serviceId_fkey",
+        "table": "MaintenanceWindow"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"MaintenanceWindow_serviceId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "MaintenanceWindow_serviceId_fkey",
+          "public",
+          "\"public\".\"MaintenanceWindow\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"MaintenanceWindow_serviceId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"MaintenanceWindow\"\nADD CONSTRAINT \"MaintenanceWindow_serviceId_fkey\"\nFOREIGN KEY (\"serviceId\")\nREFERENCES \"public\".\"Service\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"MaintenanceWindow_serviceId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "MaintenanceWindow_serviceId_fkey",
+          "public",
+          "\"public\".\"MaintenanceWindow\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.MaintenanceWindow.MaintenanceWindow_createdById_fkey",
+    "label": "Add foreign key \"MaintenanceWindow_createdById_fkey\" on \"MaintenanceWindow\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "MaintenanceWindow_createdById_fkey",
+        "table": "MaintenanceWindow"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"MaintenanceWindow_createdById_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "MaintenanceWindow_createdById_fkey",
+          "public",
+          "\"public\".\"MaintenanceWindow\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"MaintenanceWindow_createdById_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"MaintenanceWindow\"\nADD CONSTRAINT \"MaintenanceWindow_createdById_fkey\"\nFOREIGN KEY (\"createdById\")\nREFERENCES \"public\".\"User\" (\"id\")\nON DELETE SET NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"MaintenanceWindow_createdById_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "MaintenanceWindow_createdById_fkey",
+          "public",
+          "\"public\".\"MaintenanceWindow\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.NotificationDelivery.NotificationDelivery_companyId_fkey",
+    "label": "Add foreign key \"NotificationDelivery_companyId_fkey\" on \"NotificationDelivery\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "NotificationDelivery_companyId_fkey",
+        "table": "NotificationDelivery"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"NotificationDelivery_companyId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "NotificationDelivery_companyId_fkey",
+          "public",
+          "\"public\".\"NotificationDelivery\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"NotificationDelivery_companyId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"NotificationDelivery\"\nADD CONSTRAINT \"NotificationDelivery_companyId_fkey\"\nFOREIGN KEY (\"companyId\")\nREFERENCES \"public\".\"Company\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"NotificationDelivery_companyId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "NotificationDelivery_companyId_fkey",
+          "public",
+          "\"public\".\"NotificationDelivery\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.NotificationDelivery.NotificationDelivery_incidentId_fkey",
+    "label": "Add foreign key \"NotificationDelivery_incidentId_fkey\" on \"NotificationDelivery\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "NotificationDelivery_incidentId_fkey",
+        "table": "NotificationDelivery"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"NotificationDelivery_incidentId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "NotificationDelivery_incidentId_fkey",
+          "public",
+          "\"public\".\"NotificationDelivery\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"NotificationDelivery_incidentId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"NotificationDelivery\"\nADD CONSTRAINT \"NotificationDelivery_incidentId_fkey\"\nFOREIGN KEY (\"incidentId\")\nREFERENCES \"public\".\"Incident\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"NotificationDelivery_incidentId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "NotificationDelivery_incidentId_fkey",
+          "public",
+          "\"public\".\"NotificationDelivery\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.NotificationDelivery.NotificationDelivery_queueJobId_fkey",
+    "label": "Add foreign key \"NotificationDelivery_queueJobId_fkey\" on \"NotificationDelivery\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "NotificationDelivery_queueJobId_fkey",
+        "table": "NotificationDelivery"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"NotificationDelivery_queueJobId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "NotificationDelivery_queueJobId_fkey",
+          "public",
+          "\"public\".\"NotificationDelivery\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"NotificationDelivery_queueJobId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"NotificationDelivery\"\nADD CONSTRAINT \"NotificationDelivery_queueJobId_fkey\"\nFOREIGN KEY (\"queueJobId\")\nREFERENCES \"public\".\"QueueJob\" (\"id\")\nON DELETE SET NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"NotificationDelivery_queueJobId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "NotificationDelivery_queueJobId_fkey",
+          "public",
+          "\"public\".\"NotificationDelivery\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.QueueJob.QueueJob_companyId_fkey",
+    "label": "Add foreign key \"QueueJob_companyId_fkey\" on \"QueueJob\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "QueueJob_companyId_fkey",
+        "table": "QueueJob"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"QueueJob_companyId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "QueueJob_companyId_fkey",
+          "public",
+          "\"public\".\"QueueJob\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"QueueJob_companyId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"QueueJob\"\nADD CONSTRAINT \"QueueJob_companyId_fkey\"\nFOREIGN KEY (\"companyId\")\nREFERENCES \"public\".\"Company\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"QueueJob_companyId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "QueueJob_companyId_fkey",
+          "public",
+          "\"public\".\"QueueJob\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.QueueJob.QueueJob_incidentId_fkey",
+    "label": "Add foreign key \"QueueJob_incidentId_fkey\" on \"QueueJob\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "QueueJob_incidentId_fkey",
+        "table": "QueueJob"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"QueueJob_incidentId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "QueueJob_incidentId_fkey",
+          "public",
+          "\"public\".\"QueueJob\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"QueueJob_incidentId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"QueueJob\"\nADD CONSTRAINT \"QueueJob_incidentId_fkey\"\nFOREIGN KEY (\"incidentId\")\nREFERENCES \"public\".\"Incident\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"QueueJob_incidentId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "QueueJob_incidentId_fkey",
+          "public",
+          "\"public\".\"QueueJob\""
+        ]
+      }
+    ]
+  }
+]

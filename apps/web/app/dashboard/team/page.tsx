@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { Check, Copy, MailPlus, Trash2, UserPlus, Users, X } from 'lucide-react';
@@ -73,8 +73,13 @@ export default function TeamPage() {
     setError(null);
     setIssued(null);
     try {
-      const res = await api.post<{ token: string }>('/api/org/invitations', { email, role: inviteRole });
+      const res = await api.post<{ token: string; emailSent: boolean }>('/api/org/invitations', { email, role: inviteRole });
       setIssued({ email, token: res.token });
+      setNotice(
+        res.emailSent
+          ? `Invitation email sent to ${email}.`
+          : `Invitation created, but the email could not be sent. Share the invitation link below.`,
+      );
       setEmail('');
       await load();
     } catch (err) {
@@ -240,7 +245,7 @@ export default function TeamPage() {
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#25396e] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1c2c56] disabled:opacity-60"
             >
               <MailPlus className="h-4 w-4" />
-              {inviting ? 'Creating…' : 'Create invitation'}
+              {inviting ? 'Sending invitation…' : 'Send invitation'}
             </button>
           </form>
           <p className="mt-2 text-xs text-slate-400">{ROLE_HELP[inviteRole]}</p>
