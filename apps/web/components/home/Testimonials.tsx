@@ -2,11 +2,8 @@
 
 import React from 'react';
 import { Star, Quote } from 'lucide-react';
-import { useTheme } from '../../lib/theme-context';
 
-export default function TestimonialsDark() {
-  const { isDark } = useTheme();
-
+export default function Testimonials() {
   const testimonials = [
     {
       quote:
@@ -40,9 +37,7 @@ export default function TestimonialsDark() {
   return (
     <section
       id="testimonials"
-      className={`w-full py-24 sm:py-32 border-t transition-colors duration-300 relative overflow-hidden ${
-        isDark ? 'bg-[#090a0f] border-zinc-800/80' : 'bg-[#dfcebe] border-[#cbbaa9]'
-      }`}
+      className="w-full py-24 sm:py-32 border-t border-[#cbbaa9] bg-[#dfcebe] relative overflow-hidden"
     >
       <div className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8">
         
@@ -54,14 +49,12 @@ export default function TestimonialsDark() {
             ))}
           </div>
 
-          <h2 className={`font-sans font-black text-3xl sm:text-5xl tracking-tight uppercase leading-[1.1] ${
-            isDark ? 'text-white' : 'text-[#171a1f]'
-          }`}>
+          <h2 className="font-sans font-black text-3xl sm:text-5xl tracking-tight uppercase leading-[1.1] text-[#171a1f]">
             Loved By Engineers Who{' '}
             <span className="text-[#ff5414]">Value Sleep & Stability</span>
           </h2>
 
-          <p className={`mt-4 text-base sm:text-lg ${isDark ? 'text-zinc-400' : 'text-[#574f47]'}`}>
+          <p className="mt-4 text-base sm:text-lg text-[#574f47]">
             See how high-performing infrastructure teams rely on ResolveX to run resilient systems.
           </p>
         </div>
@@ -71,31 +64,23 @@ export default function TestimonialsDark() {
           {testimonials.map((t, idx) => (
             <div
               key={idx}
-              className={`p-7 sm:p-8 rounded-2xl border transition-all flex flex-col justify-between shadow-xl relative ${
-                isDark
-                  ? 'bg-[#0f1017] border-zinc-800/90 hover:border-zinc-700'
-                  : 'bg-[#eedccb] border-[#cbbaa9] hover:border-[#bfae9c]'
-              }`}
+              className="p-7 sm:p-8 rounded-2xl border border-[#cbbaa9] hover:border-[#bfae9c] bg-[#eedccb] transition-all flex flex-col justify-between shadow-xl relative"
             >
-              <Quote className={`w-7 h-7 mb-4 ${isDark ? 'text-zinc-700' : 'text-[#cbb9a7]'}`} />
+              <Quote className="w-7 h-7 mb-4 text-[#cbb9a7]" />
 
-              <p className={`text-sm sm:text-base leading-relaxed italic ${
-                isDark ? 'text-zinc-300' : 'text-[#27272a]'
-              }`}>
+              <p className="text-sm sm:text-base leading-relaxed italic text-[#27272a]">
                 &ldquo;{t.quote}&rdquo;
               </p>
 
-              <div className={`mt-8 pt-6 border-t flex items-center gap-3.5 ${
-                isDark ? 'border-zinc-800/80' : 'border-[#cbbaa9]'
-              }`}>
+              <div className="mt-8 pt-6 border-t border-[#cbbaa9] flex items-center gap-3.5">
                 <div
                   className={`w-11 h-11 rounded-full bg-gradient-to-br ${t.accent} text-white font-bold flex items-center justify-center text-sm shadow-md shrink-0`}
                 >
                   {t.avatar}
                 </div>
                 <div>
-                  <div className={`font-bold text-sm ${isDark ? 'text-white' : 'text-[#171a1f]'}`}>{t.author}</div>
-                  <div className={`text-xs ${isDark ? 'text-zinc-400' : 'text-[#574f47]'}`}>
+                  <div className="font-bold text-sm text-[#171a1f]">{t.author}</div>
+                  <div className="text-xs text-[#574f47]">
                     {t.role} · <span className="text-orange-500 font-semibold">{t.company}</span>
                   </div>
                 </div>

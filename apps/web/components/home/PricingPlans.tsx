@@ -2,228 +2,172 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Check, Sparkles, ArrowRight, Zap } from 'lucide-react';
-import { useTheme } from '../../lib/theme-context';
+import { Check, Sparkles, Zap } from 'lucide-react';
 
 export default function PricingPlans() {
-  const { isDark } = useTheme();
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual');
+  const [annual, setAnnual] = useState(true);
 
-  const tiers = [
+  const plans = [
     {
       name: 'Starter',
-      priceMonthly: 0,
-      priceAnnual: 0,
-      period: 'forever free',
-      desc: 'Essential API checks and on-call rotation for indie developers & small startups.',
+      desc: 'For small engineering teams and indie hackers getting services online.',
+      monthly: 19,
+      annual: 15,
       features: [
         'Up to 5 team members',
-        '10 synthetic endpoints (1 min intervals)',
-        'Basic email & webhook alerts',
-        '7 days telemetry history',
-        'Unlimited Kanban boards',
-        'Community Discord support',
+        '3 connected projects & Kanban boards',
+        '10 monitored API endpoints (1-minute checks)',
+        'Automated incident creation',
+        'Email & webhook alerts',
+        '7-day metrics retention',
       ],
-      cta: 'Get Started Free',
-      href: '/login?tab=register',
-      highlighted: false,
+      highlight: false,
+      cta: 'Start 14-day trial',
+      btnCls: 'btn-kizupi-white',
     },
     {
-      name: 'Pro Team',
-      priceMonthly: 29,
-      priceAnnual: 23,
-      period: 'per engineer / month',
-      desc: 'Full operational suite with AI root-cause analysis, bi-directional Jira sync & automated triage.',
+      name: 'Team Pro',
+      desc: 'For fast-growing SaaS startups demanding real-time operational reliability.',
+      monthly: 49,
+      annual: 39,
       features: [
         'Unlimited team members',
-        '100+ endpoints with 5s check intervals',
-        'AI Root-Cause Diagnosis Engine',
-        'Slack, SMS & Voice war-room alerts',
-        'GitHub, GitLab & Linear bi-directional sync',
-        '90 days telemetry retention',
-        '24/7 Priority engineer support',
+        'Unlimited projects, boards & sprints',
+        '50 monitored API endpoints (30-second checks)',
+        'Consecutive failure verification engine',
+        'Native service catalog & owner routing',
+        'Slack & PagerDuty bi-directional sync',
+        '30-day telemetry retention',
+        'Audit logs & multi-tenant isolation',
       ],
-      cta: 'Start 14-Day Free Trial',
-      href: '/login?tab=register',
-      highlighted: true,
-      badge: 'Most Popular',
+      highlight: true,
+      cta: 'Try Pro Free for 14 Days',
+      btnCls: 'btn-kizupi-go',
     },
     {
       name: 'Enterprise',
-      priceMonthly: 'Custom',
-      priceAnnual: 'Custom',
-      period: 'tailored annual contract',
-      desc: 'Dedicated private VPC probes, custom SLAs, SOC-2 compliance, and dedicated architect.',
+      desc: 'For high-scale engineering organizations with strict SLA and compliance needs.',
+      monthly: 149,
+      annual: 119,
       features: [
-        'Unlimited volume & 1-year telemetry retention',
-        'Custom SSO / SAML & SCIM provisioning',
-        'Dedicated Private Probing Agents (VPC)',
-        '99.99% Financial Uptime SLA',
-        'Dedicated Customer Success Architect',
-        'HIPAA & SOC-2 Type II audit packs',
+        'Unlimited endpoints & team seats',
+        'Sub-15s distributed edge polling',
+        'Custom webhook signing & key rotation',
+        'SAML SSO & Okta integration',
+        'SOC-2 Type II audit report & BAA',
+        'Dedicated Solutions Architect & 99.99% SLA',
+        '1-year telemetry retention',
       ],
-      cta: 'Contact Sales',
-      href: '#demo',
-      highlighted: false,
+      highlight: false,
+      cta: 'Contact Enterprise',
+      btnCls: 'btn-kizupi-white',
     },
   ];
 
   return (
-    <section
-      id="pricing"
-      className={`w-full py-24 sm:py-32 transition-colors duration-300 relative overflow-hidden ${
-        isDark ? 'bg-[#08080a]' : 'bg-[#e2cfc0]'
-      }`}
-    >
-      {/* Background radial glow */}
-      <div 
-        className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1100px] h-[550px] -z-10 opacity-25"
-        style={{
-          background: 'radial-gradient(ellipse at center, rgba(255, 84, 20, 0.1) 0%, transparent 70%)',
-          filter: 'blur(80px)'
-        }}
-      />
-
-      <div className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-14">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-950/60 border border-orange-500/30 text-orange-400 text-xs font-mono uppercase tracking-widest mb-4">
-            <Zap className="w-3.5 h-3.5" />
-            Predictable Developer Pricing
+    <section id="pricing" className="py-20 md:py-32 bg-[#f6f4ec]">
+      <div className="wrap max-w-6xl mx-auto px-4 sm:px-6">
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto mb-14">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#eeebe0] border border-[#dfdbcc] text-[#14201a] text-xs font-bold uppercase tracking-wider mb-3">
+            <Zap className="w-3.5 h-3.5 text-[#177a43]" /> Transparent Pricing
           </div>
-
-          <h2 className={`font-sans font-black text-3xl sm:text-5xl md:text-[50px] tracking-tight uppercase leading-[1.1] ${
-            isDark ? 'text-white' : 'text-[#171a1f]'
-          }`}>
-            Simple Pricing That{' '}
-            <span className="text-[#ff5414]">Scales With Your Stack</span>
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#14201a]">
+            Simple, fair pricing.{' '}
+            <span className="text-[#177a43]">Zero hidden surprise fees.</span>
           </h2>
-
-          <p className={`mt-4 text-base sm:text-lg ${isDark ? 'text-zinc-400' : 'text-[#574f47]'}`}>
-            No surprise per-metric overages or hidden fees. Start free and scale as your traffic grows.
+          <p className="mt-4 text-base sm:text-lg text-[#5f6b64] leading-relaxed">
+            Every plan includes a 14-day free trial. No credit card required to get started. Cancel anytime.
           </p>
 
-          {/* Billing Toggle */}
-          <div className={`mt-8 inline-flex items-center p-1 rounded-xl border ${
-            isDark ? 'bg-[#12131b] border-zinc-800' : 'bg-[#dfcebe] border-[#cbbaa9]'
-          }`}>
+          {/* Monthly / Annual Toggle */}
+          <div className="mt-8 inline-flex items-center gap-3 p-1 rounded-2xl bg-[#eeebe0] border border-[#dfdbcc]">
             <button
-              onClick={() => setBillingCycle('monthly')}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                billingCycle === 'monthly'
-                  ? isDark
-                    ? 'bg-zinc-800 text-white shadow-xs'
-                    : 'bg-[#171a1f] text-white shadow-xs'
-                  : isDark
-                    ? 'text-zinc-400 hover:text-white'
-                    : 'text-[#574f47] hover:text-[#171a1f]'
+              type="button"
+              onClick={() => setAnnual(false)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+                !annual ? 'bg-white text-[#14201a] shadow-xs' : 'text-[#5f6b64] hover:text-[#14201a]'
               }`}
             >
-              Monthly billing
+              Billed Monthly
             </button>
             <button
-              onClick={() => setBillingCycle('annual')}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                billingCycle === 'annual'
-                  ? isDark
-                    ? 'bg-[#f5e6d3] text-zinc-950 shadow-xs'
-                    : 'bg-[#171a1f] text-white shadow-xs'
-                  : isDark
-                    ? 'text-zinc-400 hover:text-white'
-                    : 'text-[#574f47] hover:text-[#171a1f]'
+              type="button"
+              onClick={() => setAnnual(true)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                annual ? 'bg-[#177a43] text-white shadow-xs' : 'text-[#5f6b64] hover:text-[#14201a]'
               }`}
             >
-              <span>Annual billing</span>
-              <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#ff5414] text-white font-bold">
-                Save 20%
-              </span>
+              <span>Billed Yearly</span>
+              <span className="px-2 py-0.5 rounded-full bg-[#c6f36b] text-[#14201a] text-[10px] font-black">SAVE 20%</span>
             </button>
           </div>
         </div>
 
-        {/* 3 Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-7 max-w-6xl mx-auto items-stretch">
-          {tiers.map((tier, idx) => {
-            const price = typeof tier.priceMonthly === 'number'
-              ? (billingCycle === 'annual' ? `$${tier.priceAnnual}` : `$${tier.priceMonthly}`)
-              : 'Custom';
-
+        {/* Pricing Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+          {plans.map((p) => {
+            const price = annual ? p.annual : p.monthly;
             return (
               <div
-                key={idx}
-                className={`relative rounded-3xl p-7 sm:p-8 flex flex-col justify-between transition-all duration-300 ${
-                  tier.highlighted
-                    ? isDark
-                      ? 'bg-[#10111a] border-2 border-[#ff5414] shadow-[0_0_40px_rgba(255,84,20,0.22)] scale-[1.03] z-10'
-                      : 'bg-[#ebd8c6] border-2 border-[#ff5414] shadow-2xl scale-[1.03] z-10'
-                    : isDark
-                      ? 'bg-[#0f1017] border border-zinc-800/90 hover:border-zinc-700 shadow-xl'
-                      : 'bg-[#eedccb] border border-[#cbbaa9] hover:border-[#bfae9c] shadow-md'
+                key={p.name}
+                className={`rounded-3xl p-7 sm:p-9 flex flex-col justify-between transition-all relative ${
+                  p.highlight
+                    ? 'border-2 border-[#14201a] bg-white shadow-[6px_6px_0_#14201a] lg:-translate-y-2'
+                    : 'border border-[#dfdbcc] bg-[#fbfaf6] shadow-[0_2px_0_#dfdbcc]'
                 }`}
               >
-                {tier.badge && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#ea580c] via-[#ff5414] to-[#f97316] text-white text-[11px] font-bold px-3.5 py-1 rounded-full uppercase tracking-wider shadow-lg flex items-center gap-1.5">
-                    <Sparkles className="w-3 h-3" />
-                    {tier.badge}
+                {p.highlight && (
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3.5 py-1 rounded-full bg-[#c6f36b] text-[#14201a] border-2 border-[#14201a] text-xs font-black uppercase tracking-wider shadow-xs">
+                    Most Popular for SaaS Teams
                   </div>
                 )}
 
                 <div>
-                  <div className="flex items-center justify-between">
-                    <h3 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-[#171a1f]'}`}>
-                      {tier.name}
-                    </h3>
-                  </div>
-
-                  <p className={`mt-2 text-xs leading-relaxed min-h-[36px] ${isDark ? 'text-zinc-400' : 'text-[#574f47]'}`}>
-                    {tier.desc}
+                  <h3 className="font-display text-2xl font-extrabold text-[#14201a]">
+                    {p.name}
+                  </h3>
+                  <p className="mt-2 text-xs text-[#5f6b64] leading-relaxed min-h-[36px]">
+                    {p.desc}
                   </p>
 
-                  <div className="mt-6 flex items-baseline gap-1.5">
-                    <span className={`text-4xl sm:text-5xl font-black font-mono tracking-tight ${isDark ? 'text-white' : 'text-[#171a1f]'}`}>
-                      {price}
-                    </span>
-                    <span className={`text-xs font-mono ${isDark ? 'text-zinc-500' : 'text-[#675d54]'}`}>
-                      {tier.period}
-                    </span>
+                  {/* Price */}
+                  <div className="mt-6 pb-6 border-b border-[#dfdbcc]">
+                    <div className="flex items-baseline gap-1">
+                      <span className="font-display text-4xl sm:text-5xl font-extrabold text-[#14201a]">
+                        ${price}
+                      </span>
+                      <span className="text-xs font-semibold text-[#5f6b64]">
+                        / month {annual && 'billed annually'}
+                      </span>
+                    </div>
                   </div>
 
-                  <div className={`mt-8 pt-6 border-t space-y-3 ${isDark ? 'border-zinc-800/80' : 'border-[#cbbaa9]'}`}>
-                    <span className={`text-[11px] uppercase font-mono font-semibold block ${isDark ? 'text-zinc-400' : 'text-[#574f47]'}`}>
-                      Everything included:
-                    </span>
-                    {tier.features.map((feat, i) => (
-                      <div key={i} className={`flex items-start gap-2.5 text-xs ${isDark ? 'text-zinc-300' : 'text-[#171a1f]'}`}>
-                        <Check className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
-                        <span>{feat}</span>
-                      </div>
+                  {/* Features list */}
+                  <ul className="mt-6 space-y-3 text-xs sm:text-sm text-[#3d4a42]">
+                    {p.features.map((f) => (
+                      <li key={f} className="flex items-start gap-2.5">
+                        <span className="w-4 h-4 rounded-full bg-[#dcefd8] text-[#177a43] flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
+                          ✓
+                        </span>
+                        <span>{f}</span>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
 
-                <div className="mt-8 pt-4">
+                <div className="mt-8 pt-6 border-t border-[#dfdbcc]">
                   <Link
-                    href={tier.href}
-                    className={`w-full py-3 px-4 rounded-xl font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all duration-150 active:scale-95 ${
-                      tier.highlighted
-                        ? isDark
-                          ? 'bg-[#f5e6d3] hover:bg-[#faebd7] text-zinc-950 shadow-[0_2px_15px_rgba(245,230,211,0.2)]'
-                          : 'bg-[#171a1f] hover:bg-black text-white shadow-md'
-                        : isDark
-                          ? 'bg-zinc-800 hover:bg-zinc-700 text-white'
-                          : 'bg-[#dfcebe] hover:bg-[#d5c2b0] border border-[#cbbaa9] text-[#171a1f]'
-                    }`}
+                    href="/login?tab=register"
+                    className={`${p.btnCls} w-full py-3 text-sm font-bold text-center`}
                   >
-                    <span>{tier.cta}</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    {p.cta}
                   </Link>
                 </div>
               </div>
             );
           })}
         </div>
-
       </div>
     </section>
   );

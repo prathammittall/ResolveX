@@ -4,841 +4,340 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  MessageSquare,
-  MoreHorizontal,
-  ChevronDown,
-  ChevronRight,
-  Plus,
-  X,
+  Activity,
   AlertTriangle,
-  Kanban,
-  ListTodo,
-  Box,
+  ArrowRight,
+  Check,
+  CheckCircle2,
+  Clock,
+  ExternalLink,
   Flame,
-  Settings,
+  FolderKanban,
+  Globe,
+  Layers,
+  Menu,
+  Radio,
+  Server,
+  ShieldAlert,
+  ShieldCheck,
+  Sparkles,
+  UserCheck,
+  X,
+  Zap,
 } from 'lucide-react';
-import { useTheme } from '../lib/theme-context';
-import ThemeToggle from './ThemeToggle';
 import EcosystemBar from './home/EcosystemBar';
 import HowItWorks from './home/HowItWorks';
 import InteractiveSimulator from './home/InteractiveSimulator';
 import FeaturesGrid from './home/FeaturesGrid';
-import StatsMetrics from './home/StatsMetrics';
 import ComparisonMatrix from './home/ComparisonMatrix';
-import TestimonialsDark from './home/TestimonialsDark';
 import PricingPlans from './home/PricingPlans';
 import FaqSection from './home/FaqSection';
-import CtaDark from './home/CtaDark';
-import FooterDark from './home/FooterDark';
+import Cta from './home/Cta';
+import Footer from './home/Footer';
 
 export function ResolveXLogoMark({ className = "w-6 h-6" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Left Chevron */}
-      <path
-        d="M7 6L16 16L7 26"
-        stroke="#f97316"
-        strokeWidth="4.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* Right Chevron */}
-      <path
-        d="M25 6L16 16L25 26"
-        stroke="#ff5414"
-        strokeWidth="4.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-// 4-Point Star Sparkle Mark from design
-function StarSparkleMark({ className = "w-7 h-7" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4L12 0Z" />
+      <rect width="32" height="32" rx="9" fill="#14201a" />
+      <circle cx="9.5" cy="10.5" r="3" fill="#c6f36b" />
+      <circle cx="22.5" cy="10.5" r="3" fill="#c6f36b" />
+      <circle cx="16" cy="22" r="3.5" fill="#177a43" />
+      <path d="M9.5 10.5L16 22L22.5 10.5" stroke="#c6f36b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="16" cy="14.5" r="1.5" fill="#ffffff" />
     </svg>
   );
 }
 
 export default function ResolveXLanding() {
   const router = useRouter();
-  const { isDark } = useTheme();
-  const [email, setEmail] = useState('');
-  const [activeModal, setActiveModal] = useState<'features' | 'docs' | 'pricing' | null>(null);
-  const [alertDismissed, setAlertDismissed] = useState(false);
-  const [showDemoNotification, setShowDemoNotification] = useState(false);
-
-  const handleGetStarted = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email) {
-      router.push(`/login?tab=register&email=${encodeURIComponent(email)}`);
-    } else {
-      router.push('/login?tab=register');
-    }
-  };
-
-  const handleDemoClick = () => {
-    setShowDemoNotification(true);
-    const simEl = document.getElementById('simulator');
-    if (simEl) {
-      simEl.scrollIntoView({ behavior: 'smooth' });
-    }
-    setTimeout(() => {
-      setShowDemoNotification(false);
-    }, 4000);
-  };
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div
-      className={`min-h-screen overflow-x-hidden relative flex flex-col justify-between transition-colors duration-300 ${
-        isDark
-          ? 'bg-[#08080a] text-white selection:bg-[#ff5414]/30 selection:text-orange-200'
-          : 'bg-[#e2cfc0] text-[#171a1f] selection:bg-[#ff5414]/25 selection:text-[#ff5414]'
-      }`}
-    >
-      {/* Top Background Subtle Glow */}
-      <div
-        className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[450px] -z-10 opacity-40 transition-opacity duration-300"
-        style={{
-          background: isDark
-            ? 'radial-gradient(ellipse at top, rgba(255, 84, 20, 0.08) 0%, rgba(20, 20, 24, 0) 70%)'
-            : 'radial-gradient(ellipse at top, rgba(255, 110, 30, 0.12) 0%, rgba(226, 207, 192, 0) 70%)',
-          filter: 'blur(70px)',
-        }}
-      />
-
-      {/* Main Container */}
-      <div className="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col flex-1">
-
-        {/* Navigation Bar */}
-        <header className="w-full py-7 flex items-center justify-between">
-          {/* Logo (Left) */}
+    <div className="min-h-screen bg-[#f6f4ec] text-[#14201a] selection:bg-[#c6f36b] selection:text-[#14201a] flex flex-col justify-between overflow-x-hidden">
+      {/* Kizupi-inspired Sticky Header */}
+      <header className="sticky top-0 z-40 bg-[#f6f4ec]/90 backdrop-blur-md border-b border-[#dfdbcc]">
+        <div className="wrap max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+          {/* Left: Brand Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
             <ResolveXLogoMark className="w-7 h-7 transition-transform group-hover:scale-105 duration-200" />
-            <span
-              className={`font-sans font-bold text-[21px] tracking-tight transition-colors ${
-                isDark ? 'text-white group-hover:text-zinc-200' : 'text-[#171a1f] group-hover:text-black'
-              }`}
-            >
-              ResolveX
+            <span className="font-display font-extrabold text-2xl tracking-tight text-[#14201a]">
+              Resolve<span className="text-[#177a43]">X</span>
             </span>
           </Link>
 
-          {/* Desktop Nav Links (Center) */}
-          <nav
-            className={`hidden md:flex items-center gap-6 lg:gap-8 text-[14px] font-medium transition-colors ${
-              isDark ? 'text-zinc-300' : 'text-[#4a423a]'
-            }`}
+          {/* Center Navigation Links */}
+          <nav className="hidden md:flex items-center gap-7 text-sm font-bold text-[#3d4a42]">
+            <a href="#features" className="hover:text-[#177a43] transition">Product</a>
+            <a href="#features" className="hover:text-[#177a43] transition">Features</a>
+            <a href="#demo" className="hover:text-[#177a43] transition flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#177a43] animate-pulse" />
+              Monitoring
+            </a>
+            <a href="#pricing" className="hover:text-[#177a43] transition">Pricing</a>
+            <a href="#faq" className="hover:text-[#177a43] transition">FAQ</a>
+          </nav>
+
+          {/* Right Action Buttons */}
+          <div className="hidden sm:flex items-center gap-3">
+            <Link
+              href="/login"
+              className="text-sm font-bold text-[#3d4a42] hover:text-[#14201a] px-3.5 py-2 transition"
+            >
+              Sign in
+            </Link>
+            <Link
+              href="/login?tab=register"
+              className="btn-kizupi-go text-xs sm:text-sm px-4 sm:px-5 py-2.5"
+            >
+              Get started free
+            </Link>
+          </div>
+
+          {/* Mobile Menu Hamburger */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 rounded-xl text-[#14201a] hover:bg-[#eeebe0] transition cursor-pointer"
+            aria-label="Toggle Navigation Menu"
           >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
+
+        {/* Mobile Navigation Drawer */}
+        {mobileMenuOpen && (
+          <nav className="md:hidden bg-[#f6f4ec] border-b border-[#dfdbcc] px-6 py-6 space-y-4 shadow-xl">
             <a
               href="#features"
-              className={`transition-colors ${isDark ? 'hover:text-white' : 'hover:text-[#171a1f]'}`}
+              onClick={() => setMobileMenuOpen(false)}
+              className="block font-bold text-base text-[#14201a]"
+            >
+              Product
+            </a>
+            <a
+              href="#features"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block font-bold text-base text-[#14201a]"
             >
               Features
             </a>
-            <button
-              onClick={() => setActiveModal('docs')}
-              className={`transition-colors cursor-pointer ${
-                isDark ? 'hover:text-white text-zinc-300' : 'hover:text-[#171a1f] text-[#4a423a]'
-              }`}
+            <a
+              href="#demo"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block font-bold text-base text-[#14201a]"
             >
-              Docs
-            </button>
+              Monitoring
+            </a>
             <a
               href="#pricing"
-              className={`transition-colors ${isDark ? 'hover:text-white' : 'hover:text-[#171a1f]'}`}
+              onClick={() => setMobileMenuOpen(false)}
+              className="block font-bold text-base text-[#14201a]"
             >
               Pricing
             </a>
             <a
-              href="#how-it-works"
-              className={`transition-colors hidden lg:inline ${
-                isDark ? 'hover:text-white' : 'hover:text-[#171a1f]'
-              }`}
+              href="#faq"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block font-bold text-base text-[#14201a]"
             >
-              How It Works
+              FAQ
             </a>
-            <a
-              href="#simulator"
-              className="hover:text-[#ff5414] transition-colors flex items-center gap-1.5 text-orange-500 font-semibold"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-              Live Demo
-            </a>
-          </nav>
-
-          {/* Right Action: Theme Switcher & Start for Free */}
-          <div className="flex items-center gap-3">
-            {/* Theme Toggle Button */}
-            <ThemeToggle />
-
-            {/* Start for Free Button */}
-            <Link
-              href="/login?tab=register"
-              className={`font-semibold text-[13.5px] px-5 py-2.5 rounded-xl transition-all duration-150 active:scale-95 ${
-                isDark
-                  ? 'bg-[#f5e6d3] hover:bg-[#faebd7] text-zinc-950 shadow-[0_2px_10px_rgba(245,230,211,0.12)] hover:shadow-[0_4px_16px_rgba(245,230,211,0.2)]'
-                  : 'bg-[#171a1f] hover:bg-[#272a33] text-white shadow-[0_2px_10px_rgba(23,26,31,0.25)] hover:shadow-[0_4px_16px_rgba(23,26,31,0.35)]'
-              }`}
-            >
-              Start for Free
-            </Link>
-          </div>
-        </header>
-
-        {/* Hero Section */}
-        <div className="pt-8 pb-4 md:pt-12 md:pb-6 text-center max-w-4xl mx-auto flex flex-col items-center">
-
-          {/* Main Headline */}
-          <h1
-            className={`font-sans font-black tracking-tight text-4xl sm:text-5xl md:text-6xl lg:text-[66px] leading-[1.08] uppercase ${
-              isDark ? 'text-white' : 'text-[#171a1f]'
-            }`}
-          >
-            <span className="block">THE JIRA THAT KNOWS</span>
-            <span className="block mt-1 sm:mt-1.5">
-              WHEN YOUR API{' '}
-              <span className="text-[#ff5414] drop-shadow-[0_0_35px_rgba(255,84,20,0.65)]">
-                BREAKS
-              </span>
-            </span>
-          </h1>
-
-          {/* Subtitle */}
-          <p
-            className={`mt-5 text-base sm:text-lg md:text-[17.5px] max-w-2xl font-normal leading-relaxed ${
-              isDark ? 'text-zinc-400' : 'text-[#574f47]'
-            }`}
-          >
-            Plan your development and monitor live API endpoints—all in one collaborative workspace.
-          </p>
-
-          {/* Call to Action Controls */}
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-md">
-            {/* Email Input + Get Started Container */}
-            <form
-              onSubmit={handleGetStarted}
-              className={`w-full sm:w-auto flex-1 flex items-center rounded-xl p-1.5 transition-colors shadow-inner ${
-                isDark
-                  ? 'bg-[#131316] border border-zinc-800/90 focus-within:border-zinc-600'
-                  : 'bg-[#dfcebe]/80 border border-[#c4b19f] focus-within:border-[#171a1f]'
-              }`}
-            >
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email..."
-                className={`w-full bg-transparent px-3 text-sm focus:outline-none ${
-                  isDark
-                    ? 'text-zinc-200 placeholder:text-zinc-500'
-                    : 'text-[#171a1f] placeholder:text-[#7d7268]'
-                }`}
-              />
-              <button
-                type="submit"
-                className={`shrink-0 font-semibold text-[13px] px-4 py-2 rounded-lg transition-colors active:scale-95 whitespace-nowrap cursor-pointer ${
-                  isDark
-                    ? 'bg-[#f5e6d3] hover:bg-[#faebd7] text-zinc-950'
-                    : 'bg-[#171a1f] hover:bg-[#272a33] text-white'
-                }`}
+            <div className="pt-4 border-t border-[#dfdbcc] flex flex-col gap-3">
+              <Link
+                href="/login"
+                className="btn-kizupi-white w-full py-2.5 text-center text-sm"
               >
-                Get Started
-              </button>
-            </form>
-
-            {/* View Demo Button */}
-            <button
-              type="button"
-              onClick={handleDemoClick}
-              className={`w-full sm:w-auto font-medium text-[13.5px] px-5 py-2.5 rounded-xl transition-all active:scale-95 whitespace-nowrap cursor-pointer flex items-center justify-center ${
-                isDark
-                  ? 'bg-[#131316]/90 hover:bg-[#1a1a20] border border-zinc-800/90 text-white'
-                  : 'bg-transparent hover:bg-[#dfcebe]/60 border border-[#ab9988] text-[#171a1f]'
-              }`}
-            >
-              View Demo
-            </button>
-          </div>
-
-          {/* Toast feedback if View Demo clicked */}
-          {showDemoNotification && (
-            <div className="mt-4 px-4 py-2 rounded-lg bg-orange-950/80 border border-orange-500/40 text-orange-200 text-xs flex items-center gap-2 animate-bounce">
-              <Flame className="w-3.5 h-3.5 text-orange-400" />
-              <span>Interactive simulator active! Notice the Live API Monitor alert on the tablet below.</span>
+                Sign in
+              </Link>
+              <Link
+                href="/login?tab=register"
+                className="btn-kizupi-go w-full py-2.5 text-center text-sm"
+              >
+                Get started free
+              </Link>
             </div>
-          )}
-        </div>
+          </nav>
+        )}
+      </header>
 
-        {/* 3D Perspective Device Showcase */}
-        <div className="relative mt-2 sm:mt-4 md:mt-6 pb-20 w-full">
+      {/* Main Page Body */}
+      <main id="main">
+        {/* HERO SECTION */}
+        <section className="pt-16 pb-20 md:pt-24 md:pb-32 relative overflow-hidden">
+          {/* Subtle top warm glow */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-[#c6f36b]/15 rounded-full blur-[100px] pointer-events-none -z-10" />
 
-          {/* Ambient Warm Underglow Behind Tablet */}
-          <div
-            className="pointer-events-none absolute -bottom-10 left-1/2 -translate-x-1/2 w-[95%] sm:w-[90%] md:w-[860px] h-[360px] -z-10 animate-pulse-glow"
-            style={{
-              background: isDark
-                ? 'radial-gradient(ellipse 65% 55% at 50% 60%, rgba(255, 95, 25, 0.28) 0%, rgba(200, 75, 15, 0.14) 40%, rgba(10, 10, 14, 0) 75%)'
-                : 'radial-gradient(ellipse 65% 55% at 50% 60%, rgba(255, 95, 25, 0.2) 0%, rgba(220, 120, 45, 0.12) 40%, rgba(226, 207, 192, 0) 75%)',
-              filter: 'blur(55px)',
-            }}
-          />
+          <div className="wrap max-w-6xl mx-auto px-4 sm:px-6 text-center">
+            {/* Trust Pill */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-[#dfdbcc] text-xs font-bold text-[#14201a] shadow-[0_2px_0_#dfdbcc] mb-8">
+              <span className="w-2 h-2 rounded-full bg-[#177a43]" />
+              Project management · Real-time monitoring · Automated incident response
+            </div>
 
-          {/* Perspective Container */}
-          <div className="perspective-container w-full max-w-5xl mx-auto">
+            {/* Headline with Kizupi highlight */}
+            <h1 className="font-display text-4xl sm:text-6xl md:text-7xl lg:text-[76px] font-extrabold tracking-tight leading-[1.04] text-[#14201a] max-w-4xl mx-auto">
+              Your projects and production health.{' '}
+              <mark className="why bg-[#c6f36b] text-[#14201a] px-3 py-0.5 rounded-xl inline-block mt-1 sm:mt-0">
+                Finally connected.
+              </mark>
+            </h1>
 
-            {/* Tilted Mockup Frame */}
-            <div
-              className="tilted-mockup rounded-[28px] p-[2px] shadow-[0_30px_70px_-20px_rgba(0,0,0,0.65),0_0_45px_rgba(255,84,20,0.18)]"
-              style={{
-                background: isDark
-                  ? 'linear-gradient(135deg, rgba(220, 185, 145, 0.9) 0%, rgba(140, 105, 75, 0.4) 45%, rgba(215, 180, 140, 0.85) 100%)'
-                  : 'linear-gradient(135deg, rgba(220, 195, 170, 0.9) 0%, rgba(180, 150, 125, 0.5) 45%, rgba(225, 200, 175, 0.9) 100%)',
-              }}
-            >
-              {/* Inner Tablet Bezel with Camera Notch */}
-              <div className="bg-[#14151a] p-2.5 sm:p-3.5 rounded-[26px]">
+            {/* Supporting Copy */}
+            <p className="mt-7 text-base sm:text-xl text-[#3d4a42] max-w-2xl mx-auto leading-relaxed font-normal">
+              Plan engineering work, monitor every critical endpoint, and automatically turn
+              production failures into actionable incidents. Everything your engineering team needs, in one place.
+            </p>
 
-                {/* Webcam / Sensor Notch at top center of bezel */}
-                <div className="w-24 h-3 bg-[#0a0b0e] rounded-b-md mx-auto mb-2 flex items-center justify-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-zinc-800" />
-                  <div className="w-1 h-1 rounded-full bg-zinc-700" />
+            {/* Call to Action Buttons */}
+            <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link
+                href="/login?tab=register"
+                className="btn-kizupi-go text-base px-8 py-4 w-full sm:w-auto font-bold"
+              >
+                Get started free for 14 days <ArrowRight className="w-4 h-4 ml-2" />
+              </Link>
+              <a
+                href="#features"
+                className="btn-kizupi-white text-base px-7 py-4 w-full sm:w-auto font-bold"
+              >
+                Explore the platform
+              </a>
+            </div>
+
+            <p className="mt-4 text-xs text-[#5f6b64]">
+              No credit card required. Free 14-day trial with full access.
+            </p>
+
+            {/* HERO VISUAL: Custom Product Showcase Composition */}
+            {/* Overlapping rounded panels on pastel backgrounds inspired by Kizupi */}
+            <div className="mt-16 sm:mt-20 max-w-5xl mx-auto relative text-left">
+              <div className="bg-[#eeebe0] p-4 sm:p-7 rounded-[32px] border-2 border-[#14201a] shadow-[8px_8px_0_#14201a] relative">
+                {/* Top window dots */}
+                <div className="flex items-center justify-between pb-4 mb-4 border-b border-[#dfdbcc]">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-[#ee4b57]" />
+                    <span className="w-3 h-3 rounded-full bg-[#ffb930]" />
+                    <span className="w-3 h-3 rounded-full bg-[#177a43]" />
+                    <span className="ml-2 font-mono text-xs font-semibold text-[#5f6b64]">resolvex.internal/operations-hub</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#177a43] bg-[#dcefd8] border border-[#b2e2a8] px-2.5 py-0.5 rounded-full">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#177a43] animate-pulse" />
+                    All Systems Live
+                  </div>
                 </div>
 
-                {/* Mockup Screen Window */}
-                <div
-                  className={`rounded-[18px] border overflow-hidden shadow-2xl flex flex-row min-h-[440px] text-left transition-colors duration-200 ${
-                    isDark ? 'bg-[#0c0d11] border-zinc-800/80' : 'bg-[#e2cfc0] border-[#cbbaa9]'
-                  }`}
-                >
-
-                  {/* Left Sidebar */}
-                  <div className="w-12 sm:w-14 bg-[#111216] border-r border-zinc-800/80 flex flex-col items-center py-4 gap-5 shrink-0">
-                    <ResolveXLogoMark className="w-5 h-5" />
-
-                    <div className="flex flex-col items-center gap-3.5 mt-2">
-                      {/* Active Kanban Icon */}
-                      <button
-                        title="Boards"
-                        className="w-8 h-8 rounded-lg border border-amber-600/70 bg-amber-500/10 flex items-center justify-center text-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.15)]"
-                      >
-                        <Kanban className="w-4 h-4" />
-                      </button>
-
-                      {/* Tasks List Icon */}
-                      <button
-                        title="List view"
-                        className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-500 hover:text-zinc-300 transition-colors"
-                      >
-                        <ListTodo className="w-4 h-4" />
-                      </button>
-
-                      {/* Settings/Components Icon */}
-                      <button
-                        title="Modules"
-                        className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-500 hover:text-zinc-300 transition-colors"
-                      >
-                        <Box className="w-4 h-4" />
-                      </button>
-
-                      <button
-                        title="Settings"
-                        className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-500 hover:text-zinc-300 transition-colors"
-                      >
-                        <Settings className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Main Kanban Content Area */}
-                  <div className={`flex-1 flex flex-col min-w-0 transition-colors duration-200 ${
-                    isDark ? 'bg-[#0e0f14]' : 'bg-[#dfcebe]'
-                  }`}>
-
-                    {/* Top Action Header Bar */}
-                    <div className={`h-12 border-b px-4 flex items-center justify-between ${
-                      isDark ? 'border-zinc-800/80' : 'border-[#cbbaa9]'
-                    }`}>
-                      <div className={`flex items-center gap-1.5 font-semibold text-xs sm:text-sm ${
-                        isDark ? 'text-zinc-200' : 'text-[#171a1f]'
-                      }`}>
-                        <span>Kanban board</span>
-                        <ChevronDown className={`w-3.5 h-3.5 ${isDark ? 'text-zinc-400' : 'text-[#524b44]'}`} />
+                {/* Overlapping Card Composition */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch">
+                  {/* Left: Miniature Project Board (6 cols) */}
+                  <div className="md:col-span-7 bg-white rounded-2xl border border-[#dfdbcc] p-4 sm:p-5 shadow-xs space-y-3">
+                    <div className="flex items-center justify-between pb-2 border-b border-[#dfdbcc]">
+                      <div className="flex items-center gap-2">
+                        <FolderKanban className="w-4 h-4 text-[#177a43]" />
+                        <span className="font-bold text-xs text-[#14201a]">Active Engineering Sprint</span>
                       </div>
-
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => router.push('/login')}
-                          className={`w-7 h-7 flex items-center justify-center rounded-md border text-xs font-semibold transition-colors cursor-pointer ${
-                            isDark
-                              ? 'bg-zinc-800/80 hover:bg-zinc-700 border-zinc-700/60 text-zinc-300'
-                              : 'bg-[#eedccb] hover:bg-[#ebd8c7] border-[#cbbaa9] text-[#171a1f]'
-                          }`}
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          className={`w-7 h-7 flex items-center justify-center rounded-md border text-xs transition-colors cursor-pointer ${
-                            isDark
-                              ? 'bg-zinc-800/80 hover:bg-zinc-700 border-zinc-700/60 text-zinc-400'
-                              : 'bg-[#eedccb] hover:bg-[#ebd8c7] border-[#cbbaa9] text-[#524b44]'
-                          }`}
-                        >
-                          <MoreHorizontal className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
+                      <span className="text-[11px] font-mono text-[#5f6b64]">SPRINT-14</span>
                     </div>
 
-                    {/* Columns Container */}
-                    <div className="p-3 sm:p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 overflow-y-auto">
-
-                      {/* Column 1: In Progress */}
-                      <div className={`rounded-xl border p-2.5 sm:p-3 flex flex-col gap-2.5 ${
-                        isDark
-                          ? 'border-amber-500/50 bg-[#121319]/80 shadow-[0_0_15px_rgba(245,158,11,0.06)]'
-                          : 'border-[#cbbaa9] bg-[#e6d6c7]/90'
-                      }`}>
-                        <div className={`flex items-center justify-between text-xs font-medium px-1 ${
-                          isDark ? 'text-zinc-300' : 'text-[#171a1f]'
-                        }`}>
-                          <span>In Progress</span>
-                          <MoreHorizontal className="w-3.5 h-3.5 opacity-60 hover:opacity-100 cursor-pointer" />
-                        </div>
-
-                        {/* Card 1 */}
-                        <div className={`rounded-lg p-3 shadow-xs transition-shadow cursor-pointer ${
-                          isDark
-                            ? 'bg-[#f6ede2] text-zinc-950'
-                            : 'bg-[#eedccb] border border-[#d8c3af] text-[#171a1f]'
-                        }`}>
-                          <p className="text-[12px] font-semibold leading-snug">
-                            Pronote container card task
-                          </p>
-                          <div className="flex items-center justify-between mt-2.5">
-                            <span className={`text-[10px] font-medium px-2 py-0.5 rounded ${
-                              isDark ? 'bg-amber-100 text-amber-900' : 'bg-[#cbb6a1] text-[#2c2722]'
-                            }`}>
-                              Done
-                            </span>
-                            <div className="flex items-center gap-1 text-[10.5px] opacity-70">
-                              <MessageSquare className="w-3 h-3" />
-                              <span>14pt</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Card 2 */}
-                        <div className={`rounded-lg p-3 shadow-xs transition-shadow cursor-pointer ${
-                          isDark
-                            ? 'bg-[#f6ede2] text-zinc-950'
-                            : 'bg-[#eedccb] border border-[#d8c3af] text-[#171a1f]'
-                        }`}>
-                          <p className="text-[12px] font-semibold leading-snug">
-                            Compm probabilit a card to terovtient
-                          </p>
-                          <div className="flex items-center justify-between mt-2.5">
-                            <span className={`text-[10px] font-medium px-2 py-0.5 rounded ${
-                              isDark ? 'bg-amber-100 text-amber-900' : 'bg-[#cbb6a1] text-[#2c2722]'
-                            }`}>
-                              Done
-                            </span>
-                            <div className="flex items-center gap-1 text-[10.5px] opacity-70">
-                              <MessageSquare className="w-3 h-3" />
-                              <span>14pt</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Card 3 */}
-                        <div className={`rounded-lg p-3 shadow-xs transition-shadow cursor-pointer ${
-                          isDark
-                            ? 'bg-[#1b1c23] border border-zinc-800/80 text-zinc-200'
-                            : 'bg-[#eedccb] border border-[#d8c3af] text-[#171a1f]'
-                        }`}>
-                          <p className="text-[12px] font-medium leading-snug">
-                            Build vpr development
-                          </p>
-                        </div>
+                    {/* Task 1 (Linked to Outage) */}
+                    <div className="p-3.5 rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] hover:border-[#177a43] transition">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-[10px] text-[#5553a8] font-bold">PAY-842</span>
+                        <span className="px-2 py-0.5 rounded-full bg-[#fef3c7] text-[#92400e] text-[10px] font-bold">In Progress</span>
                       </div>
-
-                      {/* Column 2: In Review */}
-                      <div className={`rounded-xl border p-2.5 sm:p-3 flex flex-col gap-2.5 ${
-                        isDark
-                          ? 'border-zinc-800/80 bg-[#121319]/80'
-                          : 'border-[#cbbaa9] bg-[#e6d6c7]/90'
-                      }`}>
-                        <div className={`flex items-center justify-between text-xs font-medium px-1 ${
-                          isDark ? 'text-zinc-400' : 'text-[#171a1f]'
-                        }`}>
-                          <span>In Review</span>
-                          <MoreHorizontal className="w-3.5 h-3.5 opacity-60 hover:opacity-100 cursor-pointer" />
-                        </div>
-
-                        {/* Card 1 */}
-                        <div className={`rounded-lg p-3 transition-colors cursor-pointer ${
-                          isDark
-                            ? 'bg-[#1b1c23] border border-zinc-800/80 text-zinc-200'
-                            : 'bg-[#ebd9c8] border border-[#d5c0ac] text-[#171a1f]'
-                        }`}>
-                          <p className="text-[12px] font-medium leading-snug">
-                            Review understandd card task
-                          </p>
-                          <div className="flex items-center justify-between mt-2.5">
-                            <span className={`text-[10px] font-medium px-2 py-0.5 rounded ${
-                              isDark ? 'bg-zinc-800 text-zinc-300' : 'bg-[#d8c3af] text-[#2c2722]'
-                            }`}>
-                              Review
-                            </span>
-                            <div className="flex items-center gap-1 text-[10.5px] opacity-70">
-                              <MessageSquare className="w-3 h-3" />
-                              <span>14pt</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Card 2 */}
-                        <div className={`rounded-lg p-3 transition-colors cursor-pointer ${
-                          isDark
-                            ? 'bg-[#1b1c23] border border-zinc-800/80 text-zinc-200'
-                            : 'bg-[#ebd9c8] border border-[#d5c0ac] text-[#171a1f]'
-                        }`}>
-                          <p className="text-[12px] font-medium leading-snug">
-                            Add sm contirior text card tasks
-                          </p>
-                          <div className="flex items-center justify-between mt-2.5">
-                            <span className={`text-[10px] font-medium px-2 py-0.5 rounded ${
-                              isDark ? 'bg-zinc-800 text-zinc-300' : 'bg-[#d8c3af] text-[#2c2722]'
-                            }`}>
-                              Done
-                            </span>
-                            <div className="flex items-center gap-1 text-[10.5px] opacity-70">
-                              <MessageSquare className="w-3 h-3" />
-                              <span>14pt</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Column 3: Done */}
-                      <div className={`hidden lg:flex rounded-xl border p-2.5 sm:p-3 flex-col gap-2.5 ${
-                        isDark
-                          ? 'border-zinc-800/80 bg-[#121319]/80 ring-1 ring-emerald-500/20'
-                          : 'border-[#cbbaa9] bg-[#e6d6c7]/90'
-                      }`}>
-                        <div className={`flex items-center justify-between text-xs font-medium px-1 ${
-                          isDark ? 'text-zinc-400' : 'text-[#171a1f]'
-                        }`}>
-                          <span>Done</span>
-                          <MoreHorizontal className="w-3.5 h-3.5 opacity-60 hover:opacity-100 cursor-pointer" />
-                        </div>
-
-                        {/* Card 1 */}
-                        <div className={`rounded-lg p-3 transition-colors cursor-pointer ${
-                          isDark
-                            ? 'bg-[#1b1c23] border border-zinc-800/80 text-zinc-200'
-                            : 'bg-[#ebd9c8] border border-[#d5c0ac] text-[#171a1f]'
-                        }`}>
-                          <p className="text-[12px] font-medium leading-snug">
-                            Andostore development card tasks
-                          </p>
-                          <div className="flex items-center justify-between mt-2.5">
-                            <span className={`text-[10px] font-medium px-2 py-0.5 rounded ${
-                              isDark ? 'bg-emerald-950 text-emerald-400' : 'bg-[#d8c3af] text-[#2c2722]'
-                            }`}>
-                              Done
-                            </span>
-                            <div className="flex items-center gap-1 text-[10.5px] opacity-70">
-                              <MessageSquare className="w-3 h-3" />
-                              <span>16pt</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                    </div>
-                  </div>
-
-                  {/* Right Inspector Panel: Live API Monitor */}
-                  <div className={`w-64 sm:w-72 border-l p-3 sm:p-4 flex flex-col justify-between shrink-0 transition-colors duration-200 ${
-                    isDark ? 'bg-[#0d0e13] border-zinc-800/80' : 'bg-[#dccab9] border-[#cbbaa9]'
-                  }`}>
-
-                    <div className="flex flex-col gap-3">
-                      {/* Monitor Panel Header */}
-                      <div className="flex items-center justify-between pb-1">
-                        <span className={`font-semibold text-xs tracking-tight ${
-                          isDark ? 'text-white' : 'text-[#171a1f]'
-                        }`}>
-                          Live API Monitor
+                      <p className="mt-1 font-bold text-xs text-[#14201a]">
+                        Payment Gateway Timeout — Mitigate & Tune Backoff
+                      </p>
+                      <div className="mt-2.5 pt-2 border-t border-[#dfdbcc]/50 flex items-center justify-between text-[11px]">
+                        <span className="text-[#dc2626] font-bold flex items-center gap-1">
+                          <AlertTriangle className="w-3 h-3" /> Linked to SEV1 Incident #INC-1042
                         </span>
-                        <button
-                          onClick={() => setAlertDismissed(!alertDismissed)}
-                          title="Toggle view"
-                          className="opacity-60 hover:opacity-100 transition-opacity p-0.5 cursor-pointer"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-
-                      {/* Service 1: Registry */}
-                      <div className="flex items-center justify-between text-xs py-0.5">
-                        <span className={`font-medium ${isDark ? 'text-zinc-300' : 'text-[#171a1f]'}`}>
-                          Registry
-                        </span>
-                        <button className={`text-[10.5px] px-2 py-0.5 rounded font-medium transition ${
-                          isDark ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300' : 'bg-[#cbb6a1] hover:bg-[#bfae9c] text-[#171a1f]'
-                        }`}>
-                          Add r registry
-                        </button>
-                      </div>
-
-                      {/* Service 2: payment-api */}
-                      <div className="flex items-center justify-between text-xs py-0.5">
-                        <span className={`font-medium ${isDark ? 'text-zinc-300' : 'text-[#171a1f]'}`}>
-                          payment-api
-                        </span>
-                        <div className={`flex items-center gap-1.5 text-[10.5px] font-medium px-2 py-0.5 rounded-full ${
-                          isDark
-                            ? 'bg-emerald-950/70 border border-emerald-800/60 text-emerald-400'
-                            : 'bg-[#a3d9a5]/70 border border-[#7ecb82] text-[#134e19]'
-                        }`}>
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                          <span>Healthy</span>
-                        </div>
-                      </div>
-
-                      {/* Service 3: payment-api (second check) */}
-                      <div className="flex items-center justify-between text-xs py-0.5">
-                        <span className={`font-medium ${isDark ? 'text-zinc-300' : 'text-[#171a1f]'}`}>
-                          payment-api
-                        </span>
-                        <div className={`flex items-center gap-1.5 text-[10.5px] font-medium px-2 py-0.5 rounded-full ${
-                          isDark
-                            ? 'bg-emerald-950/70 border border-emerald-800/60 text-emerald-400'
-                            : 'bg-[#a3d9a5]/70 border border-[#7ecb82] text-[#134e19]'
-                        }`}>
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                          <span>Healthy</span>
-                        </div>
-                      </div>
-
-                      {/* Auto-Alert Box (Overlaid Prominent Banner) */}
-                      {!alertDismissed && (
-                        <div className="mt-1 bg-gradient-to-r from-[#ea580c] via-[#ff5414] to-[#fb923c] text-white font-bold text-[11px] px-3 py-2.5 rounded-lg shadow-[0_4px_20px_rgba(234,88,12,0.55)] flex items-center justify-between">
-                          <div className="flex items-center gap-1.5">
-                            <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                            <span>[AUTO-ALERT] payment-api DOWN 🚨</span>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Connect with API boards */}
-                      <div className={`text-[11px] pt-1 ${isDark ? 'text-zinc-400' : 'text-[#574f47]'}`}>
-                        <div className="flex items-center gap-1">
-                          <span>— Connect with API boards</span>
-                        </div>
-                      </div>
-
-                      {/* Service 4: Registry Outage badge */}
-                      <div className="flex items-center justify-between text-xs">
-                        <span className={`font-medium ${isDark ? 'text-zinc-300' : 'text-[#171a1f]'}`}>Registry</span>
-                        <div className="flex items-center gap-1.5 bg-rose-500/20 border border-rose-500/40 text-rose-500 text-[10.5px] font-medium px-2 py-0.5 rounded-full">
-                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
-                          <span>Outage</span>
+                        <div className="w-5 h-5 rounded-full bg-[#177a43] text-white text-[10px] font-bold flex items-center justify-center">
+                          S
                         </div>
                       </div>
                     </div>
 
-                    {/* Subtext and Lower Preview */}
-                    <div className={`pt-3 border-t flex flex-col gap-1.5 ${
-                      isDark ? 'border-zinc-800/60' : 'border-[#cbbaa9]'
-                    }`}>
-                      <p className={`text-[10px] text-center italic ${
-                        isDark ? 'text-zinc-400' : 'text-[#574f47]'
-                      }`}>
-                        The Jira that knows when your API breaks
+                    {/* Task 2 */}
+                    <div className="p-3.5 rounded-xl border border-[#dfdbcc] bg-white">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-[10px] text-[#5f6b64] font-bold">AUTH-109</span>
+                        <span className="px-2 py-0.5 rounded-full bg-[#dcefd8] text-[#177a43] text-[10px] font-bold">Ready for Review</span>
+                      </div>
+                      <p className="mt-1 font-semibold text-xs text-[#14201a]">
+                        Upgrade OAuth token rotation keys to Ed25519
                       </p>
                     </div>
-
                   </div>
 
-                </div>
+                  {/* Right: Service Health & Telemetry Indicators (5 cols) */}
+                  <div className="md:col-span-5 space-y-4 flex flex-col justify-between">
+                    {/* Panel 1: Real-time Uptime Card (Mint background #dcefd8) */}
+                    <div className="p-4 rounded-2xl bg-[#dcefd8] border border-[#b2e2a8] shadow-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#177a43]">Service Telemetry</span>
+                        <span className="text-xs font-mono font-bold text-[#177a43]">99.99% UPTIME</span>
+                      </div>
+                      <div className="mt-2 flex items-baseline justify-between">
+                        <div>
+                          <span className="font-display text-2xl font-black text-[#14201a]">22ms</span>
+                          <span className="text-xs text-[#3d4a42] ml-1.5 font-medium">p95 Latency</span>
+                        </div>
+                        <span className="px-2 py-0.5 rounded-md bg-white text-[#177a43] text-[10px] font-extrabold border border-[#b2e2a8]">
+                          HEALTHY
+                        </span>
+                      </div>
+                      <div className="mt-2 text-[11px] font-mono text-[#3d4a42]">
+                        payments-checkout-api · 12 Edge Probes
+                      </div>
+                    </div>
 
+                    {/* Panel 2: Incident Notification (Peach/Coral background #faefe3) */}
+                    <div className="p-4 rounded-2xl bg-[#faefe3] border border-[#f5d5c4] shadow-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#9a3412]">Autonomous Escalation</span>
+                        <span className="text-[10px] font-bold bg-[#dc2626] text-white px-2 py-0.5 rounded">SEV1 ALERT</span>
+                      </div>
+                      <p className="mt-2 text-xs font-bold text-[#14201a]">
+                        Consecutive 500 Outage Detected & Deduplicated
+                      </p>
+                      <p className="text-[11px] text-[#5f6b64] mt-1">
+                        Service owner <strong>@sarah-devops</strong> paged directly. Sprint ticket automatically dispatched.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-
           </div>
+        </section>
 
-          {/* Decorative 4-Point Star Sparkle at bottom right (from uploaded image) */}
-          <div className="absolute -bottom-6 sm:-bottom-8 right-4 sm:right-10 pointer-events-none opacity-80 animate-pulse">
-            <StarSparkleMark
-              className={`w-8 h-8 sm:w-10 sm:h-10 ${
-                isDark ? 'text-zinc-700' : 'text-[#cbb6a1]'
-              }`}
-            />
-          </div>
+        {/* Night Stats Strip */}
+        <EcosystemBar />
 
-        </div>
+        {/* Product Introduction (3 Large Feature Sections on Pastel Backgrounds) */}
+        <HowItWorks />
 
-      </div>
+        {/* Interactive Product Demonstration (The Kizupi #ladder section adapted for ResolveX) */}
+        <InteractiveSimulator />
 
-      {/* Ecosystem Integrations Bar */}
-      <EcosystemBar />
+        {/* Feature Showcase & Smart Alerting Section */}
+        <FeaturesGrid />
 
-      {/* Autonomous Resolution Loop: 3 Steps */}
-      <HowItWorks />
+        {/* Comparison Section */}
+        <ComparisonMatrix />
 
-      {/* Interactive Telemetry & Incident Sandbox */}
-      <InteractiveSimulator />
+        {/* Transparent Pricing Section */}
+        <PricingPlans />
 
-      {/* Bento-Grid Features Deep Dive */}
-      <FeaturesGrid />
+        {/* FAQ Section */}
+        <FaqSection />
 
-      {/* SLA & Production Metrics */}
-      <StatsMetrics />
+        {/* Final CTA */}
+        <Cta />
+      </main>
 
-      {/* Side-by-Side Comparison Matrix */}
-      <ComparisonMatrix />
-
-      {/* Customer Testimonials & Reviews */}
-      <TestimonialsDark />
-
-      {/* Transparent Developer & Team Pricing */}
-      <PricingPlans />
-
-      {/* Frequently Asked Questions */}
-      <FaqSection />
-
-      {/* Bottom Conversion CTA Banner */}
-      <CtaDark />
-
-      {/* Full-Featured Footer */}
-      <FooterDark />
-
-      {/* Interactive Modal for Features / Docs / Pricing */}
-      {activeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className={`border rounded-2xl max-w-lg w-full p-6 shadow-2xl relative ${
-            isDark ? 'bg-[#101014] border-zinc-800' : 'bg-[#eedccb] border-[#cbbaa9]'
-          }`}>
-            <button
-              onClick={() => setActiveModal(null)}
-              className={`absolute top-4 right-4 p-1 rounded-lg transition ${
-                isDark ? 'text-zinc-400 hover:text-white hover:bg-zinc-800' : 'text-[#574f47] hover:text-black hover:bg-[#dfcebe]'
-              }`}
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            {activeModal === 'features' && (
-              <div>
-                <h3 className={`text-xl font-bold mb-2 flex items-center gap-2 ${
-                  isDark ? 'text-white' : 'text-[#171a1f]'
-                }`}>
-                  <ResolveXLogoMark className="w-5 h-5" />
-                  ResolveX Features
-                </h3>
-                <p className={`text-sm mb-4 ${isDark ? 'text-zinc-400' : 'text-[#574f47]'}`}>
-                  Everything you need to connect development with live service telemetry:
-                </p>
-                <div className="space-y-3 text-sm">
-                  <div className={`p-3 rounded-xl border ${
-                    isDark ? 'bg-zinc-900/70 border-zinc-800 text-zinc-300' : 'bg-[#dfcebe] border-[#cbbaa9] text-[#171a1f]'
-                  }`}>
-                    <span className="font-semibold block mb-0.5">Automatic Incident Detection</span>
-                    Direct webhook & synthetic probe alerts automatically link to Kanban task backlogs.
-                  </div>
-                  <div className={`p-3 rounded-xl border ${
-                    isDark ? 'bg-zinc-900/70 border-zinc-800 text-zinc-300' : 'bg-[#dfcebe] border-[#cbbaa9] text-[#171a1f]'
-                  }`}>
-                    <span className="font-semibold block mb-0.5">Bi-Directional Jira Workflows</span>
-                    Move cards, calculate velocity, and trigger rollback monitors seamlessly.
-                  </div>
-                </div>
-                <div className="mt-6 flex justify-end">
-                  <Link
-                    href="/dashboard"
-                    className={`font-semibold text-xs px-4 py-2 rounded-lg transition ${
-                      isDark ? 'bg-[#f5e6d3] text-zinc-950 hover:bg-[#faebd7]' : 'bg-[#171a1f] text-white hover:bg-black'
-                    }`}
-                  >
-                    Open Live Dashboard
-                  </Link>
-                </div>
-              </div>
-            )}
-
-            {activeModal === 'docs' && (
-              <div>
-                <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-[#171a1f]'}`}>
-                  Documentation & Guides
-                </h3>
-                <p className={`text-sm mb-4 ${isDark ? 'text-zinc-400' : 'text-[#574f47]'}`}>
-                  Quickstart instructions for monitoring your API endpoints and integrating Jira issues.
-                </p>
-                <div className={`p-3 rounded-xl border text-xs font-mono mb-4 ${
-                  isDark ? 'bg-zinc-900/70 border-zinc-800 text-zinc-300' : 'bg-[#dfcebe] border-[#cbbaa9] text-[#171a1f]'
-                }`}>
-                  npx @resolvex/cli monitor --endpoint https://api.yourdomain.com
-                </div>
-                <div className="flex justify-end">
-                  <button
-                    onClick={() => setActiveModal(null)}
-                    className={`font-medium text-xs px-4 py-2 rounded-lg transition cursor-pointer ${
-                      isDark ? 'bg-zinc-800 hover:bg-zinc-700 text-white' : 'bg-[#171a1f] hover:bg-black text-white'
-                    }`}
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {activeModal === 'pricing' && (
-              <div>
-                <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-[#171a1f]'}`}>
-                  Simple, Developer-Friendly Pricing
-                </h3>
-                <p className={`text-sm mb-4 ${isDark ? 'text-zinc-400' : 'text-[#574f47]'}`}>
-                  Start free with your team and upgrade as you scale live monitoring.
-                </p>
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  <div className={`p-3 rounded-xl border ${
-                    isDark ? 'bg-zinc-900/70 border-zinc-800' : 'bg-[#dfcebe] border-[#cbbaa9]'
-                  }`}>
-                    <span className="text-xs uppercase font-semibold opacity-70">Free Tier</span>
-                    <p className={`text-xl font-bold mt-1 ${isDark ? 'text-white' : 'text-[#171a1f]'}`}>$0</p>
-                    <p className="text-[11px] opacity-80 mt-1">Up to 5 services & unlimited boards</p>
-                  </div>
-                  <div className={`p-3 rounded-xl border ${
-                    isDark ? 'bg-zinc-900/70 border-amber-600/50' : 'bg-[#dfcebe] border-amber-600/50'
-                  }`}>
-                    <span className="text-xs text-amber-500 uppercase font-semibold">Pro Team</span>
-                    <p className={`text-xl font-bold mt-1 ${isDark ? 'text-white' : 'text-[#171a1f]'}`}>
-                      $19<span className="text-xs opacity-70">/mo</span>
-                    </p>
-                    <p className="text-[11px] opacity-80 mt-1">Real-time alerts, SLA & unlimited history</p>
-                  </div>
-                </div>
-                <div className="flex justify-end">
-                  <Link
-                    href="/login?tab=register"
-                    className={`font-semibold text-xs px-4 py-2 rounded-lg transition ${
-                      isDark ? 'bg-[#f5e6d3] text-zinc-950 hover:bg-[#faebd7]' : 'bg-[#171a1f] text-white hover:bg-black'
-                    }`}
-                  >
-                    Start Free Now
-                  </Link>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

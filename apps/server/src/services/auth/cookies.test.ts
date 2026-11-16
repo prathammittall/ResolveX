@@ -56,12 +56,12 @@ describe('Auth Cookies Module', () => {
 
   describe('parseCookies', () => {
     it('parses multiple cookies from Cookie header', () => {
-      const header = 'accessToken=xyz123; refreshToken=abc789; theme=dark';
+      const header = 'accessToken=xyz123; refreshToken=abc789; locale=en';
       const parsed = parseCookies(header);
 
       expect(parsed['accessToken']).toBe('xyz123');
       expect(parsed['refreshToken']).toBe('abc789');
-      expect(parsed['theme']).toBe('dark');
+      expect(parsed['locale']).toBe('en');
     });
 
     it('handles empty or malformed strings gracefully', () => {

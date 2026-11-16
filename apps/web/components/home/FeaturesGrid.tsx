@@ -1,245 +1,248 @@
 'use client';
 
-import React, { useState } from 'react';
-import { 
-  Activity, 
-  Kanban, 
-  Cpu, 
-  BellRing, 
-  Layers, 
-  ShieldCheck, 
-  Zap, 
-  Lock
+import React from 'react';
+import {
+  FolderKanban,
+  Server,
+  Activity,
+  AlertTriangle,
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  Layers,
+  Radio,
+  ShieldAlert,
+  ShieldCheck,
+  UserCheck,
+  Zap,
 } from 'lucide-react';
-import { useTheme } from '../../lib/theme-context';
 
 export default function FeaturesGrid() {
-  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
-  const { isDark } = useTheme();
-
-  const features = [
-    {
-      id: 1,
-      title: 'Continuous Synthetic Probing',
-      tag: 'Edge Ingestion',
-      desc: 'Probe REST, GraphQL, and gRPC endpoints across 12 worldwide edge locations. Configure custom HTTP headers, payload assertions, SSL certificate warnings, and check frequencies down to 5 seconds.',
-      badge: '5s Frequency',
-      icon: Activity,
-      colSpan: 'lg:col-span-7',
-      accent: isDark ? 'border-orange-500/40 hover:border-orange-500/80' : 'border-[#cbbaa9] hover:border-orange-500/80',
-      glow: 'rgba(255, 84, 20, 0.08)',
-      detail: (
-        <div className={`mt-4 p-3 rounded-xl border font-mono text-[11px] space-y-1 ${
-          isDark ? 'bg-[#090a0f] border-zinc-800/80 text-zinc-300' : 'bg-[#dfcebe] border-[#cbbaa9] text-[#171a1f]'
-        }`}>
-          <div className={`flex justify-between ${isDark ? 'text-zinc-500' : 'text-[#675d54]'}`}>
-            <span>GET /v1/healthz</span>
-            <span className="text-emerald-500 font-semibold">● 12 Nodes Online</span>
-          </div>
-          <div className={`flex justify-between ${isDark ? 'text-zinc-400' : 'text-[#574f47]'}`}>
-            <span>p50: 18ms · p95: 42ms · p99: 78ms</span>
-            <span className="text-orange-500 font-medium">SSL: 84d valid</span>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: 2,
-      title: 'Telemetry-Linked Agile Kanban',
-      tag: 'Bi-Directional Sync',
-      desc: 'The project board that knows when services degrade. Outages create tasks automatically, PR deploys trigger verification, and healthy canary checks move cards to Done.',
-      badge: 'Zero-Touch',
-      icon: Kanban,
-      colSpan: 'lg:col-span-5',
-      accent: isDark ? 'border-amber-500/40 hover:border-amber-500/80' : 'border-[#cbbaa9] hover:border-amber-500/80',
-      glow: 'rgba(245, 158, 11, 0.08)',
-      detail: (
-        <div className={`mt-4 p-3 rounded-xl border flex items-center justify-between text-xs font-mono ${
-          isDark ? 'bg-[#090a0f] border-zinc-800/80' : 'bg-[#dfcebe] border-[#cbbaa9]'
-        }`}>
-          <span className={isDark ? 'text-zinc-400' : 'text-[#574f47]'}>RES-1049 (Payment API)</span>
-          <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-500 border border-amber-500/40 text-[10px] font-bold">
-            In Progress
-          </span>
-        </div>
-      )
-    },
-    {
-      id: 3,
-      title: 'AI Root-Cause Diagnosis',
-      tag: 'Instant Correlation',
-      desc: 'ResolveX analyzes git commits, container metrics, and stack traces simultaneously to isolate the exact pull request that triggered the regression—saving up to 45 minutes of manual log searching.',
-      badge: 'Auto-Triage',
-      icon: Cpu,
-      colSpan: 'lg:col-span-5',
-      accent: isDark ? 'border-purple-500/40 hover:border-purple-500/80' : 'border-[#cbbaa9] hover:border-purple-500/80',
-      glow: 'rgba(168, 85, 247, 0.08)',
-      detail: (
-        <div className={`mt-4 p-3 rounded-xl border text-[11px] ${
-          isDark ? 'bg-[#090a0f] border-zinc-800/80 text-zinc-300' : 'bg-[#dfcebe] border-[#cbbaa9] text-[#171a1f]'
-        }`}>
-          <span className="text-purple-500 font-mono font-semibold block">Commit 9cf18a identified:</span>
-          <span className={isDark ? 'text-zinc-400' : 'text-[#574f47]'}>Database connection pool reduced from 100 to 10 in commit #382.</span>
-        </div>
-      )
-    },
-    {
-      id: 4,
-      title: 'Smart Deduplication & On-Call',
-      tag: 'Alert Sanity',
-      desc: 'Stop 3 AM pager storms. ResolveX groups downstream cascade failures into one primary incident ticket so your on-call engineer only receives a single actionable notification.',
-      badge: '-82% Noise',
-      icon: BellRing,
-      colSpan: 'lg:col-span-7',
-      accent: isDark ? 'border-blue-500/40 hover:border-blue-500/80' : 'border-[#cbbaa9] hover:border-blue-500/80',
-      glow: 'rgba(59, 130, 246, 0.08)',
-      detail: (
-        <div className={`mt-4 p-3 rounded-xl border flex items-center justify-between text-xs font-mono ${
-          isDark ? 'bg-[#090a0f] border-zinc-800/80' : 'bg-[#dfcebe] border-[#cbbaa9]'
-        }`}>
-          <span className={isDark ? 'text-zinc-400' : 'text-[#574f47]'}>48 Secondary Alerts Correlated</span>
-          <span className="text-emerald-500 font-semibold">→ 1 Root Ticket Dispatched</span>
-        </div>
-      )
-    },
-    {
-      id: 5,
-      title: 'Microservice Blast Radius Mapping',
-      tag: 'Service Topology',
-      desc: 'Visualize service architectures and dependencies. When an API slows down, instantly see which upstream user interfaces and downstream databases are affected.',
-      badge: 'Live Map',
-      icon: Layers,
-      colSpan: 'lg:col-span-6',
-      accent: isDark ? 'border-emerald-500/40 hover:border-emerald-500/80' : 'border-[#cbbaa9] hover:border-emerald-500/80',
-      glow: 'rgba(16, 185, 129, 0.08)',
-      detail: (
-        <div className={`mt-4 p-3 rounded-xl border flex items-center justify-around text-xs font-mono ${
-          isDark ? 'bg-[#090a0f] border-zinc-800/80 text-zinc-400' : 'bg-[#dfcebe] border-[#cbbaa9] text-[#574f47]'
-        }`}>
-          <span>Web Client</span>
-          <span>→</span>
-          <span className="text-rose-500 font-bold">API Gateway (502)</span>
-          <span>→</span>
-          <span>PostgreSQL</span>
-        </div>
-      )
-    },
-    {
-      id: 6,
-      title: 'Enterprise Audit Logs & RBAC',
-      tag: 'SOC-2 Ready',
-      desc: 'Immutable audit trails for every incident response action, probe configuration change, and role delegation. Full SAML SSO, SCIM provisioning, and exportable compliance reports.',
-      badge: 'SOC-2 Type II',
-      icon: ShieldCheck,
-      colSpan: 'lg:col-span-6',
-      accent: isDark ? 'border-zinc-700 hover:border-zinc-500' : 'border-[#cbbaa9] hover:border-[#84786d]',
-      glow: 'rgba(255, 255, 255, 0.05)',
-      detail: (
-        <div className={`mt-4 p-3 rounded-xl border flex items-center justify-between text-xs font-mono ${
-          isDark ? 'bg-[#090a0f] border-zinc-800/80 text-zinc-400' : 'bg-[#dfcebe] border-[#cbbaa9] text-[#574f47]'
-        }`}>
-          <div className="flex items-center gap-1.5 text-emerald-500">
-            <Lock className="w-3.5 h-3.5" />
-            <span>Audit Trail Verified</span>
-          </div>
-          <span className={isDark ? 'text-zinc-500' : 'text-[#84786d]'}>SHA-256 Tamper-Proof</span>
-        </div>
-      )
-    },
-  ];
-
   return (
-    <section
-      id="features"
-      className={`w-full py-24 sm:py-32 transition-colors duration-300 relative overflow-hidden ${
-        isDark ? 'bg-[#08080a]' : 'bg-[#e2cfc0]'
-      }`}
-    >
-      {/* Background glow */}
-      <div 
-        className="pointer-events-none absolute top-1/3 right-10 w-[700px] h-[500px] -z-10 opacity-25"
-        style={{
-          background: 'radial-gradient(ellipse at center, rgba(255, 84, 20, 0.08) 0%, transparent 70%)',
-          filter: 'blur(90px)'
-        }}
-      />
-
-      <div className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Section Heading */}
-        <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-950/60 border border-orange-500/30 text-orange-400 text-xs font-mono uppercase tracking-widest mb-4">
-            <Zap className="w-3.5 h-3.5" />
-            The Operational Cockpit
+    <section className="py-20 md:py-32 bg-[#eeebe0]/60 border-t border-[#dfdbcc]">
+      <div className="wrap max-w-6xl mx-auto px-4 sm:px-6">
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-[#dfdbcc] text-[#14201a] text-xs font-bold uppercase tracking-wider mb-3">
+            <Layers className="w-3.5 h-3.5 text-[#177a43]" /> Unified Engineering Stack
           </div>
-
-          <h2 className={`font-sans font-black text-3xl sm:text-5xl md:text-[52px] tracking-tight uppercase leading-[1.1] ${
-            isDark ? 'text-white' : 'text-[#171a1f]'
-          }`}>
-            Engineered For{' '}
-            <span className="text-[#ff5414]">Zero-Downtime Releases</span>
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#14201a]">
+            Designed for the way <span className="text-[#177a43]">engineering teams work.</span>
           </h2>
-
-          <p className={`mt-5 text-base sm:text-lg leading-relaxed ${isDark ? 'text-zinc-400' : 'text-[#574f47]'}`}>
-            Stop switching between Jira, Datadog, PagerDuty, and Slack. ResolveX integrates monitoring telemetry directly into your daily development workflow.
+          <p className="mt-4 text-base sm:text-lg text-[#5f6b64] leading-relaxed">
+            Four specialized operational capabilities unified into a single responsive interface.
           </p>
         </div>
 
-        {/* Bento Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-          {features.map((feat) => {
-            const Icon = feat.icon;
-            return (
-              <div
-                key={feat.id}
-                onMouseEnter={() => setHoveredCard(feat.id)}
-                onMouseLeave={() => setHoveredCard(null)}
-                className={`relative rounded-2xl border ${feat.accent} p-6 sm:p-7 flex flex-col justify-between transition-all duration-300 shadow-xl ${feat.colSpan} ${
-                  isDark ? 'bg-[#0f1017]' : 'bg-[#eedccb]'
-                }`}
-                style={{
-                  boxShadow: hoveredCard === feat.id ? `0 10px 40px -10px ${feat.glow}` : undefined
-                }}
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2.5">
-                      <div className={`w-9 h-9 rounded-xl border flex items-center justify-center text-orange-500 shadow-sm ${
-                        isDark ? 'bg-[#171822] border-zinc-800' : 'bg-[#dfcebe] border-[#cbbaa9]'
-                      }`}>
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <span className={`text-xs font-mono uppercase tracking-wider ${
-                        isDark ? 'text-zinc-500' : 'text-[#675d54]'
-                      }`}>
-                        {feat.tag}
-                      </span>
-                    </div>
-
-                    <span className={`text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full border ${
-                      isDark
-                        ? 'bg-zinc-800/80 border-zinc-700/60 text-zinc-300'
-                        : 'bg-[#dfcebe] border-[#cbbaa9] text-[#4a4239]'
-                    }`}>
-                      {feat.badge}
-                    </span>
-                  </div>
-
-                  <h3 className={`text-xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-[#171a1f]'}`}>
-                    {feat.title}
-                  </h3>
-
-                  <p className={`mt-2.5 text-sm leading-relaxed ${isDark ? 'text-zinc-400' : 'text-[#574f47]'}`}>
-                    {feat.desc}
-                  </p>
-                </div>
-
-                {feat.detail}
+        {/* 4 Distinct Showcase Compositions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
+          {/* Card 1: Kanban Workflows */}
+          <div className="rounded-3xl border border-[#dfdbcc] bg-white p-7 shadow-[0_3px_0_#dfdbcc] flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="p-2.5 rounded-xl bg-[#ede9fe] text-[#6d28d9]">
+                  <FolderKanban className="w-5 h-5" />
+                </span>
+                <span className="text-xs font-mono font-bold text-[#5f6b64]">PROJECTS & SPRINTS</span>
               </div>
-            );
-          })}
+              <h3 className="font-display text-xl font-bold text-[#14201a]">
+                Frictionless Kanban & Backlog Management
+              </h3>
+              <p className="mt-2 text-sm text-[#5f6b64] leading-relaxed">
+                Organize Epics, Stories, Tasks, and Bugs with customizable columns, drag-and-drop movement,
+                assignee avatars, and multi-tenant isolation.
+              </p>
+            </div>
+
+            {/* Micro Mockup inside Card 1 */}
+            <div className="mt-6 p-4 rounded-2xl bg-[#fbfaf6] border border-[#dfdbcc] space-y-2.5 text-xs">
+              <div className="flex items-center justify-between pb-2 border-b border-[#dfdbcc]">
+                <span className="font-bold text-[#14201a]">Core Platform Board</span>
+                <span className="text-[11px] text-[#5f6b64]">Sprint 14</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-[#dfdbcc] shadow-xs">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[10px] text-[#5f6b64] font-bold">CORE-12</span>
+                  <span className="font-semibold text-[#14201a]">Migrate Postgres read pool</span>
+                </div>
+                <span className="px-2 py-0.5 rounded-full bg-[#fef3c7] text-[#92400e] text-[10px] font-bold">In Review</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-[#dfdbcc] shadow-xs">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[10px] text-[#5f6b64] font-bold">CORE-19</span>
+                  <span className="font-semibold text-[#14201a]">Configure canary deploy gate</span>
+                </div>
+                <span className="px-2 py-0.5 rounded-full bg-[#dcefd8] text-[#177a43] text-[10px] font-bold">Done</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2: Service Catalog */}
+          <div className="rounded-3xl border border-[#dfdbcc] bg-white p-7 shadow-[0_3px_0_#dfdbcc] flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="p-2.5 rounded-xl bg-[#dcefd8] text-[#177a43]">
+                  <Server className="w-5 h-5" />
+                </span>
+                <span className="text-xs font-mono font-bold text-[#5f6b64]">SERVICE REPOSITORY</span>
+              </div>
+              <h3 className="font-display text-xl font-bold text-[#14201a]">
+                Living Service Catalog & Ownership Registry
+              </h3>
+              <p className="mt-2 text-sm text-[#5f6b64] leading-relaxed">
+                Know who owns what. Every microservice, background worker, and database has an assigned
+                engineering team, runbook, criticality level, and environment tag.
+              </p>
+            </div>
+
+            {/* Micro Mockup inside Card 2 */}
+            <div className="mt-6 p-4 rounded-2xl bg-[#fbfaf6] border border-[#dfdbcc] space-y-2.5 text-xs">
+              <div className="flex items-center justify-between pb-2 border-b border-[#dfdbcc]">
+                <span className="font-bold text-[#14201a]">Registered Catalog</span>
+                <span className="text-[11px] text-[#177a43] font-bold">100% Owner Coverage</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-[#dfdbcc] shadow-xs">
+                <div>
+                  <span className="font-bold text-[#14201a] block">auth-identity-svc</span>
+                  <span className="text-[10px] text-[#5f6b64]">Owner: Security Core · Production</span>
+                </div>
+                <span className="px-2 py-0.5 rounded-full bg-[#dcefd8] text-[#177a43] text-[10px] font-bold">Critical (Tier 1)</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-[#dfdbcc] shadow-xs">
+                <div>
+                  <span className="font-bold text-[#14201a] block">email-dispatcher</span>
+                  <span className="text-[10px] text-[#5f6b64]">Owner: Comms Team · Staging</span>
+                </div>
+                <span className="px-2 py-0.5 rounded-full bg-[#f1f5f9] text-[#475569] text-[10px] font-bold">Medium (Tier 3)</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 3: API Monitoring */}
+          <div className="rounded-3xl border border-[#dfdbcc] bg-white p-7 shadow-[0_3px_0_#dfdbcc] flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="p-2.5 rounded-xl bg-[#e0f2fe] text-[#0369a1]">
+                  <Activity className="w-5 h-5" />
+                </span>
+                <span className="text-xs font-mono font-bold text-[#5f6b64]">API TELEMETRY</span>
+              </div>
+              <h3 className="font-display text-xl font-bold text-[#14201a]">
+                Global Endpoint Health & Latency Distribution
+              </h3>
+              <p className="mt-2 text-sm text-[#5f6b64] leading-relaxed">
+                Monitor HTTP status codes, response headers, SSL cert expiration, and p99 latency
+                from distributed global checkpoints every 30 or 60 seconds.
+              </p>
+            </div>
+
+            {/* Micro Mockup inside Card 3 */}
+            <div className="mt-6 p-4 rounded-2xl bg-[#fbfaf6] border border-[#dfdbcc] space-y-2 text-xs">
+              <div className="flex items-center justify-between pb-2 border-b border-[#dfdbcc]">
+                <span className="font-mono text-[11px] text-[#14201a] font-bold">GET /api/v1/health</span>
+                <span className="text-[11px] text-[#177a43] font-bold">99.98% Uptime</span>
+              </div>
+              <div className="flex items-center justify-between text-[#5f6b64] text-[11px]">
+                <span>Response Time: <strong className="text-[#14201a]">22ms</strong></span>
+                <span>Checked: <strong className="text-[#14201a]">12s ago</strong></span>
+              </div>
+              {/* Latency mini sparkline blocks */}
+              <div className="grid grid-cols-12 gap-1 pt-1">
+                {[20, 24, 18, 22, 28, 25, 19, 23, 21, 24, 26, 22].map((ms, i) => (
+                  <div key={i} className="h-6 rounded bg-[#dcefd8] border border-[#b2e2a8] flex items-end justify-center">
+                    <div className="w-full bg-[#177a43] rounded-b" style={{ height: `${(ms / 30) * 100}%` }} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Card 4: Incident Lifecycle */}
+          <div className="rounded-3xl border border-[#dfdbcc] bg-white p-7 shadow-[0_3px_0_#dfdbcc] flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="p-2.5 rounded-xl bg-[#fee2e2] text-[#dc2626]">
+                  <AlertTriangle className="w-5 h-5" />
+                </span>
+                <span className="text-xs font-mono font-bold text-[#5f6b64]">INCIDENT BRIDGE</span>
+              </div>
+              <h3 className="font-display text-xl font-bold text-[#14201a]">
+                Automated Incident Rooms & Task Sync
+              </h3>
+              <p className="mt-2 text-sm text-[#5f6b64] leading-relaxed">
+                When repeated outages strike, ResolveX generates an incident room, records event timelines,
+                notifies responders, and automatically creates linked sprint tasks.
+              </p>
+            </div>
+
+            {/* Micro Mockup inside Card 4 */}
+            <div className="mt-6 p-4 rounded-2xl bg-[#fbfaf6] border border-[#dfdbcc] space-y-2 text-xs">
+              <div className="flex items-center justify-between pb-2 border-b border-[#dfdbcc]">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#dc2626]" />
+                  <span className="font-bold text-[#14201a]">Incident #INC-94</span>
+                </div>
+                <span className="px-2 py-0.5 rounded-full bg-[#fee2e2] text-[#dc2626] text-[10px] font-bold">Investigating</span>
+              </div>
+              <div className="flex items-center justify-between text-[#3d4a42]">
+                <span>Assigned Responder: <strong>Sarah Chen</strong></span>
+                <span className="text-[11px] text-[#5f6b64]">Ack in 2m</span>
+              </div>
+              <div className="p-2 rounded-xl bg-[#dcefd8]/40 border border-[#b2e2a8] text-[11px] font-medium text-[#15803d]">
+                Linked Sprint Ticket: PAY-104 (In Progress)
+              </div>
+            </div>
+          </div>
         </div>
 
+        {/* Smart Alerting Section (Phase 4.F) */}
+        <div className="rounded-3xl border-2 border-[#14201a] bg-white shadow-[6px_6px_0_#14201a] p-8 sm:p-14">
+          <div className="max-w-3xl mb-10">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#177a43] bg-[#dcefd8] px-3 py-1 rounded-full border border-[#b2e2a8]">
+              Zero-Noise Pipeline
+            </span>
+            <h3 className="font-display text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#14201a] mt-3">
+              Less alert noise. More meaningful action.
+            </h3>
+            <p className="mt-2 text-base text-[#5f6b64] leading-relaxed">
+              ResolveX verifies failures, groups repeated events, and routes incidents directly to the
+              engineers responsible for fixing them.
+            </p>
+          </div>
+
+          {/* Alert Verification Pipeline Workflow */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="p-4 rounded-2xl bg-[#fbfaf6] border border-[#dfdbcc] space-y-2">
+              <span className="w-6 h-6 rounded-full bg-[#eeebe0] text-[#14201a] font-bold text-xs flex items-center justify-center">1</span>
+              <h4 className="font-bold text-sm text-[#14201a]">Consecutive Verification</h4>
+              <p className="text-xs text-[#5f6b64]">Requires N consecutive failures across distinct edge nodes before alerting.</p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-[#fbfaf6] border border-[#dfdbcc] space-y-2">
+              <span className="w-6 h-6 rounded-full bg-[#eeebe0] text-[#14201a] font-bold text-xs flex items-center justify-center">2</span>
+              <h4 className="font-bold text-sm text-[#14201a]">Smart Deduplication</h4>
+              <p className="text-xs text-[#5f6b64]">Merges hundreds of rapid failure webhooks into a single grouped incident.</p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-[#fbfaf6] border border-[#dfdbcc] space-y-2">
+              <span className="w-6 h-6 rounded-full bg-[#eeebe0] text-[#14201a] font-bold text-xs flex items-center justify-center">3</span>
+              <h4 className="font-bold text-sm text-[#14201a]">Owner-Based Routing</h4>
+              <p className="text-xs text-[#5f6b64]">Dispatches alarms directly to the catalog service owner via Slack and webhooks.</p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-[#fbfaf6] border border-[#dfdbcc] space-y-2">
+              <span className="w-6 h-6 rounded-full bg-[#eeebe0] text-[#14201a] font-bold text-xs flex items-center justify-center">4</span>
+              <h4 className="font-bold text-sm text-[#14201a]">Backup Escalation</h4>
+              <p className="text-xs text-[#5f6b64]">Escalates to secondary responders if unacknowledged within SLA window.</p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-[#dcefd8] border border-[#b2e2a8] space-y-2">
+              <span className="w-6 h-6 rounded-full bg-[#177a43] text-white font-bold text-xs flex items-center justify-center">5</span>
+              <h4 className="font-bold text-sm text-[#14201a]">Recovery Confirmation</h4>
+              <p className="text-xs text-[#3d4a42]">Verifies 3 consecutive healthy probes before auto-mitigating the incident.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

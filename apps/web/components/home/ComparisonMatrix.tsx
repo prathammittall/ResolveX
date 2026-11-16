@@ -1,162 +1,150 @@
 'use client';
 
 import React from 'react';
-import { X, Check, Zap } from 'lucide-react';
-import { useTheme } from '../../lib/theme-context';
+import { Check, X, Sparkles } from 'lucide-react';
 
 export default function ComparisonMatrix() {
-  const { isDark } = useTheme();
-
-  const comparisons = [
+  const rows = [
     {
-      feature: 'Incident-to-Ticket Creation',
-      traditional: '15 - 30 minutes of manual copy-pasting across tabs',
-      traditionalStatus: false,
-      resolvex: 'Automated synthesis in < 3 seconds with stack trace',
-      resolvexStatus: true,
+      feature: 'Sprint & Kanban Task Management',
+      jira: true,
+      monitoring: false,
+      resolvex: true,
     },
     {
-      feature: 'Root-Cause Commit Isolation',
-      traditional: 'Manual git bisect or scouring deployment logs',
-      traditionalStatus: false,
-      resolvex: 'AI correlates API latency spikes to exact commit SHA',
-      resolvexStatus: true,
+      feature: 'Distributed Edge API Telemetry (30s polling)',
+      jira: false,
+      monitoring: true,
+      resolvex: true,
     },
     {
-      feature: 'Alert Noise & Pager Fatigue',
-      traditional: 'Cascading floods: 100+ alerts for 1 root DB outage',
-      traditionalStatus: false,
-      resolvex: '82% noise reduction with intelligent root grouping',
-      resolvexStatus: true,
+      feature: 'Native Microservice Catalog & Ownership',
+      jira: 'Partial / Add-on',
+      monitoring: 'Complex Tagging',
+      resolvex: 'Native Core',
     },
     {
-      feature: 'Deploy & Rollback Verification',
-      traditional: 'Engineers manually verify logs or forget to check',
-      traditionalStatus: false,
-      resolvex: 'Automated multi-region canary probes verify PR health',
-      resolvexStatus: true,
+      feature: 'Automated Incident Creation on Outage',
+      jira: false,
+      monitoring: 'Manual / Pager',
+      resolvex: 'Autonomous Pipeline',
     },
     {
-      feature: 'Ticket Lifecycle & Closure',
-      traditional: 'Forgotten tickets remain open in Jira backlog for weeks',
-      traditionalStatus: false,
-      resolvex: 'Cards automatically transition to Done once health returns',
-      resolvexStatus: true,
+      feature: 'Incident-to-Sprint Task Linking',
+      jira: 'Manual Copy-Paste',
+      monitoring: false,
+      resolvex: 'Instant 1-Click Sync',
     },
     {
-      feature: 'Total Tooling Cost',
-      traditional: '$160 - $220 / engineer / mo across 4 disconnected tools',
-      traditionalStatus: false,
-      resolvex: '$29 / seat / mo with all features included',
-      resolvexStatus: true,
+      feature: 'Consecutive Failure Threshold Verification',
+      jira: false,
+      monitoring: true,
+      resolvex: true,
+    },
+    {
+      feature: 'Automatic Recovery Verification & Ticket Closing',
+      jira: false,
+      monitoring: 'Alert clears only',
+      resolvex: 'Bi-Directional Sync',
+    },
+    {
+      feature: 'Zero Alert Fatigue & Direct Maintainer Routing',
+      jira: false,
+      monitoring: 'Broad on-call blast',
+      resolvex: 'Targeted Service Owner',
     },
   ];
 
   return (
-    <section
-      id="comparison"
-      className={`w-full py-24 sm:py-32 border-t transition-colors duration-300 relative overflow-hidden ${
-        isDark ? 'bg-[#090a0f] border-zinc-800/80' : 'bg-[#e2cfc0] border-[#cbbaa9]'
-      }`}
-    >
-      {/* Background glow */}
-      <div 
-        className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] -z-10 opacity-20"
-        style={{
-          background: 'radial-gradient(ellipse at center, rgba(255, 84, 20, 0.1) 0%, transparent 70%)',
-          filter: 'blur(80px)'
-        }}
-      />
-
-      <div className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Section Heading */}
-        <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-950/60 border border-orange-500/30 text-orange-400 text-xs font-mono uppercase tracking-widest mb-4">
-            <Zap className="w-3.5 h-3.5" />
-            Stack Comparison
+    <section className="py-20 md:py-32 bg-[#f6f4ec]">
+      <div className="wrap max-w-6xl mx-auto px-4 sm:px-6">
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#eeebe0] border border-[#dfdbcc] text-[#14201a] text-xs font-bold uppercase tracking-wider mb-3">
+            <Sparkles className="w-3.5 h-3.5 text-[#177a43]" /> Architectural Advantage
           </div>
-
-          <h2 className={`font-sans font-black text-3xl sm:text-5xl md:text-[50px] tracking-tight uppercase leading-[1.1] ${
-            isDark ? 'text-white' : 'text-[#171a1f]'
-          }`}>
-            Why Modern Teams{' '}
-            <span className="text-[#ff5414]">Ditch Tool Sprawl</span>
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#14201a]">
+            More than project management.{' '}
+            <span className="text-[#177a43]">More than uptime monitoring.</span>
           </h2>
-
-          <p className={`mt-5 text-base sm:text-lg leading-relaxed ${isDark ? 'text-zinc-400' : 'text-[#574f47]'}`}>
-            See how ResolveX unifies monitoring telemetry and sprint task management compared to the traditional patchwork of disconnected tools.
+          <p className="mt-4 text-base sm:text-lg text-[#5f6b64] leading-relaxed">
+            Stop bridging Jira and PagerDuty with manual Slack updates. ResolveX brings operational health
+            directly into your daily development cycle.
           </p>
         </div>
 
-        {/* Comparison Table Card */}
-        <div className={`rounded-2xl border overflow-hidden shadow-2xl ${
-          isDark ? 'bg-[#0e0f17] border-zinc-800/90' : 'bg-[#eedccb] border-[#cbbaa9]'
-        }`}>
-          
-          {/* Table Headers */}
-          <div className={`grid grid-cols-1 md:grid-cols-12 border-b text-xs font-mono uppercase tracking-wider ${
-            isDark ? 'border-zinc-800/80 bg-[#12131d]' : 'border-[#cbbaa9] bg-[#e4d1bf]'
-          }`}>
-            <div className={`md:col-span-4 p-4 sm:p-5 font-semibold ${isDark ? 'text-zinc-400' : 'text-[#524b44]'}`}>
-              Operational Capability
-            </div>
-            <div className={`md:col-span-4 p-4 sm:p-5 font-semibold border-t md:border-t-0 md:border-l ${
-              isDark ? 'text-zinc-500 border-zinc-800' : 'text-[#675d54] border-[#cbbaa9]'
-            }`}>
-              Fragmented Stack (Jira + Datadog + PagerDuty)
-            </div>
-            <div className={`md:col-span-4 p-4 sm:p-5 font-bold border-t md:border-t-0 md:border-l flex items-center justify-between ${
-              isDark
-                ? 'text-orange-400 border-zinc-800 bg-orange-950/20'
-                : 'text-orange-600 border-[#cbbaa9] bg-orange-500/10'
-            }`}>
-              <span>The ResolveX Way</span>
-              <span className="px-2 py-0.5 rounded bg-orange-500/20 text-orange-400 text-[10px] uppercase font-mono">
-                Unified
-              </span>
-            </div>
+        {/* Comparison Table */}
+        <div className="overflow-hidden rounded-3xl border-2 border-[#14201a] bg-white shadow-[6px_6px_0_#14201a]">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b-2 border-[#14201a] bg-[#fbfaf6]">
+                  <th className="p-5 sm:p-6 text-sm sm:text-base font-extrabold text-[#14201a] w-2/5">
+                    Operational Capability
+                  </th>
+                  <th className="p-5 sm:p-6 text-xs sm:text-sm font-bold text-[#5f6b64] w-1/5 text-center">
+                    Traditional PM<br />
+                    <span className="font-normal text-xs text-[#5f6b64]">(Jira / Linear)</span>
+                  </th>
+                  <th className="p-5 sm:p-6 text-xs sm:text-sm font-bold text-[#5f6b64] w-1/5 text-center">
+                    Standalone Monitoring<br />
+                    <span className="font-normal text-xs text-[#5f6b64]">(Datadog / BetterStack)</span>
+                  </th>
+                  <th className="p-5 sm:p-6 text-sm sm:text-base font-black text-[#177a43] bg-[#dcefd8]/50 w-1/5 text-center border-l-2 border-[#14201a]">
+                    ResolveX<br />
+                    <span className="font-bold text-xs text-[#177a43]">Connected Platform</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#dfdbcc] text-sm">
+                {rows.map((r, i) => (
+                  <tr key={r.feature} className={i % 2 === 0 ? 'bg-white' : 'bg-[#fbfaf6]/60'}>
+                    <td className="p-5 sm:p-6 font-bold text-[#14201a] text-xs sm:text-sm">
+                      {r.feature}
+                    </td>
+
+                    {/* Jira / Linear */}
+                    <td className="p-5 sm:p-6 text-center text-xs text-[#5f6b64]">
+                      {typeof r.jira === 'boolean' ? (
+                        r.jira ? (
+                          <span className="inline-flex w-6 h-6 rounded-full bg-[#dcefd8] text-[#177a43] items-center justify-center font-bold">✓</span>
+                        ) : (
+                          <span className="inline-flex w-6 h-6 rounded-full bg-[#fee2e2] text-[#dc2626] items-center justify-center font-bold">✕</span>
+                        )
+                      ) : (
+                        <span className="font-medium">{r.jira}</span>
+                      )}
+                    </td>
+
+                    {/* Standalone Monitoring */}
+                    <td className="p-5 sm:p-6 text-center text-xs text-[#5f6b64]">
+                      {typeof r.monitoring === 'boolean' ? (
+                        r.monitoring ? (
+                          <span className="inline-flex w-6 h-6 rounded-full bg-[#dcefd8] text-[#177a43] items-center justify-center font-bold">✓</span>
+                        ) : (
+                          <span className="inline-flex w-6 h-6 rounded-full bg-[#fee2e2] text-[#dc2626] items-center justify-center font-bold">✕</span>
+                        )
+                      ) : (
+                        <span className="font-medium">{r.monitoring}</span>
+                      )}
+                    </td>
+
+                    {/* ResolveX */}
+                    <td className="p-5 sm:p-6 text-center bg-[#dcefd8]/30 border-l-2 border-[#14201a]">
+                      {typeof r.resolvex === 'boolean' ? (
+                        <span className="inline-flex w-7 h-7 rounded-full bg-[#177a43] text-white items-center justify-center font-bold shadow-xs">✓</span>
+                      ) : (
+                        <span className="inline-flex px-3 py-1 rounded-full bg-[#177a43] text-white text-xs font-bold shadow-xs">
+                          {r.resolvex}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-
-          {/* Table Rows */}
-          <div className={`divide-y ${isDark ? 'divide-zinc-800/70' : 'divide-[#cbbaa9]'}`}>
-            {comparisons.map((row, idx) => (
-              <div 
-                key={idx} 
-                className={`grid grid-cols-1 md:grid-cols-12 transition-colors text-sm ${
-                  isDark ? 'hover:bg-[#12131e]/50' : 'hover:bg-[#f4e4d4]'
-                }`}
-              >
-                {/* Feature Name */}
-                <div className={`md:col-span-4 p-4 sm:p-5 font-semibold flex items-center ${
-                  isDark ? 'text-white' : 'text-[#171a1f]'
-                }`}>
-                  {row.feature}
-                </div>
-
-                {/* Traditional Stack */}
-                <div className={`md:col-span-4 p-4 sm:p-5 border-t md:border-t-0 md:border-l flex items-start gap-2.5 ${
-                  isDark ? 'text-zinc-400 border-zinc-800/80' : 'text-[#574f47] border-[#cbbaa9]'
-                }`}>
-                  <X className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-                  <span className="text-xs sm:text-sm">{row.traditional}</span>
-                </div>
-
-                {/* ResolveX */}
-                <div className={`md:col-span-4 p-4 sm:p-5 border-t md:border-t-0 md:border-l flex items-start gap-2.5 ${
-                  isDark
-                    ? 'text-zinc-200 border-zinc-800/80 bg-orange-950/10'
-                    : 'text-[#171a1f] border-[#cbbaa9] bg-orange-500/5'
-                }`}>
-                  <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                  <span className={`text-xs sm:text-sm font-medium ${isDark ? 'text-white' : 'text-[#171a1f]'}`}>{row.resolvex}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-
         </div>
-
       </div>
     </section>
   );

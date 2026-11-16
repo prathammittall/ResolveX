@@ -93,7 +93,7 @@ export default function TaskPage() {
       apply(await api.get<TaskDetail>(`/api/tasks/${ref}`));
     } catch (err) {
       setError(err instanceof ApiError || err instanceof Error ? err.message : 'Could not save the change');
-      if (detail) apply(detail); // snap the form back to the saved values
+      if (detail) apply(detail);
     } finally {
       setSaving(false);
     }
@@ -148,20 +148,19 @@ export default function TaskPage() {
 
   const { task } = detail;
   const names = new Map(members.map((m) => [m.userId, m.name || m.email] as const));
-  // Non-admins can only take unassigned tickets or release/keep their own.
   const ownsOrFree = task.assignee === null || task.assignee.id === user?.id;
   const assignOptions = manage ? members : members.filter((m) => m.userId === user?.id);
-  const field = 'w-full rounded-xl border border-[#cbbaa9] dark:border-white/10 bg-[#eedccb]/60 dark:bg-zinc-900 px-3 py-2 text-sm text-[#171a1f] dark:text-white outline-none focus:border-[#ff5414] focus:ring-2 focus:ring-[#ff5414]/20 disabled:opacity-60 placeholder-[#574f47]/50 dark:placeholder-zinc-500';
+  const field = 'w-full rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] px-3.5 py-2 text-sm text-[#14201a] outline-none transition focus:border-[#177a43] focus:ring-2 focus:ring-[#177a43]/20 disabled:opacity-60 placeholder-[#5f6b64]/50';
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <Link href={`/dashboard/projects/${task.projectId}`} className="inline-flex items-center gap-1.5 text-sm font-medium text-[#574f47] dark:text-zinc-400 hover:text-[#171a1f] dark:hover:text-white transition">
-          <ArrowLeft className="h-4 w-4" /> {task.projectKey} board
+    <div className="space-y-6">
+      <div className="flex items-center justify-between border-b border-[#dfdbcc] pb-4">
+        <Link href={`/dashboard/projects/${task.projectId}`} className="inline-flex items-center gap-1.5 text-xs font-bold text-[#5f6b64] hover:text-[#177a43] transition">
+          <ArrowLeft className="h-3.5 w-3.5" /> Back to {task.projectKey} board
         </Link>
         {manage && (
-          <button onClick={remove} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-[#574f47] dark:text-zinc-400 hover:bg-rose-500/10 hover:text-rose-600 transition">
-            <Trash2 className="h-4 w-4" /> Delete
+          <button onClick={remove} className="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold text-[#5f6b64] hover:bg-[#fee2e2] hover:text-[#dc2626] transition cursor-pointer">
+            <Trash2 className="h-3.5 w-3.5" /> Delete ticket
           </button>
         )}
       </div>
@@ -171,7 +170,7 @@ export default function TaskPage() {
       <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
         <div className="space-y-5">
           <div>
-            <div className="flex items-center gap-2 text-sm text-[#574f47] dark:text-zinc-400">
+            <div className="flex items-center gap-2 text-xs font-semibold text-[#5f6b64]">
               {detail.parent && (
                 <>
                   <Link href={`/dashboard/tasks/${detail.parent.ref}`} className="hover:underline">{detail.parent.ref}</Link>
@@ -179,7 +178,7 @@ export default function TaskPage() {
                 </>
               )}
               <TypeIcon type={task.type} withLabel />
-              <span className="font-mono text-[#574f47] dark:text-zinc-400">{task.ref}</span>
+              <span className="font-mono text-xs font-bold text-[#14201a]">{task.ref}</span>
             </div>
             <label htmlFor="title" className="sr-only">Title</label>
             <input
@@ -189,7 +188,7 @@ export default function TaskPage() {
               maxLength={200}
               onChange={(e) => setTitle(e.target.value)}
               onBlur={() => title.trim() && title !== task.title && void patch({ title: title.trim() })}
-              className="mt-2 w-full rounded-lg border border-transparent bg-transparent px-1 py-1 font-serif-title text-2xl font-semibold text-[#171a1f] dark:text-white outline-none hover:border-[#cbbaa9]/50 focus:border-[#ff5414] disabled:hover:border-transparent transition"
+              className="mt-2 w-full rounded-xl border border-transparent bg-transparent px-2 py-1.5 font-display text-2xl font-extrabold text-[#14201a] outline-none hover:border-[#dfdbcc] focus:border-[#177a43] focus:bg-white disabled:hover:border-transparent transition"
             />
           </div>
 
@@ -200,34 +199,34 @@ export default function TaskPage() {
               value={description}
               disabled={!work}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder={work ? 'Add more detail…' : 'No description'}
+              placeholder={work ? 'Add more detail, steps, or context...' : 'No description'}
               className={field}
             />
             {work && description !== (task.description ?? '') && (
-              <div className="mt-2 flex justify-end gap-2">
-                <button onClick={() => setDescription(task.description ?? '')} className="rounded-lg px-3 py-1.5 text-sm text-[#574f47] dark:text-zinc-300 hover:bg-[#cbbaa9]/30 dark:hover:bg-white/10 transition">Cancel</button>
-                <button disabled={saving} onClick={() => void patch({ description: description.trim() || null })} className="rounded-lg bg-[#171a1f] dark:bg-[#ff5414] px-3 py-1.5 text-sm font-semibold text-white transition shadow-xs disabled:opacity-60">Save</button>
+              <div className="mt-2.5 flex justify-end gap-2">
+                <button onClick={() => setDescription(task.description ?? '')} className="btn-kizupi-white text-xs px-3 py-1.5 cursor-pointer">Cancel</button>
+                <button disabled={saving} onClick={() => void patch({ description: description.trim() || null })} className="btn-kizupi-go text-xs px-4 py-1.5 cursor-pointer disabled:opacity-60">Save description</button>
               </div>
             )}
           </SectionCard>
 
           {(task.type !== 'subtask' || detail.subtasks.length > 0) && task.type !== 'epic' && (
             <SectionCard title={`Subtasks (${detail.subtasks.length})`}>
-              <ul className="divide-y divide-[#cbbaa9]/20 dark:divide-white/5">
+              <ul className="divide-y divide-[#dfdbcc]/50">
                 {detail.subtasks.map((s) => (
-                  <li key={s.id} className="flex items-center justify-between gap-3 py-2">
+                  <li key={s.id} className="flex items-center justify-between gap-3 py-2.5">
                     <Link href={`/dashboard/tasks/${s.ref}`} className="flex min-w-0 items-center gap-2 text-sm">
-                      <span className="font-mono text-xs text-[#574f47] dark:text-zinc-400">{s.ref}</span>
-                      <span className="truncate text-[#171a1f] dark:text-white hover:text-[#ff5414] transition">{s.title}</span>
+                      <span className="font-mono text-xs font-bold text-[#5f6b64]">{s.ref}</span>
+                      <span className="truncate font-semibold text-[#14201a] hover:text-[#177a43] transition">{s.title}</span>
                     </Link>
-                    <span className="shrink-0 text-xs text-[#574f47] dark:text-zinc-400">{s.status.name}</span>
+                    <span className="shrink-0 text-xs font-semibold text-[#5f6b64]">{s.status.name}</span>
                   </li>
                 ))}
               </ul>
               {work && task.type !== 'subtask' && (
-                <form onSubmit={addSubtask} className="mt-3 flex gap-2">
-                  <input aria-label="New subtask title" value={subtask} onChange={(e) => setSubtask(e.target.value)} placeholder="Add a subtask" maxLength={200} className={field} />
-                  <button type="submit" disabled={saving || !subtask.trim()} className="rounded-xl bg-[#171a1f] dark:bg-[#ff5414] px-3.5 py-2 text-sm font-semibold text-white transition shadow-xs disabled:opacity-50">Add</button>
+                <form onSubmit={addSubtask} className="mt-3.5 flex gap-2">
+                  <input aria-label="New subtask title" value={subtask} onChange={(e) => setSubtask(e.target.value)} placeholder="Add a subtask..." maxLength={200} className={field} />
+                  <button type="submit" disabled={saving || !subtask.trim()} className="btn-kizupi-go text-xs px-4 py-2 shrink-0 cursor-pointer disabled:opacity-50">Add</button>
                 </form>
               )}
             </SectionCard>
@@ -236,17 +235,17 @@ export default function TaskPage() {
           {task.type === 'epic' && (
             <SectionCard title={`Child tickets (${detail.subtasks.length})`}>
               {detail.subtasks.length === 0 ? (
-                <p className="text-sm text-[#574f47] dark:text-zinc-400">Pick this epic when creating a story, task or bug.</p>
+                <p className="text-sm text-[#5f6b64]">Select this epic when creating a story, task or bug.</p>
               ) : (
-                <ul className="divide-y divide-[#cbbaa9]/20 dark:divide-white/5">
+                <ul className="divide-y divide-[#dfdbcc]/50">
                   {detail.subtasks.map((s) => (
-                    <li key={s.id} className="flex items-center justify-between gap-3 py-2">
+                    <li key={s.id} className="flex items-center justify-between gap-3 py-2.5">
                       <Link href={`/dashboard/tasks/${s.ref}`} className="flex min-w-0 items-center gap-2 text-sm">
                         <TypeIcon type={s.type} />
-                        <span className="font-mono text-xs text-[#574f47] dark:text-zinc-400">{s.ref}</span>
-                        <span className="truncate text-[#171a1f] dark:text-white hover:text-[#ff5414] transition">{s.title}</span>
+                        <span className="font-mono text-xs font-bold text-[#5f6b64]">{s.ref}</span>
+                        <span className="truncate font-semibold text-[#14201a] hover:text-[#177a43] transition">{s.title}</span>
                       </Link>
-                      <span className="shrink-0 text-xs text-[#574f47] dark:text-zinc-400">{s.status.name}</span>
+                      <span className="shrink-0 text-xs font-semibold text-[#5f6b64]">{s.status.name}</span>
                     </li>
                   ))}
                 </ul>
@@ -261,20 +260,20 @@ export default function TaskPage() {
                   <Avatar name={c.author?.name ?? '?'} size={28} />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm">
-                      <span className="font-medium text-[#171a1f] dark:text-white">{c.author?.name ?? 'Former member'}</span>{' '}
-                      <span className="text-xs text-[#574f47] dark:text-zinc-400" title={formatDateTime(c.createdAt)}>{timeAgo(c.createdAt)}</span>
+                      <span className="font-bold text-[#14201a]">{c.author?.name ?? 'Former member'}</span>{' '}
+                      <span className="text-xs text-[#5f6b64]" title={formatDateTime(c.createdAt)}>{timeAgo(c.createdAt)}</span>
                     </p>
-                    <p className="mt-0.5 whitespace-pre-wrap text-sm text-[#574f47] dark:text-zinc-300">{c.body}</p>
+                    <p className="mt-1 whitespace-pre-wrap text-sm text-[#3d4a42] bg-[#fbfaf6] p-3 rounded-xl border border-[#dfdbcc]/60">{c.body}</p>
                   </div>
                 </li>
               ))}
-              {detail.comments.length === 0 && <li className="text-sm text-[#574f47] dark:text-zinc-400">No comments yet.</li>}
+              {detail.comments.length === 0 && <li className="text-sm text-[#5f6b64]">No comments yet.</li>}
             </ul>
             {work && (
-              <form onSubmit={addComment} className="mt-4 space-y-2">
-                <textarea aria-label="Add a comment" rows={3} value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Add a comment…" className={field} />
+              <form onSubmit={addComment} className="mt-4 space-y-2.5">
+                <textarea aria-label="Add a comment" rows={3} value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Write a comment..." className={field} />
                 <div className="flex justify-end">
-                  <button type="submit" disabled={saving || !comment.trim()} className="rounded-xl bg-[#171a1f] dark:bg-[#ff5414] px-4 py-2 text-sm font-semibold text-white transition shadow-xs disabled:opacity-50">Comment</button>
+                  <button type="submit" disabled={saving || !comment.trim()} className="btn-kizupi-go text-xs px-4 py-2 cursor-pointer disabled:opacity-50">Comment</button>
                 </div>
               </form>
             )}
@@ -283,9 +282,9 @@ export default function TaskPage() {
           <SectionCard title="Activity">
             <ol className="space-y-3">
               {detail.activity.map((a) => (
-                <li key={a.id} className="text-sm text-[#574f47] dark:text-zinc-300">
-                  <span className="font-medium text-[#171a1f] dark:text-white">{a.actor?.name ?? 'Someone'}</span> {describeActivity(a, names)}{' '}
-                  <span className="text-xs text-[#574f47] dark:text-zinc-400" title={formatDateTime(a.createdAt)}>{timeAgo(a.createdAt)}</span>
+                <li key={a.id} className="text-sm text-[#5f6b64]">
+                  <span className="font-semibold text-[#14201a]">{a.actor?.name ?? 'Someone'}</span> {describeActivity(a, names)}{' '}
+                  <span className="text-xs text-[#5f6b64]" title={formatDateTime(a.createdAt)}>{timeAgo(a.createdAt)}</span>
                 </li>
               ))}
             </ol>
@@ -296,15 +295,15 @@ export default function TaskPage() {
           <SectionCard title="Details">
             <dl className="space-y-4">
               <div>
-                <dt className="mb-1 text-xs font-semibold uppercase tracking-wide text-[#574f47] dark:text-zinc-400">Status</dt>
+                <dt className="mb-1 text-xs font-bold uppercase tracking-wide text-[#5f6b64]">Status</dt>
                 <dd>
                   <select aria-label="Status" disabled={!work || saving} value={task.status.id} onChange={(e) => void patch({ statusId: e.target.value })} className={field}>
-                    {detail.statuses.map((s) => <option key={s.id} value={s.id} className="bg-[#eedccb] dark:bg-zinc-900 text-[#171a1f] dark:text-white">{s.name}</option>)}
+                    {detail.statuses.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                   </select>
                 </dd>
               </div>
               <div>
-                <dt className="mb-1 text-xs font-semibold uppercase tracking-wide text-[#574f47] dark:text-zinc-400">Assignee</dt>
+                <dt className="mb-1 text-xs font-bold uppercase tracking-wide text-[#5f6b64]">Assignee</dt>
                 <dd>
                   <select
                     aria-label="Assignee"
@@ -313,32 +312,32 @@ export default function TaskPage() {
                     onChange={(e) => void patch({ assigneeId: e.target.value ? Number(e.target.value) : null })}
                     className={field}
                   >
-                    <option value="" className="bg-[#eedccb] dark:bg-zinc-900 text-[#171a1f] dark:text-white">Unassigned</option>
-                    {assignOptions.map((m) => <option key={m.userId} value={m.userId} className="bg-[#eedccb] dark:bg-zinc-900 text-[#171a1f] dark:text-white">{m.name || m.email}{m.userId === user?.id ? ' (me)' : ''}</option>)}
+                    <option value="">Unassigned</option>
+                    {assignOptions.map((m) => <option key={m.userId} value={m.userId}>{m.name || m.email}{m.userId === user?.id ? ' (me)' : ''}</option>)}
                     {task.assignee && !assignOptions.some((m) => m.userId === task.assignee?.id) && (
-                      <option value={task.assignee.id} className="bg-[#eedccb] dark:bg-zinc-900 text-[#171a1f] dark:text-white">{task.assignee.name}</option>
+                      <option value={task.assignee.id}>{task.assignee.name}</option>
                     )}
                   </select>
-                  {!manage && !ownsOrFree && <p className="mt-1 text-xs text-[#574f47] dark:text-zinc-400">Only admins can reassign this ticket.</p>}
+                  {!manage && !ownsOrFree && <p className="mt-1 text-xs text-[#5f6b64]">Only admins can reassign this ticket.</p>}
                 </dd>
               </div>
               <div>
-                <dt className="mb-1 text-xs font-semibold uppercase tracking-wide text-[#574f47] dark:text-zinc-400">Priority</dt>
+                <dt className="mb-1 text-xs font-bold uppercase tracking-wide text-[#5f6b64]">Priority</dt>
                 <dd className="flex items-center gap-2">
                   <PriorityIcon priority={task.priority} />
                   <select aria-label="Priority" disabled={!work || saving} value={task.priority} onChange={(e) => void patch({ priority: e.target.value as TaskPriority })} className={field}>
-                    {PRIORITIES.map((p) => <option key={p} value={p} className="bg-[#eedccb] dark:bg-zinc-900 text-[#171a1f] dark:text-white">{p}</option>)}
+                    {PRIORITIES.map((p) => <option key={p} value={p}>{p}</option>)}
                   </select>
                 </dd>
               </div>
               <div>
-                <dt className="mb-1 text-xs font-semibold uppercase tracking-wide text-[#574f47] dark:text-zinc-400">Due date</dt>
+                <dt className="mb-1 text-xs font-bold uppercase tracking-wide text-[#5f6b64]">Due date</dt>
                 <dd>
                   <input aria-label="Due date" type="date" disabled={!work || saving} value={task.dueDate ? task.dueDate.slice(0, 10) : ''} onChange={(e) => void patch({ dueDate: e.target.value || null })} className={field} />
                 </dd>
               </div>
               <div>
-                <dt className="mb-1 text-xs font-semibold uppercase tracking-wide text-[#574f47] dark:text-zinc-400">Labels</dt>
+                <dt className="mb-1 text-xs font-bold uppercase tracking-wide text-[#5f6b64]">Labels</dt>
                 <dd>
                   <input
                     aria-label="Labels"
@@ -355,15 +354,14 @@ export default function TaskPage() {
                 </dd>
               </div>
               <div>
-                <dt className="mb-1 text-xs font-semibold uppercase tracking-wide text-[#574f47] dark:text-zinc-400">Reporter</dt>
-                <dd className="flex items-center gap-2 text-sm text-[#171a1f] dark:text-white">
-                  {task.reporter ? (<><Avatar name={task.reporter.name} />{task.reporter.name}</>) : 'Former member'}
+                <dt className="mb-1 text-xs font-bold uppercase tracking-wide text-[#5f6b64]">Reporter</dt>
+                <dd className="flex items-center gap-2 text-sm font-semibold text-[#14201a]">
+                  {task.reporter ? (<><Avatar name={task.reporter.name} size={22} />{task.reporter.name}</>) : 'Former member'}
                 </dd>
               </div>
-              <div className="text-xs text-[#574f47] dark:text-zinc-400">
-                Created {formatDateTime(task.createdAt)}
-                <br />
-                Updated {timeAgo(task.updatedAt)}
+              <div className="border-t border-[#dfdbcc]/60 pt-3 text-xs text-[#5f6b64] space-y-1">
+                <div>Created: {formatDateTime(task.createdAt)}</div>
+                <div>Updated: {timeAgo(task.updatedAt)}</div>
               </div>
             </dl>
           </SectionCard>

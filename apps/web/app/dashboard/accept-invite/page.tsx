@@ -16,8 +16,6 @@ function AcceptInvite() {
   const [error, setError] = useState<string | null>(null);
   const started = useRef(false);
 
-  // Redeem automatically when arriving from an invitation link. Guarded so React strict mode
-  // does not submit the single-use token twice.
   useEffect(() => {
     if (!token || started.current) return;
     started.current = true;
@@ -37,9 +35,9 @@ function AcceptInvite() {
   if (!token) {
     return (
       <SectionCard title="Join an organization">
-        <p className="text-sm text-[#574f47] dark:text-zinc-300">
+        <p className="text-sm text-[#5f6b64]">
           Open the invitation link you were sent, or paste the invitation code in{' '}
-          <button className="font-semibold text-[#ff5414] underline hover:text-[#e0450a] transition" onClick={() => router.push('/dashboard/settings')}>
+          <button className="font-bold text-[#177a43] underline hover:text-[#0f5e32] transition cursor-pointer" onClick={() => router.push('/dashboard/settings')}>
             Settings
           </button>
           .
@@ -53,25 +51,29 @@ function AcceptInvite() {
       {state === 'working' && <PageLoader />}
       {state === 'done' && (
         <SectionCard>
-          <div className="flex items-start gap-3" role="status">
-            <CheckCircle2 className="mt-0.5 h-6 w-6 text-emerald-600" />
+          <div className="flex items-start gap-3.5" role="status">
+            <div className="w-10 h-10 rounded-full bg-[#dcefd8] text-[#177a43] flex items-center justify-center shrink-0">
+              <CheckCircle2 className="h-5 w-5" />
+            </div>
             <div>
-              <h1 className="font-serif-title text-lg font-semibold text-[#171a1f] dark:text-white">You’ve joined the organization</h1>
-              <p className="mt-1 text-sm text-[#574f47] dark:text-zinc-400">Taking you to your new workspace…</p>
+              <h1 className="font-display text-lg font-bold text-[#14201a]">You’ve joined the organization</h1>
+              <p className="mt-1 text-sm text-[#5f6b64]">Redirecting you to your new workspace…</p>
             </div>
           </div>
         </SectionCard>
       )}
       {state === 'error' && (
         <SectionCard>
-          <div className="flex items-start gap-3">
-            <MailWarning className="mt-0.5 h-6 w-6 text-rose-600" />
+          <div className="flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-full bg-[#fee2e2] text-[#dc2626] flex items-center justify-center shrink-0">
+              <MailWarning className="h-5 w-5" />
+            </div>
             <div className="space-y-3">
-              <h1 className="font-serif-title text-lg font-semibold text-[#171a1f] dark:text-white">Invitation can’t be used</h1>
+              <h1 className="font-display text-lg font-bold text-[#14201a]">Invitation cannot be redeemed</h1>
               {error && <ErrorBanner message={error} />}
-              <p className="text-sm text-[#574f47] dark:text-zinc-400">
-                Invitations are tied to one email address{user ? ` — you’re signed in as ${user.email}` : ''}. Ask the
-                person who invited you to send a new one, or sign in with the invited address.
+              <p className="text-sm text-[#5f6b64]">
+                Invitations are bound to one email address{user ? ` — you’re currently signed in as ${user.email}` : ''}. Ask the
+                organization admin to verify your email, or sign in with the invited email address.
               </p>
             </div>
           </div>

@@ -2,114 +2,131 @@
 
 import React, { useState } from 'react';
 import { ChevronDown, HelpCircle } from 'lucide-react';
-import { useTheme } from '../../lib/theme-context';
+
+interface FaqItem {
+  id: string;
+  n: string;
+  q: string;
+  a: string;
+}
+
+const faqs: FaqItem[] = [
+  {
+    id: 'faq-1',
+    n: '01',
+    q: 'What is ResolveX?',
+    a: 'ResolveX is a unified engineering operations platform that integrates project management, service catalog ownership, API health monitoring, and automated incident response into one synchronized workspace. Think of it as a Jira that knows the exact instant your microservices or API endpoints fail in production.',
+  },
+  {
+    id: 'faq-2',
+    n: '02',
+    q: 'How does API monitoring work?',
+    a: 'ResolveX polls your configured HTTP/API endpoints from multiple geographically distributed edge nodes at intervals as low as 30 seconds. It evaluates HTTP status codes, latency spikes, SSL certificate validity, and JSON response payloads to accurately measure service health.',
+  },
+  {
+    id: 'faq-3',
+    n: '03',
+    q: 'Can ResolveX automatically create incidents?',
+    a: 'Yes. When an endpoint or external webhook fails verification thresholds (e.g. 3 consecutive failure probes across multiple edge regions), ResolveX autonomously creates a SEV incident, generates a dedicated incident room, and records all failure events on a timeline.',
+  },
+  {
+    id: 'faq-4',
+    n: '04',
+    q: 'How does incident deduplication work?',
+    a: 'Rather than blasting 1,000 alerts during a catastrophic cascading outage, ResolveX groups related alerts from the same service into a single parent incident. Recurring failure spikes update the existing incident timeline instead of triggering redundant alert storms.',
+  },
+  {
+    id: 'faq-5',
+    n: '05',
+    q: 'Can I assign service owners?',
+    a: 'Yes! Every service registered in your Service Catalog has an assigned owner, maintainer team, repository link, and environment tier (production, staging, development). When an incident fires, ResolveX routes alerts directly to the responsible team rather than blasting the entire company.',
+  },
+  {
+    id: 'faq-6',
+    n: '06',
+    q: 'Does ResolveX support multiple organizations?',
+    a: 'Yes. ResolveX includes full multi-tenant isolation with a built-in workspace switcher in the dashboard. Users can belong to multiple organizations (e.g. personal projects, client accounts, or separate business units) with distinct roles and cryptographic separation.',
+  },
+  {
+    id: 'faq-7',
+    n: '07',
+    q: 'Can I monitor production and staging separately?',
+    a: 'Absolutely. Every service and endpoint is tagged with an environment (production, staging, or development). You can configure different probe frequencies, consecutive failure thresholds, and alerting policies for staging versus mission-critical production clusters.',
+  },
+  {
+    id: 'faq-8',
+    n: '08',
+    q: 'How are alerts delivered?',
+    a: 'Alerts are delivered in real time via email, Slack channels, Microsoft Teams, custom webhook endpoints, and in-dashboard notifications. You can configure granular notification escalation rules to wake secondary backup responders if an incident remains unacknowledged within 15 minutes.',
+  },
+];
 
 export default function FaqSection() {
-  const { isDark } = useTheme();
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [openId, setOpenId] = useState<string | null>('faq-1');
 
-  const faqs = [
-    {
-      q: 'How does ResolveX link API outages directly to Kanban tasks?',
-      a: 'When an endpoint slips into an unhealthy state (e.g., consecutive 5xx responses or severe latency degradation), ResolveX’s telemetry engine extracts the endpoint path, error payload, and affected microservice. It correlates this with your active sprint board, creates a dedicated incident task with stack traces attached, and assigns your team’s on-call engineer in under 3 seconds.',
-    },
-    {
-      q: 'Can I import our existing projects from Jira, Linear, or GitHub?',
-      a: 'Yes. ResolveX includes 1-click bi-directional importers for Jira Cloud, Linear, and GitHub Projects. You can import your epics, sprint backlogs, and active boards without losing card IDs, assignees, or labels.',
-    },
-    {
-      q: 'How does ResolveX prevent false alarms from temporary network hiccups?',
-      a: 'ResolveX uses multi-region consensus probing. Before an incident alert or automated ticket is synthesized, probes from at least 3 geographically independent edge locations (e.g., Virginia, Frankfurt, Tokyo) must confirm the failure. Single-node transient anomalies are logged but do not trigger false alarms.',
-    },
-    {
-      q: 'Can we monitor internal APIs running behind a private VPC or corporate firewall?',
-      a: 'Yes. In addition to our global managed edge probe fleet, ResolveX provides lightweight Docker and Kubernetes daemon probes that run inside your private AWS VPC, Google Cloud, or on-prem cluster to monitor internal microservice mesh traffic securely.',
-    },
-    {
-      q: 'How does automated canary verification work during deployments?',
-      a: 'When you merge a PR linked to an incident task or trigger a release webhook, ResolveX initiates high-frequency verification checks against the target endpoint. Once 3 consecutive probes report 200 OK and latency falls below your SLA threshold, ResolveX automatically transitions the card to Done.',
-    },
-    {
-      q: 'What notification channels and war-room integrations are supported?',
-      a: 'ResolveX supports native notifications via Slack (with interactive triage threads and 1-click rollback buttons), PagerDuty, OpsGenie, Microsoft Teams, Discord, SMS, voice paging, and custom webhooks.',
-    },
-  ];
+  const toggle = (id: string) => {
+    setOpenId(openId === id ? null : id);
+  };
 
   return (
-    <section
-      id="faq"
-      className={`w-full py-24 sm:py-32 border-t transition-colors duration-300 relative overflow-hidden ${
-        isDark ? 'bg-[#090a0f] border-zinc-800/80' : 'bg-[#dfcebe] border-[#cbbaa9]'
-      }`}
-    >
-      <div className="max-w-[1000px] mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-950/60 border border-orange-500/30 text-orange-400 text-xs font-mono uppercase tracking-widest mb-4">
-            <HelpCircle className="w-3.5 h-3.5" />
-            Common Questions
+    <section id="faq" className="py-20 md:py-32 bg-[#eeebe0]/60 border-t border-[#dfdbcc]">
+      <div className="wrap max-w-4xl mx-auto px-4 sm:px-6">
+        {/* Section Header */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-[#dfdbcc] text-[#14201a] text-xs font-bold uppercase tracking-wider mb-3">
+            <HelpCircle className="w-3.5 h-3.5 text-[#177a43]" /> Answers & FAQ
           </div>
-
-          <h2 className={`font-sans font-black text-3xl sm:text-5xl tracking-tight uppercase leading-[1.1] ${
-            isDark ? 'text-white' : 'text-[#171a1f]'
-          }`}>
-            Frequently Asked{' '}
-            <span className="text-[#ff5414]">Questions</span>
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#14201a]">
+            The things engineering teams ask first.
           </h2>
-
-          <p className={`mt-4 text-base ${isDark ? 'text-zinc-400' : 'text-[#574f47]'}`}>
-            Everything you need to know about connecting live telemetry with sprint task management.
+          <p className="mt-3 text-base text-[#5f6b64]">
+            Every team starts with a 14-day free trial. Have a technical question?{' '}
+            <a href="mailto:support@resolvex.dev" className="text-[#177a43] font-bold underline hover:text-[#0f5e32]">
+              Write to our engineers
+            </a>
+            , an engineer answers.
           </p>
         </div>
 
-        {/* Accordion */}
+        {/* Accordion FAQ (Kizupi numbered style) */}
         <div className="space-y-3.5">
-          {faqs.map((faq, idx) => {
-            const isOpen = openIndex === idx;
+          {faqs.map((f) => {
+            const isOpen = openId === f.id;
             return (
               <div
-                key={idx}
-                className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
-                  isOpen
-                    ? isDark
-                      ? 'bg-[#10111a] border-zinc-700/90 shadow-lg'
-                      : 'bg-[#ebd8c6] border-[#cbbaa9] shadow-md'
-                    : isDark
-                      ? 'bg-[#0e0f16]/90 border-zinc-800/80 hover:border-zinc-700'
-                      : 'bg-[#eedccb] border-[#cbbaa9] hover:border-[#bfae9c]'
-                }`}
+                key={f.id}
+                className="rounded-2xl border border-[#dfdbcc] bg-white shadow-[0_2px_0_#dfdbcc] overflow-hidden transition-all duration-150"
               >
                 <button
-                  onClick={() => setOpenIndex(isOpen ? null : idx)}
-                  className="w-full p-5 sm:p-6 text-left flex items-center justify-between gap-4 cursor-pointer"
+                  type="button"
+                  onClick={() => toggle(f.id)}
+                  aria-expanded={isOpen}
+                  className="w-full p-5 sm:p-6 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-[#fbfaf6] transition-colors"
                 >
-                  <span className={`font-sans font-bold text-base sm:text-lg ${isDark ? 'text-white' : 'text-[#171a1f]'}`}>
-                    {faq.q}
-                  </span>
-                  <div className={`p-1.5 rounded-lg shrink-0 transition-transform duration-200 ${
-                    isOpen
-                      ? 'rotate-180 text-orange-500 bg-orange-500/15'
-                      : isDark
-                        ? 'bg-zinc-800 text-zinc-400'
-                        : 'bg-[#dfcebe] text-[#524b44]'
-                  }`}>
-                    <ChevronDown className="w-4 h-4" />
+                  <div className="flex items-center gap-4 min-w-0">
+                    <span className="font-mono text-xs sm:text-sm font-extrabold text-[#177a43] bg-[#dcefd8] px-2 py-0.5 rounded-md">
+                      {f.n}
+                    </span>
+                    <span className="font-display text-base sm:text-lg font-bold text-[#14201a]">
+                      {f.q}
+                    </span>
                   </div>
+                  <ChevronDown
+                    className={`w-5 h-5 text-[#5f6b64] shrink-0 transition-transform duration-200 ${
+                      isOpen ? 'rotate-180 text-[#177a43]' : ''
+                    }`}
+                  />
                 </button>
 
                 {isOpen && (
-                  <div className={`px-5 pb-6 sm:px-6 sm:pb-6 text-sm leading-relaxed border-t pt-4 animate-fadeIn ${
-                    isDark ? 'text-zinc-400 border-zinc-800/80' : 'text-[#574f47] border-[#cbbaa9]'
-                  }`}>
-                    {faq.a}
+                  <div className="px-5 pb-5 sm:px-6 sm:pb-6 pt-0 border-t border-[#dfdbcc]/50 text-sm sm:text-base text-[#3d4a42] leading-relaxed animate-in fade-in duration-150">
+                    <p className="pt-3">{f.a}</p>
                   </div>
                 )}
               </div>
             );
           })}
         </div>
-
       </div>
     </section>
   );

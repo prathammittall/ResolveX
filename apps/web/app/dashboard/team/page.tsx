@@ -9,16 +9,16 @@ import type { InvitationItem, MemberItem, OrgRole } from '../../../lib/types';
 import { EmptyState, ErrorBanner, PageLoader, SectionCard, cn, formatDateTime, timeAgo } from '../_components/ui';
 
 const roleStyle: Record<OrgRole, string> = {
-  owner: 'bg-violet-50 text-violet-700 ring-violet-200',
-  admin: 'bg-blue-50 text-blue-700 ring-blue-200',
-  responder: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-  member: 'bg-slate-100 text-slate-700 ring-slate-200',
-  viewer: 'bg-amber-50 text-amber-700 ring-amber-200',
+  owner: 'bg-[#ede9fe] text-[#6d28d9] border border-[#ddd6fe] font-bold',
+  admin: 'bg-[#e0f2fe] text-[#0369a1] border border-[#bae6fd] font-bold',
+  responder: 'bg-[#dcefd8] text-[#15803d] border border-[#b2e2a8] font-bold',
+  member: 'bg-[#f1f5f9] text-[#475569] border border-[#cbd5e1] font-semibold',
+  viewer: 'bg-[#fef3c7] text-[#92400e] border border-[#fde68a] font-semibold',
 };
 
 function RoleBadge({ role }: { role: OrgRole }) {
   return (
-    <span className={cn('inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset', roleStyle[role])}>
+    <span className={cn('inline-flex rounded-full px-2.5 py-0.5 text-xs', roleStyle[role])}>
       {ROLE_LABEL[role]}
     </span>
   );
@@ -153,10 +153,10 @@ export default function TeamPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#dfdbcc] pb-5">
         <div>
-          <h1 className="font-serif-title text-2xl font-semibold text-[#171a1f] dark:text-white">Team</h1>
-          <p className="mt-1 text-sm text-[#574f47] dark:text-zinc-400">People in this organization and what they can do.</p>
+          <h1 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-[#14201a]">Team</h1>
+          <p className="mt-1 text-sm text-[#5f6b64]">Organization members, role permissions, and active invitations.</p>
         </div>
         {admin && (
           <button
@@ -165,156 +165,154 @@ export default function TeamPage() {
               setIssued(null);
               setInviteOpen(true);
             }}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#171a1f] dark:bg-[#ff5414] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#2b2f38] dark:hover:bg-[#ff6830] transition shadow-xs"
+            className="btn-kizupi-go text-sm px-4 py-2.5 cursor-pointer"
           >
-            <UserPlus className="h-4 w-4" />
+            <UserPlus className="h-4 w-4 mr-1.5" />
             Add teammate
           </button>
         )}
       </div>
 
       {!admin && (
-        <div role="note" className="rounded-xl border border-amber-300 dark:border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
+        <div role="note" className="rounded-xl border border-[#fde68a] bg-[#fef3c7] px-4 py-3 text-sm text-[#92400e]">
           You’re a <strong>{ROLE_LABEL[user?.role ?? 'viewer']}</strong> in this organization. Only owners and admins can
-          add teammates or change roles. Ask an owner to promote you if you need to.
+          add teammates or change roles.
         </div>
       )}
 
       {error && <ErrorBanner message={error} />}
       {notice && (
-        <div role="status" className="rounded-xl border border-emerald-300 dark:border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-200">
+        <div role="status" className="rounded-xl border border-[#b2e2a8] bg-[#dcefd8] px-4 py-3 text-sm font-semibold text-[#15803d]">
           {notice}
         </div>
       )}
 
       {admin && inviteOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Add teammate">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-xs" onClick={() => setInviteOpen(false)} />
-          <div className="relative w-full max-w-lg rounded-2xl border border-[#cbbaa9] dark:border-white/10 bg-[#eedccb] dark:bg-[#12131a] p-6 shadow-2xl">
-            <div className="flex items-start justify-between">
+          <div className="fixed inset-0 bg-[#14201a]/40 backdrop-blur-xs" onClick={() => setInviteOpen(false)} />
+          <div className="relative w-full max-w-lg rounded-2xl border border-[#dfdbcc] bg-white p-6 shadow-2xl">
+            <div className="flex items-start justify-between border-b border-[#dfdbcc] pb-4">
               <div>
-                <h2 className="font-serif-title text-lg font-semibold text-[#171a1f] dark:text-white">Add teammate</h2>
-                <p className="mt-0.5 text-sm text-[#574f47] dark:text-zinc-400">They join with the role you pick once they accept.</p>
+                <h2 className="font-display text-xl font-bold text-[#14201a]">Add teammate</h2>
+                <p className="mt-0.5 text-xs text-[#5f6b64]">They join with the designated role once accepted.</p>
               </div>
-              <button type="button" onClick={() => setInviteOpen(false)} aria-label="Close" className="rounded-lg p-1.5 text-[#574f47] dark:text-zinc-400 hover:bg-[#cbbaa9]/30 dark:hover:bg-white/10 transition">
+              <button type="button" onClick={() => setInviteOpen(false)} aria-label="Close" className="rounded-lg p-1.5 text-[#5f6b64] hover:bg-[#eeebe0] transition cursor-pointer">
                 <X className="h-4 w-4" />
               </button>
             </div>
             {error && <div className="mt-4"><ErrorBanner message={error} /></div>}
             <div className="mt-5">
-          <form onSubmit={invite} className="flex flex-col gap-4">
-            <div className="flex-1">
-              <label htmlFor="invite-email" className="mb-1 block text-sm font-medium text-[#171a1f] dark:text-zinc-200">
-                Email address
-              </label>
-              <input
-                id="invite-email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="teammate@company.com"
-                className="w-full rounded-xl border border-[#cbbaa9] dark:border-white/10 bg-[#e2cfc0]/50 dark:bg-zinc-900 px-3 py-2.5 text-sm text-[#171a1f] dark:text-white outline-none focus:border-[#ff5414] focus:ring-2 focus:ring-[#ff5414]/20 placeholder-[#574f47]/50 dark:placeholder-zinc-500"
-              />
-            </div>
-            <div>
-              <label htmlFor="invite-role" className="mb-1 block text-sm font-medium text-[#171a1f] dark:text-zinc-200">
-                Role
-              </label>
-              <select
-                id="invite-role"
-                value={inviteRole}
-                onChange={(e) => setInviteRole(e.target.value as OrgRole)}
-                className="w-full rounded-xl border border-[#cbbaa9] dark:border-white/10 bg-[#e2cfc0]/50 dark:bg-zinc-900 px-3 py-2.5 text-sm text-[#171a1f] dark:text-white outline-none focus:border-[#ff5414] focus:ring-2 focus:ring-[#ff5414]/20"
-              >
-                {roles.map((r) => (
-                  <option key={r} value={r} className="bg-[#eedccb] dark:bg-zinc-900 text-[#171a1f] dark:text-white">
-                    {ROLE_LABEL[r]}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <button
-              type="submit"
-              disabled={inviting}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#171a1f] dark:bg-[#ff5414] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#2b2f38] dark:hover:bg-[#ff6830] transition shadow-xs disabled:opacity-60"
-            >
-              <MailPlus className="h-4 w-4" />
-              {inviting ? 'Creating…' : 'Create invitation'}
-            </button>
-          </form>
-          <p className="mt-2 text-xs text-[#574f47] dark:text-zinc-400">{ROLE_HELP[inviteRole]}</p>
-
-          {issued && (
-            <div className="mt-4 rounded-xl border border-amber-300 dark:border-amber-500/30 bg-amber-500/10 p-4" role="status">
-              <p className="text-sm font-medium text-amber-900 dark:text-amber-200">Invitation created for {issued.email}</p>
-              <p className="mt-1 text-xs text-amber-800 dark:text-amber-300">
-                Email delivery is not set up yet, so share this link yourself. It is shown only once and expires in 7
-                days.
-              </p>
-              <div className="mt-3 flex items-center gap-2">
-                <input
-                  readOnly
-                  value={inviteLink}
-                  aria-label="Invitation link"
-                  onFocus={(e) => e.currentTarget.select()}
-                  className="min-w-0 flex-1 rounded-lg border border-amber-300 dark:border-amber-500/30 bg-[#faefe3] dark:bg-zinc-900 px-3 py-2 font-mono text-xs text-[#171a1f] dark:text-white"
-                />
+              <form onSubmit={invite} className="flex flex-col gap-4">
+                <div>
+                  <label htmlFor="invite-email" className="mb-1 block text-xs font-semibold text-[#14201a]">
+                    Email address
+                  </label>
+                  <input
+                    id="invite-email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="teammate@company.com"
+                    className="w-full rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] px-3.5 py-2 text-sm text-[#14201a] outline-none transition focus:border-[#177a43] focus:ring-2 focus:ring-[#177a43]/20 placeholder-[#5f6b64]/50"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="invite-role" className="mb-1 block text-xs font-semibold text-[#14201a]">
+                    Role
+                  </label>
+                  <select
+                    id="invite-role"
+                    value={inviteRole}
+                    onChange={(e) => setInviteRole(e.target.value as OrgRole)}
+                    className="w-full rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] px-3.5 py-2 text-sm text-[#14201a] outline-none transition focus:border-[#177a43] cursor-pointer"
+                  >
+                    {roles.map((r) => (
+                      <option key={r} value={r} className="bg-white text-[#14201a]">
+                        {ROLE_LABEL[r]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <button
-                  type="button"
-                  onClick={copyLink}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-[#171a1f] dark:bg-[#ff5414] text-white px-3 py-2 text-xs font-semibold hover:bg-[#2b2f38] dark:hover:bg-[#ff6830] transition shadow-xs"
+                  type="submit"
+                  disabled={inviting}
+                  className="btn-kizupi-go text-sm px-4 py-2.5 cursor-pointer disabled:opacity-60"
                 >
-                  {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                  {copied ? 'Copied' : 'Copy'}
+                  <MailPlus className="h-4 w-4 mr-1.5" />
+                  {inviting ? 'Creating…' : 'Generate invitation link'}
                 </button>
-              </div>
-            </div>
-          )}
+              </form>
+              <p className="mt-2.5 text-xs text-[#5f6b64]">{ROLE_HELP[inviteRole]}</p>
+
+              {issued && (
+                <div className="mt-4 rounded-xl border border-[#fde68a] bg-[#fef3c7] p-4" role="status">
+                  <p className="text-sm font-bold text-[#92400e]">Invitation created for {issued.email}</p>
+                  <p className="mt-1 text-xs text-[#92400e]/80">
+                    Share this link with your teammate. It expires in 7 days.
+                  </p>
+                  <div className="mt-3 flex items-center gap-2">
+                    <input
+                      readOnly
+                      value={inviteLink}
+                      aria-label="Invitation link"
+                      onFocus={(e) => e.currentTarget.select()}
+                      className="min-w-0 flex-1 rounded-xl border border-[#fde68a] bg-white px-3 py-2 font-mono text-xs text-[#14201a]"
+                    />
+                    <button
+                      type="button"
+                      onClick={copyLink}
+                      className="btn-kizupi-go text-xs px-3.5 py-2 cursor-pointer"
+                    >
+                      {copied ? <Check className="h-3.5 w-3.5 mr-1" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
+                      {copied ? 'Copied!' : 'Copy link'}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
       )}
 
-      <SectionCard title={`Members (${members.length})`}>
+      <SectionCard title={`Active Members (${members.length})`}>
         {members.length === 0 ? (
-          <EmptyState icon={Users} title="No members" description="Members appear here once they join." />
+          <EmptyState icon={Users} title="No members" description="Members will appear here once they join." />
         ) : (
           <div className="-mx-5 overflow-x-auto">
             <table className="w-full min-w-[560px] text-left text-sm">
               <thead>
-                <tr className="border-b border-[#cbbaa9]/30 dark:border-white/10 text-xs uppercase tracking-wide text-[#574f47] dark:text-zinc-400">
-                  <th className="px-5 py-2 font-medium">Member</th>
-                  <th className="px-5 py-2 font-medium">Role</th>
-                  <th className="px-5 py-2 font-medium">Joined</th>
-                  <th className="px-5 py-2" />
+                <tr className="border-b border-[#dfdbcc] bg-[#fbfaf6] text-xs font-bold uppercase tracking-wide text-[#5f6b64]">
+                  <th className="px-5 py-3">Member</th>
+                  <th className="px-5 py-3">Role</th>
+                  <th className="px-5 py-3">Joined</th>
+                  <th className="px-5 py-3 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#cbbaa9]/20 dark:divide-white/5">
+              <tbody className="divide-y divide-[#dfdbcc]/50">
                 {members.map((m) => {
                   const self = m.userId === user?.id;
-                  // Admins cannot edit owners; only owners can.
                   const editable = admin && (user?.role === 'owner' || m.role !== 'owner');
                   return (
-                    <tr key={m.userId} className="hover:bg-[#cbbaa9]/20 dark:hover:bg-white/5 transition">
-                      <td className="px-5 py-3">
-                        <p className="font-medium text-[#171a1f] dark:text-white">
+                    <tr key={m.userId} className="hover:bg-[#f6f4ec] transition">
+                      <td className="px-5 py-3.5">
+                        <p className="font-bold text-[#14201a]">
                           {m.name || m.email.split('@')[0]}
-                          {self && <span className="ml-2 text-xs font-normal text-[#574f47] dark:text-zinc-400">(you)</span>}
+                          {self && <span className="ml-2 text-xs font-semibold text-[#177a43] bg-[#dcefd8] px-2 py-0.5 rounded-full">(you)</span>}
                         </p>
-                        <p className="text-xs text-[#574f47] dark:text-zinc-400">{m.email}</p>
+                        <p className="text-xs text-[#5f6b64]">{m.email}</p>
                       </td>
-                      <td className="px-5 py-3">
+                      <td className="px-5 py-3.5">
                         {editable ? (
                           <select
                             aria-label={`Role for ${m.email}`}
                             value={m.role}
                             disabled={busyId === String(m.userId)}
                             onChange={(e) => changeRole(m, e.target.value as OrgRole)}
-                            className="rounded-lg border border-[#cbbaa9] dark:border-white/10 bg-[#e2cfc0]/50 dark:bg-zinc-900 px-2 py-1.5 text-sm text-[#171a1f] dark:text-white outline-none focus:border-[#ff5414]"
+                            className="rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] px-2.5 py-1 text-xs text-[#14201a] outline-none focus:border-[#177a43] cursor-pointer"
                           >
                             {roles.map((r) => (
-                              <option key={r} value={r} className="bg-[#eedccb] dark:bg-zinc-900 text-[#171a1f] dark:text-white">
+                              <option key={r} value={r} className="bg-white text-[#14201a]">
                                 {ROLE_LABEL[r]}
                               </option>
                             ))}
@@ -323,16 +321,16 @@ export default function TeamPage() {
                           <RoleBadge role={m.role} />
                         )}
                       </td>
-                      <td className="px-5 py-3 text-[#574f47] dark:text-zinc-400" title={formatDateTime(m.joinedAt)}>
+                      <td className="px-5 py-3.5 text-xs text-[#5f6b64]" title={formatDateTime(m.joinedAt)}>
                         {timeAgo(m.joinedAt)}
                       </td>
-                      <td className="px-5 py-3 text-right">
+                      <td className="px-5 py-3.5 text-right">
                         {(self || editable) && (
                           <button
                             type="button"
                             onClick={() => remove(m)}
                             disabled={busyId === String(m.userId)}
-                            className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium text-[#574f47] dark:text-zinc-400 hover:bg-rose-500/10 hover:text-rose-600 transition disabled:opacity-50"
+                            className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-bold text-[#5f6b64] hover:bg-[#fee2e2] hover:text-[#dc2626] transition disabled:opacity-50 cursor-pointer"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                             {self ? 'Leave' : 'Remove'}
@@ -351,14 +349,14 @@ export default function TeamPage() {
       {admin && (
         <SectionCard title={`Pending invitations (${pending.length})`}>
           {pending.length === 0 ? (
-            <p className="text-sm text-[#574f47] dark:text-zinc-400">No pending invitations.</p>
+            <p className="text-sm text-[#5f6b64]">No pending invitations.</p>
           ) : (
-            <ul className="divide-y divide-[#cbbaa9]/20 dark:divide-white/5">
+            <ul className="divide-y divide-[#dfdbcc]/50">
               {pending.map((inv) => (
                 <li key={inv.id} className="flex items-center justify-between gap-3 py-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-[#171a1f] dark:text-white">{inv.email}</p>
-                    <p className="text-xs text-[#574f47] dark:text-zinc-400">
+                    <p className="truncate text-sm font-bold text-[#14201a]">{inv.email}</p>
+                    <p className="text-xs text-[#5f6b64]">
                       {ROLE_LABEL[inv.role]} · expires {formatDateTime(inv.expiresAt)}
                     </p>
                   </div>
@@ -366,7 +364,7 @@ export default function TeamPage() {
                     type="button"
                     onClick={() => revoke(inv)}
                     disabled={busyId === inv.id}
-                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-[#574f47] dark:text-zinc-400 hover:bg-rose-500/10 hover:text-rose-600 transition disabled:opacity-50"
+                    className="rounded-lg px-3 py-1 text-xs font-bold text-[#5f6b64] hover:bg-[#fee2e2] hover:text-[#dc2626] transition disabled:opacity-50 cursor-pointer"
                   >
                     Revoke
                   </button>
