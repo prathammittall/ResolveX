@@ -23,6 +23,7 @@ interface AuthContextType {
   user: AuthUser | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<AuthResult>;
+  loginWithGoogle: (data: { credential?: string; email?: string; name?: string }) => Promise<AuthResult>;
   register: (data: {
     email: string;
     password: string;
@@ -134,6 +135,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [authRequest],
   );
 
+  const loginWithGoogle = useCallback(
+    async (payload: { credential?: string; email?: string; name?: string }): Promise<AuthResult> => {
+      return authRequest(
+        '/api/auth/google',
+        payload,
+        'Google sign-in failed. Please try again.',
+        (data) => data?.error?.message || 'Google sign-in failed.',
+      );
+    },
+    [authRequest],
+  );
+
   const register = useCallback(
     (payload: { email: string; password: string; name?: string; companyName?: string }) =>
       authRequest('/api/auth/register', payload, 'Registration failed', registrationErrorMessage),
@@ -173,7 +186,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout, switchOrg, refreshUser }}>
+    <AuthContext.Provider value={{ user, isLoading, login, loginWithGoogle, register, logout, switchOrg, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

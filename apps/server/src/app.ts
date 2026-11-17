@@ -6,7 +6,7 @@ import { authRouter } from './services/auth/index.js';
 import { dashboardRouter } from './services/api/index.js';
 import { processAlertWebhook, isAlertProcessingError, type AlertErrorBody } from './services/incident-engine/index.js';
 
-const AUTH_PATHS = ['/api/auth', '/auth', '/register', '/login', '/refresh', '/logout', '/me'];
+const AUTH_PATHS = ['/api/auth', '/auth', '/register', '/login', '/refresh', '/logout', '/me', '/google'];
 const BODY_LIMIT = '1mb';
 
 const MIN = 60_000;
@@ -22,7 +22,7 @@ export const DEFAULT_RATE_LIMITS: Record<RateLimitName, RateLimitRule> = {
   api: { windowMs: MIN, max: 600 }, // per IP, dashboard API
 };
 
-const LOGIN_PATHS = ['/api/auth/login', '/auth/login', '/login'];
+const LOGIN_PATHS = ['/api/auth/login', '/auth/login', '/login', '/api/auth/google', '/auth/google', '/google'];
 const REGISTER_PATHS = ['/api/auth/register', '/auth/register', '/register'];
 const REFRESH_PATHS = ['/api/auth/refresh', '/auth/refresh', '/refresh'];
 

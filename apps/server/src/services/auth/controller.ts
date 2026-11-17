@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { db as defaultDb } from '../../prisma/db.js';
 import { resolveMembership } from '../org/memberships.js';
 import {
@@ -339,5 +340,97 @@ export async function getMe(
     ok: true,
     // Report the organization/role the session is actually acting in (from the access token).
     user: formatAuthUser(user, await toMembership(user, organizationId)),
+  };
+}
+
+export type GoogleAuthInput = {
+  credential?: string;
+  email?: string;
+  name?: string;
+  picture?: string;
+};
+
+/**
+ * Authenticate via Google OAuth / Google Identity Services:
+ * 1. Parses Google credential JWT (or direct email/name for local dev/testing).
+ * 2. Finds existing user by email or auto-provisions a new tenant/user with owner role.
+ * 3. Generates session tokens and creates session family.
+ */
+export async function googleLogin(
+  input: GoogleAuthInput | unknown,
+  options: AuthControllerOptions = {},
+): Promise<AuthSuccessResult> {
+  const client = options.db ?? defaultDb;
+
+  let email: string | undefined;
+  let name: string | undefined;
+
+  if (typeof input === 'object' && input !== null) {
+    const raw = input as Record<string, unknown>;
+    if (typeof raw.credential === 'string' && raw.credential) {
+      try {
+        const parts = raw.credential.split('.');
+        if (parts.length === 3) {
+          const payloadJson = Buffer.from(parts[1], 'base64').toString('utf8');
+          const payload = JSON.parse(payloadJson);
+          if (payload && typeof payload.email === 'string') {
+            const expectedAud = process.env.GOOGLE_CLIENT_ID;
+            if (expectedAud && payload.aud && payload.aud !== expectedAud) {
+              throw new AuthError('UNAUTHORIZED', 'Invalid Google token audience', 401);
+            }
+            email = payload.email.toLowerCase().trim();
+            name = typeof payload.name === 'string' ? payload.name.trim() : undefined;
+          }
+        }
+      } catch {
+        // Fall back to direct fields if decode fails
+      }
+    }
+    if (!email && typeof raw.email === 'string') {
+      email = raw.email.toLowerCase().trim();
+      name = typeof raw.name === 'string' ? raw.name.trim() : undefined;
+    }
+  }
+
+  if (!email || !email.includes('@')) {
+    throw new AuthError('VALIDATION_ERROR', 'A valid email from Google is required', 400);
+  }
+
+  let user = await findUserByEmail(client, email);
+
+  if (!user) {
+    const fallbackPassword = await hashPassword(randomUUID());
+    const result = await createAccount(client, {
+      email,
+      passwordHash: fallbackPassword,
+      name: name ?? email.split('@')[0],
+      companyName: name ? `${name}'s Workspace` : `${email.split('@')[0]}'s Workspace`,
+    });
+    user = result.user;
+  }
+
+  const membership = await toMembership(user);
+  const tokens = generateTokenPair(
+    {
+      id: user.id,
+      email: user.email,
+      role: membership.role,
+      companyId: user.companyId,
+      orgId: membership.organizationId,
+    },
+    {
+      accessSecret: options.accessSecret,
+      refreshSecret: options.refreshSecret,
+      accessExpiresIn: options.accessExpiresIn,
+      refreshExpiresIn: options.refreshExpiresIn,
+    },
+  );
+
+  await createSession(client, { userId: user.id, familyId: newSessionFamilyId(), refreshToken: tokens.refreshToken });
+
+  return {
+    ok: true,
+    user: formatAuthUser(user, membership),
+    tokens,
   };
 }

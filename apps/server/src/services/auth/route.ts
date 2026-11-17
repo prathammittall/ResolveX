@@ -1,6 +1,7 @@
 import {
   isAuthError,
   login,
+  googleLogin,
   logout,
   refresh,
   register,
@@ -43,6 +44,17 @@ export async function handleLogin(req: Request, options?: AuthControllerOptions)
   try {
     const data = await req.json();
     const result = await login(data, options);
+    const cookies = buildAuthCookies(result.tokens, options);
+    return jsonWithCookies(result, cookies, { status: 200 });
+  } catch (err) {
+    return handleError(err);
+  }
+}
+
+export async function handleGoogleLogin(req: Request, options?: AuthControllerOptions): Promise<Response> {
+  try {
+    const data = await req.json();
+    const result = await googleLogin(data, options);
     const cookies = buildAuthCookies(result.tokens, options);
     return jsonWithCookies(result, cookies, { status: 200 });
   } catch (err) {
@@ -153,6 +165,7 @@ export async function authRouter(req: Request, options?: AuthControllerOptions):
   if (method === 'POST') {
     if (pathname.endsWith('/register')) return handleRegister(req, options);
     if (pathname.endsWith('/login')) return handleLogin(req, options);
+    if (pathname.endsWith('/google')) return handleGoogleLogin(req, options);
     if (pathname.endsWith('/refresh')) return handleRefreshToken(req, options);
     if (pathname.endsWith('/logout')) return handleLogout(req, options);
     if (pathname.endsWith('/switch-org')) return handleSwitchOrg(req, options);
