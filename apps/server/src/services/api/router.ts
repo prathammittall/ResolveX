@@ -24,6 +24,15 @@ import { can, type Permission } from '../org/permissions.js';
 import { orgRoutes } from './org-routes.js';
 import { workRoutes } from './work-routes.js';
 import { createServiceWebhookKey, listServiceWebhookKeys, revokeServiceWebhookKey } from './webhook-keys.js';
+import {
+  createEscalationPolicy,
+  createMaintenanceWindow,
+  deleteMaintenanceWindow,
+  listEscalationPolicies,
+  listMaintenanceWindows,
+  updateEscalationPolicy,
+  updateMaintenanceWindow,
+} from './alert-routing.js';
 
 /** Strip an optional leading `/api` prefix so the router works for both shapes. */
 function normalizePath(pathname: string): string {
@@ -98,6 +107,9 @@ export async function dashboardRouter(req: Request): Promise<Response> {
   else if (resource === 'services') required = isWrite ? 'services:manage' : 'services:read';
   else if (resource === 'incidents') required = isWrite ? 'incidents:respond' : 'incidents:read';
   else if (resource === 'metrics' || resource === 'alerts') required = isWrite ? 'incidents:respond' : 'incidents:read';
+  else if (resource === 'escalation-policies' || resource === 'maintenance-windows') {
+    required = isWrite ? 'services:manage' : 'incidents:read';
+  }
   if (required) {
     const denied = need(required);
     if (denied) return denied;
@@ -106,6 +118,33 @@ export async function dashboardRouter(req: Request): Promise<Response> {
   // GET /metrics
   if (path === '/metrics' && method === 'GET') {
     return getMetrics(auth.companyId);
+  }
+
+  // /escalation-policies[/id]
+  if (segments[0] === 'escalation-policies') {
+    if (segments.length === 1 && method === 'GET') return listEscalationPolicies(auth.companyId);
+    if (segments.length === 1 && method === 'POST') {
+      return createEscalationPolicy(auth.companyId, await readJson(req));
+    }
+    if (segments.length === 2) {
+      const id = parseId(segments[1]);
+      if (id === null) return badRequestResponse('Invalid escalation policy id');
+      if (method === 'PATCH') return updateEscalationPolicy(auth.companyId, id, await readJson(req));
+    }
+  }
+
+  // /maintenance-windows[/id]
+  if (segments[0] === 'maintenance-windows') {
+    if (segments.length === 1 && method === 'GET') return listMaintenanceWindows(auth.companyId);
+    if (segments.length === 1 && method === 'POST') {
+      return createMaintenanceWindow(auth.companyId, auth.userId, await readJson(req));
+    }
+    if (segments.length === 2) {
+      const id = parseId(segments[1]);
+      if (id === null) return badRequestResponse('Invalid maintenance window id');
+      if (method === 'PATCH') return updateMaintenanceWindow(auth.companyId, id, await readJson(req));
+      if (method === 'DELETE') return deleteMaintenanceWindow(auth.companyId, id);
+    }
   }
 
   // /services/:id/webhook-keys[/:keyId]

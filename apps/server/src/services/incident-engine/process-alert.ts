@@ -9,6 +9,7 @@ import {
 import { AlertProcessingError, isUniqueViolation } from './errors.js';
 import type { AlertProcessResult, AlertWebhookPayload, IncidentSeverityValue } from './types.js';
 import { parseAlertWebhookPayload, parseJsonBody } from './validation.js';
+import { initializeIncidentEscalation } from './escalation.js';
 
 type DbClient = typeof defaultDb;
 
@@ -253,6 +254,16 @@ async function handleFiring(
   await tx.orm.public.Service.where({ id: args.service.id }).update({
     healthStatus: healthFromSeverity(args.payload.severity),
   });
+
+  if (outcome === 'incident_created') {
+    await initializeIncidentEscalation(tx, {
+      incidentId: incident.id,
+      companyId: args.companyId,
+      serviceId: args.service.id,
+      severity: args.payload.severity,
+      occurredAt: args.occurredAt,
+    });
+  }
 
   await tx.orm.public.AlertEvent.where({ id: args.alert.id }).update({
     processingStatus: 'processed',

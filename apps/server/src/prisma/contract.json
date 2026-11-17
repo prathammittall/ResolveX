@@ -16,8 +16,20 @@
       "model": "Company",
       "namespace": "public"
     },
+    "EscalationPolicy": {
+      "model": "EscalationPolicy",
+      "namespace": "public"
+    },
+    "EscalationStep": {
+      "model": "EscalationStep",
+      "namespace": "public"
+    },
     "Incident": {
       "model": "Incident",
+      "namespace": "public"
+    },
+    "IncidentEscalation": {
+      "model": "IncidentEscalation",
       "namespace": "public"
     },
     "IncidentEvent": {
@@ -28,8 +40,16 @@
       "model": "Invitation",
       "namespace": "public"
     },
+    "MaintenanceWindow": {
+      "model": "MaintenanceWindow",
+      "namespace": "public"
+    },
     "Membership": {
       "model": "Membership",
+      "namespace": "public"
+    },
+    "NotificationDelivery": {
+      "model": "NotificationDelivery",
       "namespace": "public"
     },
     "Organization": {
@@ -46,6 +66,10 @@
     },
     "ProjectStatus": {
       "model": "ProjectStatus",
+      "namespace": "public"
+    },
+    "QueueJob": {
+      "model": "QueueJob",
       "namespace": "public"
     },
     "Service": {
@@ -107,6 +131,44 @@
               {
                 "name": "failed",
                 "value": "failed"
+              }
+            ]
+          },
+          "EscalationStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "active",
+                "value": "active"
+              },
+              {
+                "name": "acknowledged",
+                "value": "acknowledged"
+              },
+              {
+                "name": "exhausted",
+                "value": "exhausted"
+              },
+              {
+                "name": "cancelled",
+                "value": "cancelled"
+              }
+            ]
+          },
+          "EscalationTargetType": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "user",
+                "value": "user"
+              },
+              {
+                "name": "team",
+                "value": "team"
+              },
+              {
+                "name": "webhook",
+                "value": "webhook"
               }
             ]
           },
@@ -186,6 +248,69 @@
               {
                 "name": "resolved",
                 "value": "resolved"
+              }
+            ]
+          },
+          "NotificationDeliveryStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "pending",
+                "value": "pending"
+              },
+              {
+                "name": "sent",
+                "value": "sent"
+              },
+              {
+                "name": "delivered",
+                "value": "delivered"
+              },
+              {
+                "name": "failed",
+                "value": "failed"
+              },
+              {
+                "name": "cancelled",
+                "value": "cancelled"
+              }
+            ]
+          },
+          "QueueJobStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "pending",
+                "value": "pending"
+              },
+              {
+                "name": "processing",
+                "value": "processing"
+              },
+              {
+                "name": "completed",
+                "value": "completed"
+              },
+              {
+                "name": "failed",
+                "value": "failed"
+              },
+              {
+                "name": "cancelled",
+                "value": "cancelled"
+              }
+            ]
+          },
+          "QueueJobType": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "escalate",
+                "value": "escalate"
+              },
+              {
+                "name": "notify",
+                "value": "notify"
               }
             ]
           },
@@ -651,6 +776,21 @@
               }
             },
             "relations": {
+              "escalationPolicies": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "companyId"
+                  ]
+                },
+                "to": {
+                  "model": "EscalationPolicy",
+                  "namespace": "public"
+                }
+              },
               "incidents": {
                 "cardinality": "1:N",
                 "on": {
@@ -663,6 +803,36 @@
                 },
                 "to": {
                   "model": "Incident",
+                  "namespace": "public"
+                }
+              },
+              "maintenanceWindows": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "companyId"
+                  ]
+                },
+                "to": {
+                  "model": "MaintenanceWindow",
+                  "namespace": "public"
+                }
+              },
+              "notificationDeliveries": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "companyId"
+                  ]
+                },
+                "to": {
+                  "model": "NotificationDelivery",
                   "namespace": "public"
                 }
               },
@@ -679,6 +849,21 @@
                 },
                 "to": {
                   "model": "Organization",
+                  "namespace": "public"
+                }
+              },
+              "queueJobs": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "companyId"
+                  ]
+                },
+                "to": {
+                  "model": "QueueJob",
                   "namespace": "public"
                 }
               },
@@ -747,9 +932,299 @@
               "table": "Company"
             }
           },
+          "EscalationPolicy": {
+            "fields": {
+              "companyId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "enabled": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "name": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "serviceId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "company": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "companyId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Company",
+                  "namespace": "public"
+                }
+              },
+              "escalations": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "policyId"
+                  ]
+                },
+                "to": {
+                  "model": "IncidentEscalation",
+                  "namespace": "public"
+                }
+              },
+              "incidents": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "escalationPolicyId"
+                  ]
+                },
+                "to": {
+                  "model": "Incident",
+                  "namespace": "public"
+                }
+              },
+              "service": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "serviceId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Service",
+                  "namespace": "public"
+                }
+              },
+              "steps": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "policyId"
+                  ]
+                },
+                "to": {
+                  "model": "EscalationStep",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "companyId": {
+                  "column": "companyId"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "enabled": {
+                  "column": "enabled"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "name": {
+                  "column": "name"
+                },
+                "serviceId": {
+                  "column": "serviceId"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "EscalationPolicy"
+            }
+          },
+          "EscalationStep": {
+            "fields": {
+              "acknowledgmentRequired": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "delaySeconds": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "notificationChannels": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/jsonb@1",
+                  "kind": "scalar"
+                }
+              },
+              "policyId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "position": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "targetId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "targetType": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "EscalationTargetType",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              }
+            },
+            "relations": {
+              "policy": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "policyId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "EscalationPolicy",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "acknowledgmentRequired": {
+                  "column": "acknowledgmentRequired"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "delaySeconds": {
+                  "column": "delaySeconds"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "notificationChannels": {
+                  "column": "notificationChannels"
+                },
+                "policyId": {
+                  "column": "policyId"
+                },
+                "position": {
+                  "column": "position"
+                },
+                "targetId": {
+                  "column": "targetId"
+                },
+                "targetType": {
+                  "column": "targetType"
+                }
+              },
+              "namespaceId": "public",
+              "table": "EscalationStep"
+            }
+          },
           "Incident": {
             "fields": {
               "acknowledgedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "acknowledgmentDueAt": {
                 "nullable": true,
                 "type": {
                   "codecId": "pg/timestamptz-string@1",
@@ -791,8 +1266,42 @@
                   "kind": "scalar"
                 }
               },
+              "escalationPolicyId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "escalationStatus": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "EscalationStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "firstAcknowledgedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "mttaSeconds": {
+                "nullable": true,
                 "type": {
                   "codecId": "pg/int4@1",
                   "kind": "scalar"
@@ -901,6 +1410,38 @@
                   "namespace": "public"
                 }
               },
+              "escalation": {
+                "cardinality": "1:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "incidentId"
+                  ]
+                },
+                "to": {
+                  "model": "IncidentEscalation",
+                  "namespace": "public"
+                }
+              },
+              "escalationPolicy": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "escalationPolicyId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "EscalationPolicy",
+                  "namespace": "public"
+                }
+              },
               "events": {
                 "cardinality": "1:N",
                 "on": {
@@ -913,6 +1454,36 @@
                 },
                 "to": {
                   "model": "IncidentEvent",
+                  "namespace": "public"
+                }
+              },
+              "notificationDeliveries": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "incidentId"
+                  ]
+                },
+                "to": {
+                  "model": "NotificationDelivery",
+                  "namespace": "public"
+                }
+              },
+              "queueJobs": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "incidentId"
+                  ]
+                },
+                "to": {
+                  "model": "QueueJob",
                   "namespace": "public"
                 }
               },
@@ -938,6 +1509,9 @@
                 "acknowledgedAt": {
                   "column": "acknowledgedAt"
                 },
+                "acknowledgmentDueAt": {
+                  "column": "acknowledgmentDueAt"
+                },
                 "assignedResponderId": {
                   "column": "assignedResponderId"
                 },
@@ -953,8 +1527,20 @@
                 "detectedAt": {
                   "column": "detectedAt"
                 },
+                "escalationPolicyId": {
+                  "column": "escalationPolicyId"
+                },
+                "escalationStatus": {
+                  "column": "escalationStatus"
+                },
+                "firstAcknowledgedAt": {
+                  "column": "firstAcknowledgedAt"
+                },
                 "id": {
                   "column": "id"
+                },
+                "mttaSeconds": {
+                  "column": "mttaSeconds"
                 },
                 "resolvedAt": {
                   "column": "resolvedAt"
@@ -977,6 +1563,146 @@
               },
               "namespaceId": "public",
               "table": "Incident"
+            }
+          },
+          "IncidentEscalation": {
+            "fields": {
+              "acknowledgedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "currentStep": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "incidentId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "nextEscalationAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "policyId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "EscalationStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "incident": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "incidentId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Incident",
+                  "namespace": "public"
+                }
+              },
+              "policy": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "policyId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "EscalationPolicy",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "acknowledgedAt": {
+                  "column": "acknowledgedAt"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "currentStep": {
+                  "column": "currentStep"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "incidentId": {
+                  "column": "incidentId"
+                },
+                "nextEscalationAt": {
+                  "column": "nextEscalationAt"
+                },
+                "policyId": {
+                  "column": "policyId"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "IncidentEscalation"
             }
           },
           "IncidentEvent": {
@@ -1223,6 +1949,192 @@
               "table": "Invitation"
             }
           },
+          "MaintenanceWindow": {
+            "fields": {
+              "bypassSeverity": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "IncidentSeverity",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "companyId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdById": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "enabled": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "endsAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "name": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "serviceId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "startsAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "timezone": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "company": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "companyId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Company",
+                  "namespace": "public"
+                }
+              },
+              "createdBy": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "createdById"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "service": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "serviceId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Service",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "bypassSeverity": {
+                  "column": "bypassSeverity"
+                },
+                "companyId": {
+                  "column": "companyId"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "createdById": {
+                  "column": "createdById"
+                },
+                "enabled": {
+                  "column": "enabled"
+                },
+                "endsAt": {
+                  "column": "endsAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "name": {
+                  "column": "name"
+                },
+                "serviceId": {
+                  "column": "serviceId"
+                },
+                "startsAt": {
+                  "column": "startsAt"
+                },
+                "timezone": {
+                  "column": "timezone"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "MaintenanceWindow"
+            }
+          },
           "Membership": {
             "fields": {
               "createdAt": {
@@ -1321,6 +2233,212 @@
               },
               "namespaceId": "public",
               "table": "Membership"
+            }
+          },
+          "NotificationDelivery": {
+            "fields": {
+              "acknowledgedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "channel": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "companyId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "deliveredAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "error": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "idempotencyKey": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "incidentId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "queueJobId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "recipient": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "sentAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "NotificationDeliveryStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "company": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "companyId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Company",
+                  "namespace": "public"
+                }
+              },
+              "incident": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "incidentId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Incident",
+                  "namespace": "public"
+                }
+              },
+              "queueJob": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "queueJobId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "QueueJob",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "acknowledgedAt": {
+                  "column": "acknowledgedAt"
+                },
+                "channel": {
+                  "column": "channel"
+                },
+                "companyId": {
+                  "column": "companyId"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "deliveredAt": {
+                  "column": "deliveredAt"
+                },
+                "error": {
+                  "column": "error"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "idempotencyKey": {
+                  "column": "idempotencyKey"
+                },
+                "incidentId": {
+                  "column": "incidentId"
+                },
+                "queueJobId": {
+                  "column": "queueJobId"
+                },
+                "recipient": {
+                  "column": "recipient"
+                },
+                "sentAt": {
+                  "column": "sentAt"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "NotificationDelivery"
             }
           },
           "Organization": {
@@ -1942,6 +3060,207 @@
               "table": "ProjectStatus"
             }
           },
+          "QueueJob": {
+            "fields": {
+              "attempts": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "companyId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "idempotencyKey": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "incidentId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "lastError": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "lockedUntil": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "payload": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/jsonb@1",
+                  "kind": "scalar"
+                }
+              },
+              "runAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "QueueJobStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "type": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "QueueJobType",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "company": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "companyId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Company",
+                  "namespace": "public"
+                }
+              },
+              "deliveries": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "queueJobId"
+                  ]
+                },
+                "to": {
+                  "model": "NotificationDelivery",
+                  "namespace": "public"
+                }
+              },
+              "incident": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "incidentId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Incident",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "attempts": {
+                  "column": "attempts"
+                },
+                "companyId": {
+                  "column": "companyId"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "idempotencyKey": {
+                  "column": "idempotencyKey"
+                },
+                "incidentId": {
+                  "column": "incidentId"
+                },
+                "lastError": {
+                  "column": "lastError"
+                },
+                "lockedUntil": {
+                  "column": "lockedUntil"
+                },
+                "payload": {
+                  "column": "payload"
+                },
+                "runAt": {
+                  "column": "runAt"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "type": {
+                  "column": "type"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "QueueJob"
+            }
+          },
           "Service": {
             "fields": {
               "companyId": {
@@ -2078,6 +3397,21 @@
                   "namespace": "public"
                 }
               },
+              "escalationPolicies": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "serviceId"
+                  ]
+                },
+                "to": {
+                  "model": "EscalationPolicy",
+                  "namespace": "public"
+                }
+              },
               "incidents": {
                 "cardinality": "1:N",
                 "on": {
@@ -2090,6 +3424,21 @@
                 },
                 "to": {
                   "model": "Incident",
+                  "namespace": "public"
+                }
+              },
+              "maintenanceWindows": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "serviceId"
+                  ]
+                },
+                "to": {
+                  "model": "MaintenanceWindow",
                   "namespace": "public"
                 }
               },
@@ -3124,6 +4473,21 @@
                   "namespace": "public"
                 }
               },
+              "createdMaintenanceWindows": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "createdById"
+                  ]
+                },
+                "to": {
+                  "model": "MaintenanceWindow",
+                  "namespace": "public"
+                }
+              },
               "incidentEvents": {
                 "cardinality": "1:N",
                 "on": {
@@ -3962,8 +5326,274 @@
               },
               "uniques": []
             },
+            "EscalationPolicy": {
+              "columns": {
+                "companyId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "enabled": {
+                  "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
+                  "default": {
+                    "kind": "literal",
+                    "value": true
+                  },
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "name": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "serviceId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "EscalationPolicy_companyId_idx_33acc5ed"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "companyId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "EscalationPolicy"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Company"
+                  }
+                },
+                {
+                  "index": {
+                    "name": "EscalationPolicy_serviceId_idx_b5d9acbf"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "serviceId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "EscalationPolicy"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Service"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "companyId",
+                    "enabled"
+                  ],
+                  "name": "EscalationPolicy_companyId_enabled_idx_0f7516a0",
+                  "prefix": "EscalationPolicy_companyId_enabled_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "companyId"
+                  ],
+                  "name": "EscalationPolicy_companyId_idx_33acc5ed",
+                  "prefix": "EscalationPolicy_companyId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "serviceId",
+                    "enabled"
+                  ],
+                  "name": "EscalationPolicy_serviceId_enabled_idx_71358b09",
+                  "prefix": "EscalationPolicy_serviceId_enabled_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "serviceId"
+                  ],
+                  "name": "EscalationPolicy_serviceId_idx_b5d9acbf",
+                  "prefix": "EscalationPolicy_serviceId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "companyId",
+                    "name"
+                  ]
+                }
+              ]
+            },
+            "EscalationStep": {
+              "checks": [
+                {
+                  "expression": "\"targetType\" IN ('user', 'team', 'webhook')",
+                  "name": "EscalationStep_targetType_check_17501856",
+                  "prefix": "EscalationStep_targetType_check"
+                }
+              ],
+              "columns": {
+                "acknowledgmentRequired": {
+                  "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
+                  "default": {
+                    "kind": "literal",
+                    "value": true
+                  },
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "delaySeconds": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "notificationChannels": {
+                  "codecId": "pg/jsonb@1",
+                  "dataType": "pg/jsonb",
+                  "nullable": false
+                },
+                "policyId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "position": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "targetId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "targetType": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "EscalationTargetType",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "EscalationStep_policyId_idx_17c369b7"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "policyId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "EscalationStep"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "EscalationPolicy"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "policyId"
+                  ],
+                  "name": "EscalationStep_policyId_idx_17c369b7",
+                  "prefix": "EscalationStep_policyId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "policyId",
+                    "position"
+                  ]
+                }
+              ]
+            },
             "Incident": {
               "checks": [
+                {
+                  "expression": "\"escalationStatus\" IN ('active', 'acknowledged', 'exhausted', 'cancelled')",
+                  "name": "Incident_escalationStatus_check_d92203ad",
+                  "prefix": "Incident_escalationStatus_check"
+                },
                 {
                   "expression": "\"severity\" IN ('sev1', 'sev2', 'sev3', 'sev4')",
                   "name": "Incident_severity_check_b5a34339",
@@ -3977,6 +5607,11 @@
               ],
               "columns": {
                 "acknowledgedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
+                },
+                "acknowledgmentDueAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "dataType": "pg/timestamptz",
                   "nullable": true
@@ -4010,6 +5645,27 @@
                   "dataType": "pg/timestamptz",
                   "nullable": false
                 },
+                "escalationPolicyId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
+                },
+                "escalationStatus": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "EscalationStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "firstAcknowledgedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
+                },
                 "id": {
                   "codecId": "pg/int4@1",
                   "dataType": "pg/int4",
@@ -4018,6 +5674,11 @@
                     "kind": "function"
                   },
                   "nullable": false
+                },
+                "mttaSeconds": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
                 },
                 "resolvedAt": {
                   "codecId": "pg/timestamptz-string@1",
@@ -4126,6 +5787,26 @@
                     "namespaceId": "public",
                     "tableName": "User"
                   }
+                },
+                {
+                  "index": {
+                    "name": "Incident_escalationPolicyId_idx_b1f620eb"
+                  },
+                  "onDelete": "setNull",
+                  "source": {
+                    "columns": [
+                      "escalationPolicyId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Incident"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "EscalationPolicy"
+                  }
                 }
               ],
               "indexes": [
@@ -4165,6 +5846,14 @@
                 },
                 {
                   "columns": [
+                    "escalationPolicyId"
+                  ],
+                  "name": "Incident_escalationPolicyId_idx_b1f620eb",
+                  "prefix": "Incident_escalationPolicyId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
                     "serviceId"
                   ],
                   "name": "Incident_serviceId_idx_b5d9acbf",
@@ -4187,6 +5876,159 @@
                 ]
               },
               "uniques": []
+            },
+            "IncidentEscalation": {
+              "checks": [
+                {
+                  "expression": "\"status\" IN ('active', 'acknowledged', 'exhausted', 'cancelled')",
+                  "name": "IncidentEscalation_status_check_734f4e01",
+                  "prefix": "IncidentEscalation_status_check"
+                }
+              ],
+              "columns": {
+                "acknowledgedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "currentStep": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "incidentId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "nextEscalationAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
+                },
+                "policyId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "default": {
+                    "kind": "literal",
+                    "value": "active"
+                  },
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "EscalationStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "unique": [
+                      "incidentId"
+                    ]
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "incidentId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "IncidentEscalation"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Incident"
+                  }
+                },
+                {
+                  "index": {
+                    "name": "IncidentEscalation_policyId_idx_17c369b7"
+                  },
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "policyId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "IncidentEscalation"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "EscalationPolicy"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "policyId"
+                  ],
+                  "name": "IncidentEscalation_policyId_idx_17c369b7",
+                  "prefix": "IncidentEscalation_policyId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "status",
+                    "nextEscalationAt"
+                  ],
+                  "name": "IncidentEscalation_status_nextEscalationAt_idx_94a105ce",
+                  "prefix": "IncidentEscalation_status_nextEscalationAt_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "incidentId"
+                  ]
+                }
+              ]
             },
             "IncidentEvent": {
               "checks": [
@@ -4455,6 +6297,209 @@
                 }
               ]
             },
+            "MaintenanceWindow": {
+              "checks": [
+                {
+                  "expression": "\"bypassSeverity\" IN ('sev1', 'sev2', 'sev3', 'sev4')",
+                  "name": "MaintenanceWindow_bypassSeverity_check_e5dcd509",
+                  "prefix": "MaintenanceWindow_bypassSeverity_check"
+                }
+              ],
+              "columns": {
+                "bypassSeverity": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "IncidentSeverity",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "companyId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "createdById": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
+                },
+                "enabled": {
+                  "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
+                  "default": {
+                    "kind": "literal",
+                    "value": true
+                  },
+                  "nullable": false
+                },
+                "endsAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "name": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "serviceId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
+                },
+                "startsAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": false
+                },
+                "timezone": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "MaintenanceWindow_companyId_idx_33acc5ed"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "companyId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "MaintenanceWindow"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Company"
+                  }
+                },
+                {
+                  "index": {
+                    "name": "MaintenanceWindow_serviceId_idx_b5d9acbf"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "serviceId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "MaintenanceWindow"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Service"
+                  }
+                },
+                {
+                  "index": {
+                    "name": "MaintenanceWindow_createdById_idx_8bf640ed"
+                  },
+                  "onDelete": "setNull",
+                  "source": {
+                    "columns": [
+                      "createdById"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "MaintenanceWindow"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "User"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "companyId"
+                  ],
+                  "name": "MaintenanceWindow_companyId_idx_33acc5ed",
+                  "prefix": "MaintenanceWindow_companyId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "companyId",
+                    "startsAt",
+                    "endsAt"
+                  ],
+                  "name": "MaintenanceWindow_companyId_startsAt_endsAt_idx_52b53cdb",
+                  "prefix": "MaintenanceWindow_companyId_startsAt_endsAt_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "createdById"
+                  ],
+                  "name": "MaintenanceWindow_createdById_idx_8bf640ed",
+                  "prefix": "MaintenanceWindow_createdById_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "serviceId"
+                  ],
+                  "name": "MaintenanceWindow_serviceId_idx_b5d9acbf",
+                  "prefix": "MaintenanceWindow_serviceId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "serviceId",
+                    "startsAt",
+                    "endsAt"
+                  ],
+                  "name": "MaintenanceWindow_serviceId_startsAt_endsAt_idx_e4925605",
+                  "prefix": "MaintenanceWindow_serviceId_startsAt_endsAt_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "Membership": {
               "checks": [
                 {
@@ -4574,6 +6619,223 @@
                   "columns": [
                     "organizationId",
                     "userId"
+                  ]
+                }
+              ]
+            },
+            "NotificationDelivery": {
+              "checks": [
+                {
+                  "expression": "\"status\" IN ('pending', 'sent', 'delivered', 'failed', 'cancelled')",
+                  "name": "NotificationDelivery_status_check_bb8816fa",
+                  "prefix": "NotificationDelivery_status_check"
+                }
+              ],
+              "columns": {
+                "acknowledgedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
+                },
+                "channel": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "companyId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "deliveredAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
+                },
+                "error": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "idempotencyKey": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "incidentId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "queueJobId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
+                },
+                "recipient": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "sentAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "default": {
+                    "kind": "literal",
+                    "value": "pending"
+                  },
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "NotificationDeliveryStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "NotificationDelivery_companyId_idx_33acc5ed"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "companyId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "NotificationDelivery"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Company"
+                  }
+                },
+                {
+                  "index": {
+                    "name": "NotificationDelivery_incidentId_idx_20b6f3c9"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "incidentId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "NotificationDelivery"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Incident"
+                  }
+                },
+                {
+                  "index": {
+                    "name": "NotificationDelivery_queueJobId_idx_1f5ee8c1"
+                  },
+                  "onDelete": "setNull",
+                  "source": {
+                    "columns": [
+                      "queueJobId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "NotificationDelivery"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "QueueJob"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "companyId"
+                  ],
+                  "name": "NotificationDelivery_companyId_idx_33acc5ed",
+                  "prefix": "NotificationDelivery_companyId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "companyId",
+                    "incidentId"
+                  ],
+                  "name": "NotificationDelivery_companyId_incidentId_idx_5b953ff6",
+                  "prefix": "NotificationDelivery_companyId_incidentId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "incidentId"
+                  ],
+                  "name": "NotificationDelivery_incidentId_idx_20b6f3c9",
+                  "prefix": "NotificationDelivery_incidentId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "incidentId",
+                    "status"
+                  ],
+                  "name": "NotificationDelivery_incidentId_status_idx_da8bb603",
+                  "prefix": "NotificationDelivery_incidentId_status_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "queueJobId"
+                  ],
+                  "name": "NotificationDelivery_queueJobId_idx_1f5ee8c1",
+                  "prefix": "NotificationDelivery_queueJobId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "idempotencyKey"
                   ]
                 }
               ]
@@ -4978,6 +7240,206 @@
                   "columns": [
                     "projectId",
                     "name"
+                  ]
+                }
+              ]
+            },
+            "QueueJob": {
+              "checks": [
+                {
+                  "expression": "\"status\" IN ('pending', 'processing', 'completed', 'failed', 'cancelled')",
+                  "name": "QueueJob_status_check_d8313f9b",
+                  "prefix": "QueueJob_status_check"
+                },
+                {
+                  "expression": "\"type\" IN ('escalate', 'notify')",
+                  "name": "QueueJob_type_check_9fc40b9f",
+                  "prefix": "QueueJob_type_check"
+                }
+              ],
+              "columns": {
+                "attempts": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nullable": false
+                },
+                "companyId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "idempotencyKey": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "incidentId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
+                },
+                "lastError": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "lockedUntil": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
+                },
+                "payload": {
+                  "codecId": "pg/jsonb@1",
+                  "dataType": "pg/jsonb",
+                  "nullable": false
+                },
+                "runAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "default": {
+                    "kind": "literal",
+                    "value": "pending"
+                  },
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "QueueJobStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "type": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "QueueJobType",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "QueueJob_companyId_idx_33acc5ed"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "companyId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "QueueJob"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Company"
+                  }
+                },
+                {
+                  "index": {
+                    "name": "QueueJob_incidentId_idx_20b6f3c9"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "incidentId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "QueueJob"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Incident"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "companyId"
+                  ],
+                  "name": "QueueJob_companyId_idx_33acc5ed",
+                  "prefix": "QueueJob_companyId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "companyId",
+                    "status",
+                    "runAt"
+                  ],
+                  "name": "QueueJob_companyId_status_runAt_idx_3c51a5a7",
+                  "prefix": "QueueJob_companyId_status_runAt_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "incidentId"
+                  ],
+                  "name": "QueueJob_incidentId_idx_20b6f3c9",
+                  "prefix": "QueueJob_incidentId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "status",
+                    "runAt"
+                  ],
+                  "name": "QueueJob_status_runAt_idx_97459e4a",
+                  "prefix": "QueueJob_status_runAt_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "idempotencyKey"
                   ]
                 }
               ]
@@ -6334,6 +8796,23 @@
                 "failed"
               ]
             },
+            "EscalationStatus": {
+              "kind": "valueSet",
+              "values": [
+                "active",
+                "acknowledged",
+                "exhausted",
+                "cancelled"
+              ]
+            },
+            "EscalationTargetType": {
+              "kind": "valueSet",
+              "values": [
+                "user",
+                "team",
+                "webhook"
+              ]
+            },
             "IncidentEventType": {
               "kind": "valueSet",
               "values": [
@@ -6363,6 +8842,33 @@
                 "investigating",
                 "mitigated",
                 "resolved"
+              ]
+            },
+            "NotificationDeliveryStatus": {
+              "kind": "valueSet",
+              "values": [
+                "pending",
+                "sent",
+                "delivered",
+                "failed",
+                "cancelled"
+              ]
+            },
+            "QueueJobStatus": {
+              "kind": "valueSet",
+              "values": [
+                "pending",
+                "processing",
+                "completed",
+                "failed",
+                "cancelled"
+              ]
+            },
+            "QueueJobType": {
+              "kind": "valueSet",
+              "values": [
+                "escalate",
+                "notify"
               ]
             },
             "ServiceCriticality": {
@@ -6446,10 +8952,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "87ea269d75fc85c753eb2548f6e8bb34459722889464a3c143cb499d27e57f6e"
+    "storageHash": "e0225e76588acf769ae388baedd5be441cdd19c6dfed7b7351ac03af5a98f258"
   },
   "execution": {
-    "executionHash": "56a1a1e4f8963ed72dd051e94a4ac7d0b18008b7b1ae37e406c66f7c6634d4fe",
+    "executionHash": "e737be8c7b141db66282d561c1e0a6ac39ff48abbe36657589337813b0754f5f",
     "mutations": {
       "defaults": [
         {
@@ -6488,7 +8994,37 @@
             "kind": "generator"
           },
           "ref": {
+            "entry": "EscalationPolicy",
+            "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
             "entry": "Incident",
+            "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "IncidentEscalation",
             "field": "updatedAt",
             "namespace": "public"
           }
@@ -6506,12 +9042,42 @@
         },
         {
           "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "MaintenanceWindow",
+            "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
             "id": "uuidv4",
             "kind": "generator"
           },
           "ref": {
             "entry": "Membership",
             "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "NotificationDelivery",
+            "field": "updatedAt",
             "namespace": "public"
           }
         },
@@ -6590,6 +9156,21 @@
           "ref": {
             "entry": "ProjectStatus",
             "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "QueueJob",
+            "field": "updatedAt",
             "namespace": "public"
           }
         },

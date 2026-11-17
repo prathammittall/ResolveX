@@ -52,6 +52,11 @@ export interface IncidentItem {
   assignedResponderId: number | null;
   detectedAt: string;
   acknowledgedAt: string | null;
+  firstAcknowledgedAt: string | null;
+  acknowledgmentDueAt: string | null;
+  mttaSeconds: number | null;
+  escalationStatus: 'active' | 'acknowledged' | 'exhausted' | 'cancelled' | null;
+  escalationPolicyId: number | null;
   resolvedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -75,6 +80,37 @@ export interface IncidentAlertItem {
   providerEventId: string;
   processingStatus: AlertProcessingStatus;
   receivedAt: string;
+}
+
+export interface IncidentEscalationItem {
+  id: number;
+  currentStep: number;
+  status: 'active' | 'acknowledged' | 'exhausted' | 'cancelled';
+  nextEscalationAt: string | null;
+  steps: Array<{
+    position: number;
+    delaySeconds: number;
+    targetType: string;
+    targetId: string;
+    notificationChannels: unknown;
+  }>;
+  queue: Array<{
+    id: number;
+    type: 'notify' | 'escalate';
+    status: string;
+    runAt: string;
+    attempts: number;
+    lastError: string | null;
+  }>;
+  deliveries: Array<{
+    id: number;
+    channel: string;
+    recipient: string;
+    status: string;
+    sentAt: string | null;
+    deliveredAt: string | null;
+    error: string | null;
+  }>;
 }
 
 export interface AlertItem {
@@ -113,6 +149,31 @@ export interface Metrics {
     failed: number;
     ignored: number;
   };
+  mtta: {
+    averageSeconds: number | null;
+    acknowledgedIncidents: number;
+    sev1Seconds: number | null;
+    sev2Seconds: number | null;
+    sev3Seconds: number | null;
+    sev4Seconds: number | null;
+  };
+  escalation: {
+    active: number;
+    acknowledged: number;
+    exhausted: number;
+    cancelled: number;
+    unacknowledgedActiveIncidents: number;
+  };
+  queue: {
+    pending: number;
+    processing: number;
+    failed: number;
+  };
+  notifications: {
+    delivered: number;
+    failed: number;
+    pending: number;
+  };
 }
 
 // Response envelopes
@@ -137,6 +198,7 @@ export interface IncidentDetailResponse {
   incident: IncidentItem;
   events: IncidentEventItem[];
   alerts: IncidentAlertItem[];
+  escalation: IncidentEscalationItem | null;
 }
 export interface AlertsResponse {
   ok: true;
