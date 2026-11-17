@@ -68,7 +68,7 @@ export default function WebhookKeysModal({
   }
 
   async function revoke(key: WebhookKeyItem) {
-    if (!window.confirm(`Revoke "${key.name}"? Tools using it will stop being able to send alerts.`)) return;
+    if (!window.confirm(`Revoke "${key.name}"? External tools using it will immediately stop being able to send alerts.`)) return;
     try {
       await api.del(`${base}/${key.id}`);
       await load();
@@ -92,43 +92,43 @@ export default function WebhookKeysModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={`Webhook keys for ${service.name}`}>
-      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs" onClick={onClose} />
-      <div className="relative max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
-        <div className="flex items-start justify-between">
+      <div className="fixed inset-0 bg-[#14201a]/40 backdrop-blur-xs" onClick={onClose} />
+      <div className="relative max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-[#dfdbcc] bg-white p-6 shadow-2xl">
+        <div className="flex items-start justify-between border-b border-[#dfdbcc] pb-4">
           <div>
-            <h2 className="font-serif-title text-lg font-semibold text-slate-900">Alert webhook keys</h2>
-            <p className="mt-0.5 text-sm text-slate-500">{service.name}</p>
+            <h2 className="font-display text-xl font-bold text-[#14201a]">Alert webhook keys</h2>
+            <p className="mt-0.5 text-xs text-[#5f6b64]">Target: {service.name}</p>
           </div>
-          <button onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
+          <button onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 text-[#5f6b64] hover:bg-[#eeebe0] transition cursor-pointer">
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <p className="mt-4 rounded-xl bg-slate-50 p-3 text-xs leading-relaxed text-slate-600">
-          Send alerts with <code>POST {apiBase}/api/webhooks/alerts</code> and the header{' '}
-          <code>Authorization: Bearer &lt;key&gt;</code>. Each key only works for this service.
+        <p className="mt-4 rounded-xl bg-[#eeebe0]/60 border border-[#dfdbcc] p-3 text-xs leading-relaxed text-[#3d4a42]">
+          Send telemetry and alerts with <code className="font-mono font-bold text-[#14201a]">POST {apiBase}/api/webhooks/alerts</code> and header{' '}
+          <code className="font-mono text-[#177a43]">Authorization: Bearer &lt;key&gt;</code>. Each key is strictly scoped to this service.
         </p>
 
         {error && <div className="mt-4"><ErrorBanner message={error} /></div>}
 
         {secret && (
-          <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4" role="status">
-            <p className="text-sm font-medium text-amber-900">Copy your key now — it won’t be shown again.</p>
-            <div className="mt-2 flex items-center gap-2">
+          <div className="mt-4 rounded-xl border border-[#fde68a] bg-[#fef3c7] p-4" role="status">
+            <p className="text-sm font-bold text-[#92400e]">Copy your key now — it will not be shown again.</p>
+            <div className="mt-2.5 flex items-center gap-2">
               <input
                 readOnly
                 value={secret}
                 aria-label="New webhook key"
                 onFocus={(e) => e.currentTarget.select()}
-                className="min-w-0 flex-1 rounded-lg border border-amber-200 bg-white px-3 py-2 font-mono text-xs"
+                className="min-w-0 flex-1 rounded-xl border border-[#fde68a] bg-white text-[#14201a] px-3 py-2 font-mono text-xs"
               />
               <button
                 type="button"
                 onClick={copy}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-inset ring-amber-200 hover:bg-amber-100"
+                className="btn-kizupi-go text-xs px-3.5 py-2 cursor-pointer"
               >
-                {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                {copied ? 'Copied' : 'Copy'}
+                {copied ? <Check className="h-3.5 w-3.5 mr-1" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
+                {copied ? 'Copied!' : 'Copy'}
               </button>
             </div>
           </div>
@@ -145,36 +145,37 @@ export default function WebhookKeysModal({
               maxLength={100}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Datadog production"
-              className="min-w-0 flex-1 rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#25396e] focus:ring-2 focus:ring-[#25396e]/20"
+              placeholder="e.g. Datadog Production, Cloudwatch"
+              className="min-w-0 flex-1 rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] px-3.5 py-2 text-sm text-[#14201a] outline-none transition focus:border-[#177a43] focus:ring-2 focus:ring-[#177a43]/20 placeholder-[#5f6b64]/50"
             />
             <button
               type="submit"
               disabled={creating}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#25396e] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1c2c56] disabled:opacity-60"
+              className="btn-kizupi-go text-sm px-4 py-2 cursor-pointer disabled:opacity-60"
             >
-              <KeyRound className="h-4 w-4" />
+              <KeyRound className="h-4 w-4 mr-1.5" />
               {creating ? 'Creating…' : 'Create key'}
             </button>
           </form>
         )}
 
-        <div className="mt-5">
+        <div className="mt-5 border-t border-[#dfdbcc]/60 pt-4">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6b64] mb-3">Active keys</h3>
           {loading ? (
             <div className="flex justify-center py-6"><Spinner /></div>
           ) : keys.length === 0 ? (
-            <p className="py-4 text-center text-sm text-slate-500">No keys yet.</p>
+            <p className="py-4 text-center text-sm text-[#5f6b64]">No webhook keys created yet.</p>
           ) : (
-            <ul className="divide-y divide-slate-100">
+            <ul className="divide-y divide-[#dfdbcc]/50">
               {keys.map((k) => (
                 <li key={k.id} className="flex items-center justify-between gap-3 py-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-slate-800">
+                    <p className="truncate text-sm font-bold text-[#14201a]">
                       {k.name}
-                      {k.revokedAt && <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">revoked</span>}
+                      {k.revokedAt && <span className="ml-2 rounded-full bg-[#fee2e2] text-[#dc2626] border border-[#fca5a5] px-2 py-0.5 text-[10px] font-bold">revoked</span>}
                     </p>
-                    <p className="text-xs text-slate-400">
-                      <code>{k.keyPrefix}…</code> · created {formatDateTime(k.createdAt)} ·{' '}
+                    <p className="text-xs text-[#5f6b64] mt-0.5">
+                      <code className="font-mono font-semibold text-[#14201a]">{k.keyPrefix}…</code> · created {formatDateTime(k.createdAt)} ·{' '}
                       {k.lastUsedAt ? `last used ${timeAgo(k.lastUsedAt)}` : 'never used'}
                     </p>
                   </div>
@@ -182,7 +183,7 @@ export default function WebhookKeysModal({
                     <button
                       type="button"
                       onClick={() => revoke(k)}
-                      className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 hover:bg-rose-50 hover:text-rose-600"
+                      className="rounded-lg px-3 py-1.5 text-xs font-bold text-[#5f6b64] hover:bg-[#fee2e2] hover:text-[#dc2626] transition cursor-pointer"
                     >
                       Revoke
                     </button>

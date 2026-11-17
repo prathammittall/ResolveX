@@ -75,34 +75,34 @@ export default function AuditPage() {
       <EmptyState
         icon={ScrollText}
         title="Audit log is restricted"
-        description="Only owners and admins can read the audit log."
+        description="Only organization owners and admins have permission to inspect security audit logs."
       />
     );
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-serif-title text-2xl font-semibold text-slate-900">Audit log</h1>
-        <p className="mt-1 text-sm text-slate-500">A record of who changed what in this organization.</p>
+      <div className="border-b border-[#dfdbcc] pb-5">
+        <h1 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-[#14201a]">Audit log</h1>
+        <p className="mt-1 text-sm text-[#5f6b64]">An immutable record of who changed what in this engineering organization.</p>
       </div>
       {error && <ErrorBanner message={error} />}
       <SectionCard>
         {logs.length === 0 ? (
-          <EmptyState icon={ScrollText} title="Nothing recorded yet" description="Member and invitation changes appear here." />
+          <EmptyState icon={ScrollText} title="Nothing recorded yet" description="Member and invitation changes will appear here." />
         ) : (
-          <ul className="-my-3 divide-y divide-slate-100">
+          <ul className="-my-3 divide-y divide-[#dfdbcc]/50">
             {logs.map((l) => (
-              <li key={l.id} className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between">
+              <li key={l.id} className="flex flex-col gap-1 py-3.5 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-slate-800">{ACTION_LABEL[l.action] ?? l.action}</p>
-                  <p className="truncate text-xs text-slate-500">
+                  <p className="text-sm font-bold text-[#14201a]">{ACTION_LABEL[l.action] ?? l.action}</p>
+                  <p className="truncate text-xs text-[#5f6b64] mt-0.5">
                     {describe(l)}
-                    {l.actorId !== null && <span className="text-slate-400"> · by user #{l.actorId}</span>}
-                    {l.requestId && <span className="text-slate-300"> · {l.requestId.slice(0, 8)}</span>}
+                    {l.actorId !== null && <span className="opacity-70"> · by user #{l.actorId}</span>}
+                    {l.requestId && <span className="opacity-50"> · {l.requestId.slice(0, 8)}</span>}
                   </p>
                 </div>
-                <time dateTime={l.createdAt} title={formatDateTime(l.createdAt)} className="shrink-0 text-xs text-slate-400">
+                <time dateTime={l.createdAt} title={formatDateTime(l.createdAt)} className="shrink-0 text-xs font-semibold text-[#5f6b64]">
                   {timeAgo(l.createdAt)}
                 </time>
               </li>
@@ -110,14 +110,14 @@ export default function AuditPage() {
           </ul>
         )}
         {next && (
-          <div className="mt-4 text-center">
+          <div className="mt-5 text-center">
             <button
               type="button"
               onClick={more}
               disabled={loadingMore}
-              className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+              className="btn-kizupi-white text-xs px-4 py-2 cursor-pointer disabled:opacity-60"
             >
-              {loadingMore ? 'Loading…' : 'Load older entries'}
+              {loadingMore ? 'Loading…' : 'Load older audit entries'}
             </button>
           </div>
         )}

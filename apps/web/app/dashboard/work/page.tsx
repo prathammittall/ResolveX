@@ -31,13 +31,13 @@ export default function MyWorkPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-end justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#dfdbcc] pb-5">
         <div>
-          <h1 className="font-serif-title text-2xl font-semibold text-slate-900">My work</h1>
-          <p className="mt-1 text-sm text-slate-500">Tickets assigned to you across all projects.</p>
+          <h1 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-[#14201a]">My work</h1>
+          <p className="mt-1 text-sm text-[#5f6b64]">Tickets currently assigned to you across all projects and services.</p>
         </div>
-        <label className="flex items-center gap-2 text-sm text-slate-500">
-          <input type="checkbox" checked={showDone} onChange={(e) => setShowDone(e.target.checked)} />
+        <label className="flex items-center gap-2 text-sm font-semibold text-[#3d4a42] cursor-pointer">
+          <input type="checkbox" checked={showDone} onChange={(e) => setShowDone(e.target.checked)} className="accent-[#177a43] rounded" />
           Include finished
         </label>
       </div>
@@ -46,25 +46,25 @@ export default function MyWorkPage() {
       {shown.length === 0 ? (
         <EmptyState
           icon={ClipboardList}
-          title={tasks.length === 0 ? 'Nothing assigned to you' : 'All caught up'}
-          description={tasks.length === 0 ? 'When an admin assigns you a ticket, it shows up here.' : 'Every ticket assigned to you is finished.'}
+          title={tasks.length === 0 ? 'Nothing assigned to you' : 'All caught up!'}
+          description={tasks.length === 0 ? 'When tickets or incident actions are assigned to you, they will appear here.' : 'Every ticket assigned to you has been completed.'}
         />
       ) : (
         [...byProject.entries()].map(([key, list]) => (
           <SectionCard key={key} title={key} subtitle={`${list.length} ticket${list.length === 1 ? '' : 's'}`}>
-            <ul className="-my-2 divide-y divide-slate-100">
+            <ul className="-my-2 divide-y divide-[#dfdbcc]/50">
               {list.map((t) => (
                 <li key={t.id}>
-                  <Link href={`/dashboard/tasks/${t.ref}`} className="flex items-center justify-between gap-3 py-3 hover:bg-slate-50">
+                  <Link href={`/dashboard/tasks/${t.ref}`} className="flex items-center justify-between gap-3 py-3 hover:bg-[#f6f4ec] transition rounded-xl px-2">
                     <span className="flex min-w-0 items-center gap-2">
                       <TypeIcon type={t.type} />
-                      <span className="font-mono text-xs text-slate-400">{t.ref}</span>
-                      <span className="truncate text-sm font-medium text-slate-800">{t.title}</span>
+                      <span className="font-mono text-xs font-bold text-[#5f6b64]">{t.ref}</span>
+                      <span className="truncate text-sm font-bold text-[#14201a] hover:text-[#177a43] transition">{t.title}</span>
                     </span>
                     <span className="flex shrink-0 items-center gap-3">
                       <DueDate iso={t.dueDate} done={t.status.category === 'done'} />
                       <PriorityIcon priority={t.priority} />
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{t.status.name}</span>
+                      <span className="rounded-full bg-[#eeebe0] px-2.5 py-0.5 text-xs text-[#14201a] font-semibold border border-[#dfdbcc]">{t.status.name}</span>
                     </span>
                   </Link>
                 </li>

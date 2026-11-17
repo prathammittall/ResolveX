@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { api, ApiError } from '../../../lib/api';
+import { api } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth-context';
 import { ROLE_HELP, ROLE_LABEL } from '../../../lib/permissions';
 import type { OrganizationInfo } from '../../../lib/types';
@@ -9,9 +9,9 @@ import { ErrorBanner, PageLoader, SectionCard, formatDateTime } from '../_compon
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-0.5 py-3 sm:flex-row sm:items-center sm:justify-between">
-      <dt className="text-sm text-slate-500">{label}</dt>
-      <dd className="text-sm font-medium text-slate-800">{children}</dd>
+    <div className="flex flex-col gap-1 py-3.5 sm:flex-row sm:items-center sm:justify-between">
+      <dt className="text-sm font-semibold text-[#5f6b64]">{label}</dt>
+      <dd className="text-sm font-bold text-[#14201a]">{children}</dd>
     </div>
   );
 }
@@ -38,7 +38,6 @@ export default function SettingsPage() {
     e.preventDefault();
     setJoining(true);
     setJoinError(null);
-    // The accept page redeems the code and switches the session to the new organization.
     window.location.assign(`/dashboard/accept-invite?token=${encodeURIComponent(code.trim())}`);
   }
 
@@ -47,35 +46,39 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-serif-title text-2xl font-semibold text-slate-900">Settings</h1>
-        <p className="mt-1 text-sm text-slate-500">Your organization and account.</p>
+      <div className="border-b border-[#dfdbcc] pb-5">
+        <h1 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-[#14201a]">Settings</h1>
+        <p className="mt-1 text-sm text-[#5f6b64]">Organization configuration and personal account profile.</p>
       </div>
       {error && <ErrorBanner message={error} />}
 
       <SectionCard title="Organization">
-        <dl className="-my-3 divide-y divide-slate-100">
-          <Row label="Name">{org?.name ?? '—'}</Row>
-          <Row label="Identifier">
-            <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">{org?.slug ?? '—'}</code>
+        <dl className="-my-3 divide-y divide-[#dfdbcc]/50">
+          <Row label="Organization Name">{org?.name ?? '—'}</Row>
+          <Row label="Workspace Identifier">
+            <code className="rounded-md bg-[#eeebe0] px-2 py-0.5 font-mono text-xs font-bold text-[#14201a]">{org?.slug ?? '—'}</code>
           </Row>
           <Row label="Created">{org ? formatDateTime(org.createdAt) : '—'}</Row>
         </dl>
       </SectionCard>
 
-      <SectionCard title="Your account">
-        <dl className="-my-3 divide-y divide-slate-100">
-          <Row label="Name">{user.name || user.username || '—'}</Row>
-          <Row label="Email">{user.email}</Row>
-          <Row label="Role in this organization">
-            {ROLE_LABEL[user.role]}
-            <span className="ml-2 text-xs font-normal text-slate-400">{ROLE_HELP[user.role]}</span>
+      <SectionCard title="Your Account">
+        <dl className="-my-3 divide-y divide-[#dfdbcc]/50">
+          <Row label="Full Name">{user.name || user.username || '—'}</Row>
+          <Row label="Email Address">{user.email}</Row>
+          <Row label="Current Workspace Role">
+            <span className="inline-flex items-center gap-2">
+              <span className="rounded-full bg-[#dcefd8] text-[#177a43] px-2.5 py-0.5 text-xs font-bold border border-[#b2e2a8]">
+                {ROLE_LABEL[user.role]}
+              </span>
+              <span className="text-xs font-normal text-[#5f6b64]">{ROLE_HELP[user.role]}</span>
+            </span>
           </Row>
         </dl>
       </SectionCard>
 
-      <SectionCard title="Join another organization" subtitle="Paste the invitation code you were given.">
-        <form onSubmit={join} className="flex flex-col gap-3 sm:flex-row">
+      <SectionCard title="Join another organization" subtitle="Paste the invitation token code you were issued.">
+        <form onSubmit={join} className="flex flex-col gap-3 sm:flex-row mt-2">
           <label htmlFor="invite-code" className="sr-only">
             Invitation code
           </label>
@@ -87,18 +90,18 @@ export default function SettingsPage() {
             placeholder="rxinv_…"
             autoComplete="off"
             spellCheck={false}
-            className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2.5 font-mono text-sm outline-none focus:border-[#25396e] focus:ring-2 focus:ring-[#25396e]/20"
+            className="min-w-0 flex-1 rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] px-3.5 py-2.5 font-mono text-sm text-[#14201a] outline-none transition focus:border-[#177a43] focus:ring-2 focus:ring-[#177a43]/20 placeholder-[#5f6b64]/50"
           />
           <button
             type="submit"
             disabled={joining}
-            className="rounded-xl bg-[#25396e] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1c2c56] disabled:opacity-60"
+            className="btn-kizupi-go text-sm px-5 py-2.5 cursor-pointer disabled:opacity-60"
           >
-            {joining ? 'Joining…' : 'Join'}
+            {joining ? 'Joining…' : 'Join organization'}
           </button>
         </form>
         {joinError && <div className="mt-3"><ErrorBanner message={joinError} /></div>}
-        <p className="mt-2 text-xs text-slate-400">Invitations only work for the email address they were sent to.</p>
+        <p className="mt-2 text-xs text-[#5f6b64]">Invitations are cryptographically validated and only work for the target email address.</p>
       </SectionCard>
     </div>
   );

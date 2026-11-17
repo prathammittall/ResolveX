@@ -91,44 +91,47 @@ export default function ProjectPage() {
   if (!project) return <ErrorBanner message={error ?? 'Project not found'} />;
 
   const epics = tasks.filter((t) => t.type === 'epic');
-  const input = 'rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm outline-none focus:border-[#25396e]';
+  const input = 'rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] px-3 py-1.5 text-sm text-[#14201a] outline-none transition focus:border-[#177a43]';
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div>
-        <Link href="/dashboard/projects" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-800">
-          <ArrowLeft className="h-4 w-4" /> Projects
+        <Link href="/dashboard/projects" className="inline-flex items-center gap-1.5 text-xs font-bold text-[#5f6b64] hover:text-[#177a43] transition">
+          <ArrowLeft className="h-3.5 w-3.5" /> Back to projects
         </Link>
         <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs font-semibold text-slate-600">{project.key}</span>
-            <h1 className="font-serif-title text-2xl font-semibold text-slate-900">{project.name}</h1>
-            {project.archived && <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-700">Archived</span>}
+            <span className="rounded-md bg-[#eeebe0] px-2.5 py-1 font-mono text-xs font-bold text-[#14201a]">{project.key}</span>
+            <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-[#14201a]">{project.name}</h1>
+            {project.archived && <span className="rounded-full bg-[#fef3c7] border border-[#fde68a] px-2.5 py-0.5 text-xs text-[#92400e] font-semibold">Archived</span>}
           </div>
           {work && !project.archived && (
             <button
               onClick={() => setCreating({})}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#25396e] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1b2b57]"
+              className="btn-kizupi-go text-sm px-4 py-2 cursor-pointer"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4 w-4 mr-1.5" />
               Create ticket
             </button>
           )}
         </div>
-        {project.description && <p className="mt-1 max-w-2xl text-sm text-slate-500">{project.description}</p>}
+        {project.description && <p className="mt-1 max-w-2xl text-sm text-[#5f6b64]">{project.description}</p>}
       </div>
 
       {error && <ErrorBanner message={error} />}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div role="tablist" className="inline-flex rounded-xl bg-slate-100 p-1">
+        <div role="tablist" className="inline-flex rounded-xl bg-[#eeebe0] p-1 border border-[#dfdbcc]">
           {(['board', 'backlog', ...(manage ? (['workflow'] as const) : [])] as Tab[]).map((t) => (
             <button
               key={t}
               role="tab"
               aria-selected={tab === t}
               onClick={() => setTab(t)}
-              className={cn('rounded-lg px-4 py-1.5 text-sm font-medium capitalize', tab === t ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800')}
+              className={cn(
+                'rounded-lg px-4 py-1.5 text-xs font-bold capitalize transition cursor-pointer',
+                tab === t ? 'bg-white text-[#177a43] shadow-[0_1px_0_#dfdbcc] border border-[#dfdbcc]' : 'text-[#5f6b64] hover:text-[#14201a]'
+              )}
             >
               {t === 'workflow' ? 'Workflow' : t}
             </button>
@@ -136,7 +139,7 @@ export default function ProjectPage() {
         </div>
         {tab !== 'workflow' && (
           <div className="flex flex-wrap items-center gap-2">
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search tickets" aria-label="Search tickets" className={cn(input, 'w-44')} />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search tickets..." aria-label="Search tickets" className={cn(input, 'w-48')} />
             <select value={assignee} onChange={(e) => setAssignee(e.target.value)} aria-label="Filter by assignee" className={input}>
               <option value="all">Everyone</option>
               <option value="me">Assigned to me</option>
@@ -154,7 +157,7 @@ export default function ProjectPage() {
       </div>
 
       {truncated && (
-        <p className="text-xs text-amber-700">Showing the 500 newest tickets. Use filters to narrow the list.</p>
+        <p className="text-xs text-[#b45309]">Showing the 500 newest tickets. Use filters to narrow the list.</p>
       )}
 
       {tab === 'board' && (
@@ -180,19 +183,22 @@ export default function ProjectPage() {
                     if (dragRef) void moveTask(dragRef, s.id);
                     setDragRef(null);
                   }}
-                  className={cn('w-72 shrink-0 rounded-2xl bg-slate-100/70 p-3 transition', isOver && 'bg-blue-50 ring-2 ring-[#25396e]/30')}
+                  className={cn(
+                    'w-76 shrink-0 rounded-2xl bg-[#eeebe0]/50 border border-[#dfdbcc] p-3 transition-all',
+                    isOver && 'ring-2 ring-[#177a43] bg-[#dcefd8]/30'
+                  )}
                 >
                   <header className="mb-3 flex items-center justify-between px-1">
-                    <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-600">
-                      {s.name} <span className="ml-1 font-normal text-slate-400">{column.length}</span>
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-[#3d4a42]">
+                      {s.name} <span className="ml-1 text-xs font-semibold text-[#5f6b64]">({column.length})</span>
                     </h2>
                     {work && !project.archived && (
-                      <button onClick={() => setCreating({ statusId: s.id })} aria-label={`Add ticket to ${s.name}`} className="rounded p-1 text-slate-400 hover:bg-white hover:text-slate-700">
+                      <button onClick={() => setCreating({ statusId: s.id })} aria-label={`Add ticket to ${s.name}`} className="rounded-lg p-1 text-[#5f6b64] hover:bg-[#eeebe0] transition cursor-pointer">
                         <Plus className="h-4 w-4" />
                       </button>
                     )}
                   </header>
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     {column.map((t) => (
                       <article
                         key={t.id}
@@ -202,25 +208,31 @@ export default function ProjectPage() {
                           setDragRef(null);
                           setOverStatus(null);
                         }}
-                        className={cn('rounded-xl border border-slate-200 bg-white p-3 shadow-xs', work && 'cursor-grab active:cursor-grabbing', dragRef === t.ref && 'opacity-50')}
+                        className={cn(
+                          'rounded-xl border border-[#dfdbcc] bg-white p-3.5 shadow-[0_2px_0_#dfdbcc] transition hover:-translate-y-0.5 hover:shadow-[0_4px_0_#dfdbcc]',
+                          work && 'cursor-grab active:cursor-grabbing',
+                          dragRef === t.ref && 'opacity-40'
+                        )}
                       >
-                        <Link href={`/dashboard/tasks/${t.ref}`} className="block text-sm font-medium text-slate-800 hover:text-[#25396e]">
+                        <Link href={`/dashboard/tasks/${t.ref}`} className="block text-sm font-bold text-[#14201a] hover:text-[#177a43] transition">
                           {t.title}
                         </Link>
                         {t.labels.length > 0 && (
                           <div className="mt-2 flex flex-wrap gap-1">
-                            {t.labels.map((l) => <span key={l} className="rounded bg-slate-100 px-1.5 py-0.5 text-[11px] text-slate-600">{l}</span>)}
+                            {t.labels.map((l) => (
+                              <span key={l} className="rounded-md bg-[#eeebe0] px-1.5 py-0.5 text-[10px] text-[#3d4a42] font-semibold">{l}</span>
+                            ))}
                           </div>
                         )}
                         <div className="mt-3 flex items-center justify-between">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1.5">
                             <TypeIcon type={t.type} />
-                            <span className="font-mono text-xs text-slate-400">{t.ref}</span>
+                            <span className="font-mono text-xs font-semibold text-[#5f6b64]">{t.ref}</span>
                             <PriorityIcon priority={t.priority} />
                           </div>
                           <div className="flex items-center gap-2">
                             <DueDate iso={t.dueDate} done={t.status.category === 'done'} />
-                            {t.assignee && <Avatar name={t.assignee.name} />}
+                            {t.assignee && <Avatar name={t.assignee.name} size={22} />}
                           </div>
                         </div>
                         {work && (
@@ -228,14 +240,18 @@ export default function ProjectPage() {
                             aria-label={`Move ${t.ref} to another status`}
                             value={t.status.id}
                             onChange={(e) => void moveTask(t.ref, e.target.value)}
-                            className="mt-2 w-full rounded-md border border-slate-200 bg-slate-50 px-1.5 py-1 text-xs text-slate-600"
+                            className="mt-2 w-full rounded-lg border border-[#dfdbcc] bg-[#fbfaf6] px-2 py-1 text-xs text-[#3d4a42] outline-none cursor-pointer"
                           >
                             {statuses.map((st) => <option key={st.id} value={st.id}>{st.name}</option>)}
                           </select>
                         )}
                       </article>
                     ))}
-                    {column.length === 0 && <p className="px-1 py-6 text-center text-xs text-slate-400">No tickets</p>}
+                    {column.length === 0 && (
+                      <div className="rounded-xl border-2 border-dashed border-[#dfdbcc] p-6 text-center text-xs text-[#5f6b64]">
+                        No tickets
+                      </div>
+                    )}
                   </div>
                 </section>
               );
@@ -245,41 +261,41 @@ export default function ProjectPage() {
       )}
 
       {tab === 'backlog' && (
-        <SectionCard className="overflow-hidden">
+        <SectionCard className="overflow-hidden p-0">
           {visible.length === 0 ? (
-            <p className="py-8 text-center text-sm text-slate-500">No tickets match. {work && 'Create the first one with “Create ticket”.'}</p>
+            <div className="py-12 text-center text-sm text-[#5f6b64]">No tickets match. {work && 'Create the first one with “Create ticket”.'}</div>
           ) : (
-            <div className="-mx-5 -my-5 overflow-x-auto">
+            <div className="overflow-x-auto">
               <table className="w-full min-w-[720px] text-left text-sm">
                 <thead>
-                  <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
-                    <th className="px-5 py-2.5 font-medium">Ticket</th>
-                    <th className="px-3 py-2.5 font-medium">Status</th>
-                    <th className="px-3 py-2.5 font-medium">Priority</th>
-                    <th className="px-3 py-2.5 font-medium">Assignee</th>
-                    <th className="px-5 py-2.5 font-medium">Due</th>
+                  <tr className="border-b border-[#dfdbcc] bg-[#fbfaf6] text-xs font-bold uppercase tracking-wide text-[#5f6b64]">
+                    <th className="px-5 py-3 font-semibold">Ticket</th>
+                    <th className="px-3 py-3 font-semibold">Status</th>
+                    <th className="px-3 py-3 font-semibold">Priority</th>
+                    <th className="px-3 py-3 font-semibold">Assignee</th>
+                    <th className="px-5 py-3 font-semibold">Due</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-[#dfdbcc]/50">
                   {visible.map((t) => (
-                    <tr key={t.id} className="hover:bg-slate-50">
-                      <td className="px-5 py-3">
+                    <tr key={t.id} className="hover:bg-[#f6f4ec] transition">
+                      <td className="px-5 py-3.5">
                         <Link href={`/dashboard/tasks/${t.ref}`} className="flex items-center gap-2">
                           <TypeIcon type={t.type} />
-                          <span className="font-mono text-xs text-slate-400">{t.ref}</span>
-                          <span className="font-medium text-slate-800">{t.title}</span>
+                          <span className="font-mono text-xs font-bold text-[#5f6b64]">{t.ref}</span>
+                          <span className="font-semibold text-[#14201a] hover:text-[#177a43] transition">{t.title}</span>
                         </Link>
                       </td>
-                      <td className="px-3 py-3 text-slate-600">{t.status.name}</td>
-                      <td className="px-3 py-3"><PriorityIcon priority={t.priority} withLabel /></td>
-                      <td className="px-3 py-3">
+                      <td className="px-3 py-3.5 text-xs font-semibold text-[#3d4a42]">{t.status.name}</td>
+                      <td className="px-3 py-3.5"><PriorityIcon priority={t.priority} withLabel /></td>
+                      <td className="px-3 py-3.5">
                         {t.assignee ? (
-                          <span className="inline-flex items-center gap-2 text-slate-700"><Avatar name={t.assignee.name} />{t.assignee.name}</span>
+                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#14201a]"><Avatar name={t.assignee.name} size={20} />{t.assignee.name}</span>
                         ) : (
-                          <span className="text-slate-400">Unassigned</span>
+                          <span className="text-xs text-[#5f6b64]">Unassigned</span>
                         )}
                       </td>
-                      <td className="px-5 py-3"><DueDate iso={t.dueDate} done={t.status.category === 'done'} /></td>
+                      <td className="px-5 py-3.5"><DueDate iso={t.dueDate} done={t.status.category === 'done'} /></td>
                     </tr>
                   ))}
                 </tbody>
@@ -348,7 +364,7 @@ function WorkflowEditor({
   return (
     <div className="space-y-5">
       <SectionCard title="Workflow statuses" subtitle="Tickets move left to right across these columns. “Done” category statuses count as finished.">
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y divide-[#dfdbcc]/50">
           {statuses.map((s, i) => (
             <li key={s.id} className="flex flex-wrap items-center gap-3 py-3">
               <input
@@ -359,28 +375,28 @@ function WorkflowEditor({
                   const v = e.target.value.trim();
                   if (v && v !== s.name) void run(() => api.patch(`${base}/statuses/${s.id}`, { name: v }));
                 }}
-                className="min-w-0 flex-1 rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm"
+                className="min-w-0 flex-1 rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] px-3 py-1.5 text-sm text-[#14201a] outline-none focus:border-[#177a43]"
               />
               <select
                 aria-label={`Category of ${s.name}`}
                 value={s.category}
                 disabled={busy}
                 onChange={(e) => void run(() => api.patch(`${base}/statuses/${s.id}`, { category: e.target.value }))}
-                className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm"
+                className="rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] px-2.5 py-1.5 text-sm text-[#14201a] outline-none focus:border-[#177a43]"
               >
                 {(Object.keys(CATEGORY_LABEL) as StatusCategory[]).map((c) => <option key={c} value={c}>{CATEGORY_LABEL[c]}</option>)}
               </select>
-              <button disabled={busy || i === 0} onClick={() => void swap(s, statuses[i - 1]!)} aria-label={`Move ${s.name} up`} className="rounded p-1.5 text-slate-400 hover:bg-slate-100 disabled:opacity-30">
+              <button disabled={busy || i === 0} onClick={() => void swap(s, statuses[i - 1]!)} aria-label={`Move ${s.name} up`} className="rounded-lg p-1.5 text-[#5f6b64] hover:bg-[#eeebe0] disabled:opacity-30 cursor-pointer">
                 <ArrowUp className="h-4 w-4" />
               </button>
-              <button disabled={busy || i === statuses.length - 1} onClick={() => void swap(s, statuses[i + 1]!)} aria-label={`Move ${s.name} down`} className="rounded p-1.5 text-slate-400 hover:bg-slate-100 disabled:opacity-30">
+              <button disabled={busy || i === statuses.length - 1} onClick={() => void swap(s, statuses[i + 1]!)} aria-label={`Move ${s.name} down`} className="rounded-lg p-1.5 text-[#5f6b64] hover:bg-[#eeebe0] disabled:opacity-30 cursor-pointer">
                 <ArrowDown className="h-4 w-4" />
               </button>
               <button
                 disabled={busy}
                 onClick={() => window.confirm(`Delete the “${s.name}” status?`) && void run(() => api.del(`${base}/statuses/${s.id}`))}
                 aria-label={`Delete ${s.name}`}
-                className="rounded p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+                className="rounded-lg p-1.5 text-[#5f6b64] hover:bg-[#fee2e2] hover:text-[#dc2626] transition cursor-pointer"
               >
                 <Trash2 className="h-4 w-4" />
               </button>
@@ -395,24 +411,24 @@ function WorkflowEditor({
               setName('');
             });
           }}
-          className="mt-4 flex flex-wrap items-end gap-2"
+          className="mt-5 flex flex-wrap items-end gap-2.5"
         >
-          <div className="min-w-[10rem] flex-1">
-            <label htmlFor="new-status" className="mb-1 block text-sm font-medium text-slate-700">New status</label>
-            <input id="new-status" required maxLength={40} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Blocked" className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          <div className="min-w-[12rem] flex-1">
+            <label htmlFor="new-status" className="mb-1 block text-xs font-semibold text-[#14201a]">New column status</label>
+            <input id="new-status" required maxLength={40} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. In QA, Blocked" className="w-full rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] px-3 py-2 text-sm text-[#14201a] outline-none focus:border-[#177a43]" />
           </div>
-          <select aria-label="Category of new status" value={category} onChange={(e) => setCategory(e.target.value as StatusCategory)} className="rounded-lg border border-slate-300 px-2 py-2 text-sm">
+          <select aria-label="Category of new status" value={category} onChange={(e) => setCategory(e.target.value as StatusCategory)} className="rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] px-3 py-2 text-sm text-[#14201a] outline-none focus:border-[#177a43]">
             {(Object.keys(CATEGORY_LABEL) as StatusCategory[]).map((c) => <option key={c} value={c}>{CATEGORY_LABEL[c]}</option>)}
           </select>
-          <button type="submit" disabled={busy} className="rounded-xl bg-[#25396e] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1c2c56] disabled:opacity-60">Add status</button>
+          <button type="submit" disabled={busy} className="btn-kizupi-go text-sm px-4 py-2 cursor-pointer disabled:opacity-60">Add status</button>
         </form>
       </SectionCard>
 
-      <SectionCard title="Project" subtitle="Archived projects stay readable but no new tickets can be raised.">
+      <SectionCard title="Project settings" subtitle="Archived projects stay readable but no new tickets can be raised.">
         <button
           disabled={busy}
           onClick={() => void run(() => api.patch(base, { archived: !project.archived }))}
-          className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+          className="btn-kizupi-white text-sm px-4 py-2 cursor-pointer disabled:opacity-60"
         >
           {project.archived ? 'Restore project' : 'Archive project'}
         </button>

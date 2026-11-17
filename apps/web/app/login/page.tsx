@@ -19,6 +19,7 @@ import {
   Check,
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
+import { ResolveXLogoMark } from '../../components/ResolveXLanding';
 
 /** Only same-site relative paths are honoured, so `?next=` cannot be used as an open redirect. */
 function safeNext(value: string | null): string {
@@ -113,10 +114,10 @@ function LoginContent() {
           companyName: companyName.trim() || undefined,
         });
         if (res.ok) {
-          setSuccessMessage(`Account created successfully! Welcome to ResolveX.`);
+          setSuccessMessage('Account created successfully! Preparing your workspace...');
           setTimeout(() => {
             router.push(nextPath);
-          }, 1200);
+          }, 1400);
         } else {
           setErrorMessage(res.error || 'Failed to create account. Please try again.');
         }
@@ -140,65 +141,59 @@ function LoginContent() {
   };
 
   return (
-    <div className="h-screen h-[100dvh] max-h-screen overflow-hidden bg-[#fafaf9] flex flex-col justify-between text-slate-900 relative selection:bg-blue-100 selection:text-blue-900">
-      {/* Background Decorative Mesh & Radial Aura */}
+    <div className="min-h-screen flex flex-col justify-between relative bg-[#f6f4ec] text-[#14201a] selection:bg-[#c6f36b] selection:text-[#14201a]">
+      {/* Top subtle decorative pattern */}
       <div
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#00000006_1px,transparent_1px),linear-gradient(to_bottom,#00000006_1px,transparent_1px)] bg-[size:36px_36px] -z-10"
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] -z-10"
-        style={{
-          background:
-            'radial-gradient(ellipse at top, rgba(219, 234, 254, 0.7) 0%, rgba(238, 242, 255, 0.4) 45%, rgba(250, 250, 249, 0) 75%)',
-          filter: 'blur(60px)',
-        }}
+        className="pointer-events-none absolute inset-0 opacity-10 dither-band"
         aria-hidden="true"
       />
 
-      {/* Top Header (Strictly compact height) */}
-      <header className="h-14 sm:h-16 px-6 max-w-6xl w-full mx-auto flex items-center justify-between shrink-0 z-10">
+      {/* Top Header */}
+      <header className="h-16 px-6 max-w-6xl w-full mx-auto flex items-center justify-between shrink-0 z-10 border-b border-[#dfdbcc]">
         <Link href="/" className="group flex items-center gap-2.5">
-          <span className="font-serif-title text-2xl font-bold tracking-tight text-slate-900 group-hover:text-blue-700 transition-colors">
-            ResolveX
+          <ResolveXLogoMark className="w-6 h-6 transition-transform group-hover:scale-105 duration-200" />
+          <span className="font-display font-extrabold text-xl tracking-tight text-[#14201a]">
+            Resolve<span className="text-[#177a43]">X</span>
           </span>
-          <span className="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-[11px] font-semibold text-emerald-700">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            Systems Operational
+          <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#dcefd8] border border-[#b2e2a8] text-[11px] font-bold text-[#177a43]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#177a43] animate-pulse" />
+            Operational
           </span>
         </Link>
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-950 px-3 py-1.5 rounded-lg hover:bg-slate-200/50 transition"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Home</span>
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/"
+            className="btn-kizupi-white text-xs px-3.5 py-2 inline-flex items-center gap-1.5"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back to website</span>
+          </Link>
+        </div>
       </header>
 
-      {/* Main Container - Centered within 100vh with no scrollbar */}
-      <main className="flex-1 flex items-center justify-center px-4 py-1 sm:py-2 min-h-0 z-10 overflow-y-auto sm:overflow-hidden">
-        <div className="w-full max-w-[420px] bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-[0_16px_45px_-12px_rgba(15,23,42,0.08)] p-5 sm:p-6 my-auto transition-all">
+      {/* Main Container */}
+      <main className="flex-1 flex items-center justify-center px-4 py-8 z-10">
+        <div className="w-full max-w-[440px] rounded-3xl border border-[#dfdbcc] bg-white text-[#14201a] shadow-[0_4px_0_#dfdbcc] p-6 sm:p-8 transition-all">
           {/* Card Title & Segmented Tab Switcher */}
-          <div className="text-center mb-4">
-            <h1 className="font-serif-title text-2xl sm:text-[26px] font-semibold text-slate-900 tracking-tight leading-snug">
+          <div className="text-center mb-5">
+            <h1 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-[#14201a]">
               {mode === 'login' ? 'Sign in to ResolveX' : 'Create your workspace'}
             </h1>
-            <p className="mt-1 text-[12px] sm:text-xs text-slate-500">
+            <p className="mt-1 text-xs text-[#5f6b64]">
               {mode === 'login'
-                ? 'Incident command center & real-time telemetry.'
-                : 'Get started with autonomous telemetry & incident rooms.'}
+                ? 'Incident response, API health, and team sprint boards.'
+                : 'Free 14-day trial. No credit card required to start.'}
             </p>
 
             {/* Segmented Mode Selector */}
-            <div className="mt-3.5 p-1 bg-slate-100/90 rounded-xl flex items-center text-xs font-semibold">
+            <div className="mt-4 p-1 rounded-xl flex items-center text-xs font-bold border bg-[#eeebe0] border-[#dfdbcc]">
               <button
                 type="button"
                 onClick={() => handleTabSwitch('login')}
-                className={`flex-1 py-1.5 px-3 rounded-lg transition-all duration-150 ${
+                className={`flex-1 py-1.5 px-3 rounded-lg transition-all duration-150 cursor-pointer ${
                   mode === 'login'
-                    ? 'bg-white text-slate-900 shadow-xs font-bold'
-                    : 'text-slate-500 hover:text-slate-900'
+                    ? 'bg-[#177a43] text-white shadow-xs font-bold'
+                    : 'text-[#5f6b64] hover:text-[#14201a]'
                 }`}
               >
                 Sign In
@@ -206,10 +201,10 @@ function LoginContent() {
               <button
                 type="button"
                 onClick={() => handleTabSwitch('register')}
-                className={`flex-1 py-1.5 px-3 rounded-lg transition-all duration-150 ${
+                className={`flex-1 py-1.5 px-3 rounded-lg transition-all duration-150 cursor-pointer ${
                   mode === 'register'
-                    ? 'bg-white text-slate-900 shadow-xs font-bold'
-                    : 'text-slate-500 hover:text-slate-900'
+                    ? 'bg-[#177a43] text-white shadow-xs font-bold'
+                    : 'text-[#5f6b64] hover:text-[#14201a]'
                 }`}
               >
                 Create Account
@@ -217,14 +212,14 @@ function LoginContent() {
             </div>
           </div>
 
-          {/* Social Auth Providers (Compact 2-col) */}
-          <div className="grid grid-cols-2 gap-2 mb-3">
+          {/* Social Auth Providers */}
+          <div className="grid grid-cols-2 gap-2.5 mb-4">
             <button
               type="button"
               onClick={() => setErrorMessage('GitHub sign-in is not configured for this environment.')}
-              className="py-1.5 px-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-[11px] sm:text-xs font-medium text-slate-700 shadow-2xs flex items-center justify-center gap-2 transition active:scale-[0.98]"
+              className="btn-kizupi-white text-xs py-2 px-3 font-semibold flex items-center justify-center gap-2 cursor-pointer"
             >
-              <svg className="w-3.5 h-3.5 fill-current text-slate-800" viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                 <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
               </svg>
               <span>GitHub</span>
@@ -233,7 +228,7 @@ function LoginContent() {
             <button
               type="button"
               onClick={() => setErrorMessage('Google sign-in is not configured for this environment.')}
-              className="py-1.5 px-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-[11px] sm:text-xs font-medium text-slate-700 shadow-2xs flex items-center justify-center gap-2 transition active:scale-[0.98]"
+              className="btn-kizupi-white text-xs py-2 px-3 font-semibold flex items-center justify-center gap-2 cursor-pointer"
             >
               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
                 <path
@@ -258,40 +253,40 @@ function LoginContent() {
           </div>
 
           {/* Divider */}
-          <div className="relative my-3 text-center text-[10px] text-slate-400">
+          <div className="relative my-4 text-center text-[10px]">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200/80" />
+              <div className="w-full border-t border-[#dfdbcc]" />
             </div>
-            <span className="relative bg-white px-2.5 font-medium uppercase tracking-wider text-[10px]">
+            <span className="relative px-2.5 font-bold uppercase tracking-wider text-[10px] bg-white text-[#5f6b64]">
               or with email
             </span>
           </div>
 
           {/* Error & Success Feedback Banners */}
           {errorMessage && (
-            <div className="mb-3 p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2 animate-in fade-in slide-in-from-top-1 duration-150">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
+            <div className="mb-3.5 p-3 rounded-xl bg-[#fee2e2] border border-[#fca5a5] text-[#991b1b] text-xs font-semibold flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-[#dc2626]" />
               <div className="flex-1">{errorMessage}</div>
             </div>
           )}
 
           {successMessage && (
-            <div className="mb-3 p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-start gap-2 animate-in fade-in slide-in-from-top-1 duration-150">
-              <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600" />
+            <div className="mb-3.5 p-3 rounded-xl bg-[#dcefd8] border border-[#b2e2a8] text-[#15803d] text-xs font-bold flex items-start gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-[#177a43]" />
               <div className="flex-1">{successMessage}</div>
             </div>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-2.5">
+          <form onSubmit={handleSubmit} className="space-y-3.5">
             {/* If Register: Full Name */}
             {mode === 'register' && (
               <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-bold mb-1 text-[#14201a]">
                   Full Name
                 </label>
                 <div className="relative">
-                  <UserIcon className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <UserIcon className="w-4 h-4 text-[#5f6b64] absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     value={name}
@@ -299,8 +294,8 @@ function LoginContent() {
                       setName(e.target.value);
                       if (errorMessage) setErrorMessage(null);
                     }}
-                    placeholder="Alex Chen"
-                    className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 text-xs sm:text-[13px] bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
+                    placeholder="Sarah Miller"
+                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] text-[#14201a] placeholder:text-[#5f6b64]/50 text-sm transition focus:outline-none focus:ring-2 focus:ring-[#177a43]/20 focus:border-[#177a43]"
                   />
                 </div>
               </div>
@@ -308,11 +303,11 @@ function LoginContent() {
 
             {/* Email Field */}
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                Email
+              <label className="block text-xs font-bold mb-1 text-[#14201a]">
+                Work Email
               </label>
               <div className="relative">
-                <Mail className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Mail className="w-4 h-4 text-[#5f6b64] absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="email"
                   required
@@ -321,8 +316,8 @@ function LoginContent() {
                     setEmail(e.target.value);
                     if (errorMessage) setErrorMessage(null);
                   }}
-                  placeholder="alex.chen@example.com"
-                  className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 text-xs sm:text-[13px] bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
+                  placeholder="sarah@company.com"
+                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] text-[#14201a] placeholder:text-[#5f6b64]/50 text-sm transition focus:outline-none focus:ring-2 focus:ring-[#177a43]/20 focus:border-[#177a43]"
                 />
               </div>
             </div>
@@ -331,19 +326,19 @@ function LoginContent() {
             {mode === 'register' && (
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="block text-[11px] font-semibold text-slate-700">
-                    Organization / Team
+                  <label className="block text-xs font-bold text-[#14201a]">
+                    Organization / Company
                   </label>
-                  <span className="text-[10px] text-slate-400">Optional</span>
+                  <span className="text-[11px] text-[#5f6b64]">Optional</span>
                 </div>
                 <div className="relative">
-                  <Building2 className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Building2 className="w-4 h-4 text-[#5f6b64] absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
-                    placeholder="Acme Reliability"
-                    className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 text-xs sm:text-[13px] bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
+                    placeholder="Acme Operations"
+                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] text-[#14201a] placeholder:text-[#5f6b64]/50 text-sm transition focus:outline-none focus:ring-2 focus:ring-[#177a43]/20 focus:border-[#177a43]"
                   />
                 </div>
               </div>
@@ -352,7 +347,7 @@ function LoginContent() {
             {/* Password Field */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="block text-[11px] font-semibold text-slate-700">
+                <label className="block text-xs font-bold text-[#14201a]">
                   Password
                 </label>
                 {mode === 'login' ? (
@@ -362,16 +357,16 @@ function LoginContent() {
                       setForgotEmail(email);
                       setForgotModalOpen(true);
                     }}
-                    className="text-[11px] font-medium text-blue-600 hover:text-blue-800 transition"
+                    className="text-xs font-semibold text-[#177a43] hover:underline transition cursor-pointer"
                   >
                     Forgot password?
                   </button>
                 ) : (
-                  <span className="text-[10px] text-slate-400">Min. 6 chars</span>
+                  <span className="text-[11px] text-[#5f6b64]">Min. 6 characters</span>
                 )}
               </div>
               <div className="relative">
-                <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Lock className="w-4 h-4 text-[#5f6b64] absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
@@ -381,15 +376,15 @@ function LoginContent() {
                     if (errorMessage) setErrorMessage(null);
                   }}
                   placeholder="••••••••••••"
-                  className="w-full pl-8 pr-9 py-1.5 rounded-lg border border-slate-200 text-xs sm:text-[13px] bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] text-[#14201a] placeholder:text-[#5f6b64]/50 text-sm transition focus:outline-none focus:ring-2 focus:ring-[#177a43]/20 focus:border-[#177a43]"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded transition"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5f6b64] hover:text-[#14201a] p-1 rounded transition cursor-pointer"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
@@ -402,9 +397,11 @@ function LoginContent() {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-3.5 h-3.5 rounded text-blue-600 focus:ring-blue-500 border-slate-300"
+                    className="w-4 h-4 rounded accent-[#177a43] border-[#dfdbcc]"
                   />
-                  <span className="text-[11px] text-slate-600 font-medium">Keep me signed in</span>
+                  <span className="text-xs font-medium text-[#3d4a42]">
+                    Remember this device for 30 days
+                  </span>
                 </label>
               </div>
             )}
@@ -413,43 +410,43 @@ function LoginContent() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full mt-1.5 py-2.5 px-4 rounded-xl bg-[#25396e] hover:bg-[#1b2b57] disabled:bg-slate-400 text-white text-xs sm:text-sm font-semibold shadow-xs hover:shadow transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
+              className="btn-kizupi-go w-full py-3 px-4 font-bold text-sm cursor-pointer disabled:opacity-60 mt-2"
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin text-white" />
-                  <span>{mode === 'login' ? 'Authenticating...' : 'Creating Account...'}</span>
+                  <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
+                  <span>{mode === 'login' ? 'Authenticating...' : 'Provisioning Workspace...'}</span>
                 </>
               ) : (
                 <>
-                  <span>{mode === 'login' ? 'Sign In to Workspace' : 'Create Workspace Account'}</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <span>{mode === 'login' ? 'Sign In to Workspace' : 'Get Started Free'}</span>
+                  <ArrowRight className="w-4 h-4 ml-1.5" />
                 </>
               )}
             </button>
           </form>
 
           {/* Bottom Card Footer: Mode Switch */}
-          <div className="mt-3.5 pt-3 border-t border-slate-100 flex flex-col gap-2 text-center">
-            <p className="text-[11px] text-slate-500">
+          <div className="mt-5 pt-4 border-t border-[#dfdbcc] text-center">
+            <p className="text-xs text-[#5f6b64]">
               {mode === 'login' ? (
                 <>
-                  Don't have an account?{' '}
+                  Don't have an account yet?{' '}
                   <button
                     type="button"
                     onClick={() => handleTabSwitch('register')}
-                    className="text-blue-600 font-semibold hover:underline"
+                    className="text-[#177a43] font-bold hover:underline cursor-pointer"
                   >
                     Start 14-day free trial
                   </button>
                 </>
               ) : (
                 <>
-                  Already have an account?{' '}
+                  Already registered with ResolveX?{' '}
                   <button
                     type="button"
                     onClick={() => handleTabSwitch('login')}
-                    className="text-blue-600 font-semibold hover:underline"
+                    className="text-[#177a43] font-bold hover:underline cursor-pointer"
                   >
                     Sign in here
                   </button>
@@ -460,37 +457,37 @@ function LoginContent() {
         </div>
       </main>
 
-      {/* Footer copyright (Strictly compact height) */}
-      <footer className="h-10 sm:h-11 px-6 max-w-6xl w-full mx-auto flex items-center justify-between text-[11px] text-slate-400 shrink-0 z-10 border-t border-slate-200/40">
-        <span>© {new Date().getFullYear()} ResolveX Technologies</span>
+      {/* Footer copyright */}
+      <footer className="h-14 px-6 max-w-6xl w-full mx-auto flex items-center justify-between text-xs shrink-0 z-10 border-t border-[#dfdbcc] text-[#5f6b64]">
+        <span>© {new Date().getFullYear()} ResolveX Inc. All rights reserved.</span>
         <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1">
-            <Shield className="w-3 h-3 text-emerald-600" />
+          <span className="flex items-center gap-1.5 font-medium">
+            <Shield className="w-3.5 h-3.5 text-[#177a43]" />
             AES-256 Encrypted
           </span>
-          <span className="hidden sm:inline text-slate-300">•</span>
-          <span className="hidden sm:inline">SOC-2 Type II Certified</span>
+          <span className="hidden sm:inline opacity-40">•</span>
+          <span className="hidden sm:inline font-medium">SOC-2 Type II Compliant</span>
         </div>
       </footer>
 
       {/* Forgot Password Modal */}
       {forgotModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
-            <h3 className="font-serif-title text-xl font-bold text-slate-900">Reset Password</h3>
-            <p className="mt-1 text-xs text-slate-500">
-              Enter your email address and we will dispatch a secure recovery token.
+        <div className="fixed inset-0 z-50 bg-[#14201a]/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-[#dfdbcc] bg-white text-[#14201a]">
+            <h3 className="font-display text-xl font-bold">Reset Password</h3>
+            <p className="mt-1 text-xs text-[#5f6b64]">
+              Enter your registered email address and we will dispatch a secure reset token.
             </p>
 
             {forgotSuccess ? (
-              <div className="mt-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-600" />
-                Reset instructions sent to your email!
+              <div className="mt-4 p-3 rounded-xl bg-[#dcefd8] border border-[#b2e2a8] text-[#15803d] text-xs font-bold flex items-center gap-2">
+                <Check className="w-4 h-4 text-[#177a43]" />
+                Password reset instructions dispatched!
               </div>
             ) : (
-              <form onSubmit={handleForgotPassword} className="mt-4 space-y-3">
+              <form onSubmit={handleForgotPassword} className="mt-4 space-y-3.5">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-bold mb-1 text-[#14201a]">
                     Email
                   </label>
                   <input
@@ -498,21 +495,21 @@ function LoginContent() {
                     required
                     value={forgotEmail}
                     onChange={(e) => setForgotEmail(e.target.value)}
-                    placeholder="alex@example.com"
-                    className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    placeholder="sarah@example.com"
+                    className="w-full px-3.5 py-2 rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] text-[#14201a] text-sm focus:outline-none focus:ring-2 focus:ring-[#177a43]/20 focus:border-[#177a43]"
                   />
                 </div>
                 <div className="flex items-center justify-end gap-2 pt-2">
                   <button
                     type="button"
                     onClick={() => setForgotModalOpen(false)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100"
+                    className="btn-kizupi-white text-xs px-3.5 py-1.5 cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-1.5 rounded-lg bg-[#25396e] hover:bg-[#1b2b57] text-white text-xs font-semibold"
+                    className="btn-kizupi-go text-xs px-4 py-1.5 cursor-pointer"
                   >
                     Send Recovery Link
                   </button>
@@ -530,8 +527,8 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="h-screen h-[100dvh] flex items-center justify-center bg-[#fafaf9]">
-          <Loader2 className="w-6 h-6 animate-spin text-[#25396e]" />
+        <div className="h-screen flex items-center justify-center bg-[#f6f4ec]">
+          <Loader2 className="w-7 h-7 animate-spin text-[#177a43]" />
         </div>
       }
     >

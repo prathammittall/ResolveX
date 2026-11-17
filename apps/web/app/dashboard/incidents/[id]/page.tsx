@@ -39,13 +39,13 @@ import {
 } from '../../_components/ui';
 
 const eventTypeMeta: Record<IncidentEventType, { icon: React.ComponentType<{ className?: string }>; color: string }> = {
-  created: { icon: PlayCircle, color: 'bg-blue-100 text-blue-600' },
-  acknowledged: { icon: Hand, color: 'bg-blue-100 text-blue-600' },
-  status_change: { icon: Settings2, color: 'bg-violet-100 text-violet-600' },
-  comment: { icon: MessageCircle, color: 'bg-slate-100 text-slate-600' },
-  assignment: { icon: UserCog, color: 'bg-indigo-100 text-indigo-600' },
-  resolved: { icon: CheckCircle2, color: 'bg-emerald-100 text-emerald-600' },
-  system: { icon: Info, color: 'bg-slate-100 text-slate-500' },
+  created: { icon: PlayCircle, color: 'bg-[#fee2e2] text-[#dc2626] border border-[#fecaca]' },
+  acknowledged: { icon: Hand, color: 'bg-[#e0f2fe] text-[#0284c7] border border-[#bae6fd]' },
+  status_change: { icon: Settings2, color: 'bg-[#ede9fe] text-[#7c3aed] border border-[#ddd6fe]' },
+  comment: { icon: MessageCircle, color: 'bg-[#eeebe0] text-[#3d4a42] border border-[#dfdbcc]' },
+  assignment: { icon: UserCog, color: 'bg-[#dcefd8] text-[#177a43] border border-[#b2e2a8]' },
+  resolved: { icon: CheckCircle2, color: 'bg-[#dcefd8] text-[#15803d] border border-[#b2e2a8]' },
+  system: { icon: Info, color: 'bg-[#f1f5f9] text-[#64748b] border border-[#cbd5e1]' },
 };
 
 export default function IncidentDetailPage() {
@@ -135,8 +135,8 @@ export default function IncidentDetailPage() {
   if (error || !data) {
     return (
       <div className="space-y-4">
-        <Link href="/dashboard/incidents" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-800">
-          <ArrowLeft className="h-4 w-4" /> Back to incidents
+        <Link href="/dashboard/incidents" className="inline-flex items-center gap-1.5 text-xs font-bold text-[#5f6b64] hover:text-[#177a43] transition">
+          <ArrowLeft className="h-3.5 w-3.5" /> Back to incidents
         </Link>
         <ErrorBanner message={error || 'Incident not found'} />
       </div>
@@ -153,44 +153,44 @@ export default function IncidentDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Link href="/dashboard/incidents" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-800">
-          <ArrowLeft className="h-4 w-4" /> Back to incidents
+      <div className="flex items-center justify-between border-b border-[#dfdbcc] pb-4">
+        <Link href="/dashboard/incidents" className="inline-flex items-center gap-1.5 text-xs font-bold text-[#5f6b64] hover:text-[#177a43] transition">
+          <ArrowLeft className="h-3.5 w-3.5" /> Back to incidents
         </Link>
       </div>
 
       {actionError && <ErrorBanner message={actionError} />}
 
       {/* Header card */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
+      <div className="rounded-2xl border border-[#dfdbcc] bg-white p-6 shadow-[0_2px_0_#dfdbcc]">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <SeverityBadge severity={incident.severity} />
               <StatusBadge status={incident.status} />
             </div>
-            <h1 className="mt-3 font-serif-title text-2xl font-semibold text-slate-900">{incident.title}</h1>
-            <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-500">
+            <h1 className="mt-3 font-display text-2xl font-extrabold text-[#14201a]">{incident.title}</h1>
+            <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-[#5f6b64]">
               <span className="inline-flex items-center gap-1.5">
-                <Server className="h-3.5 w-3.5" />
-                <Link href="/dashboard/services" className="font-medium text-slate-700 hover:underline">{incident.serviceName}</Link>
+                <Server className="h-4 w-4 text-[#177a43]" />
+                <Link href="/dashboard/services" className="font-bold text-[#14201a] hover:text-[#177a43] hover:underline transition">{incident.serviceName}</Link>
               </span>
               {incident.assignedResponderName && (
-                <span className="inline-flex items-center gap-1.5">
-                  <UserCog className="h-3.5 w-3.5" />
+                <span className="inline-flex items-center gap-1.5 font-semibold text-[#3d4a42]">
+                  <UserCog className="h-4 w-4" />
                   {incident.assignedResponderName}
                 </span>
               )}
             </div>
           </div>
-          <div className="flex shrink-0 gap-2">
+          <div className="flex shrink-0 gap-2.5">
             {canAcknowledge && (
               <button
                 onClick={handleAcknowledge}
                 disabled={acting !== null}
-                className="inline-flex items-center gap-2 rounded-xl bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:opacity-60"
+                className="btn-kizupi-ink text-sm px-4 py-2 cursor-pointer disabled:opacity-60"
               >
-                {acting === 'acknowledge' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Hand className="h-4 w-4" />}
+                {acting === 'acknowledge' ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <Hand className="h-4 w-4 mr-1.5" />}
                 Acknowledge
               </button>
             )}
@@ -198,20 +198,20 @@ export default function IncidentDetailPage() {
               <button
                 onClick={handleResolve}
                 disabled={acting !== null}
-                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+                className="btn-kizupi-go text-sm px-4 py-2 cursor-pointer disabled:opacity-60"
               >
-                {acting === 'resolve' ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                Resolve
+                {acting === 'resolve' ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <CheckCircle2 className="h-4 w-4 mr-1.5" />}
+                Mark as Resolved
               </button>
             )}
           </div>
         </div>
 
         {incident.description && (
-          <p className="mt-4 border-t border-slate-100 pt-4 text-sm text-slate-600">{incident.description}</p>
+          <p className="mt-4 border-t border-[#dfdbcc]/60 pt-4 text-sm text-[#5f6b64] leading-relaxed">{incident.description}</p>
         )}
 
-        <dl className="mt-4 grid grid-cols-2 gap-4 border-t border-slate-100 pt-4 sm:grid-cols-3">
+        <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-[#dfdbcc]/60 pt-4 sm:grid-cols-3">
           <DetailItem label="Detected" value={formatDateTime(incident.detectedAt)} sub={timeAgo(incident.detectedAt)} />
           <DetailItem
             label="Acknowledged"
@@ -300,80 +300,82 @@ export default function IncidentDetailPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Timeline */}
         <div className="lg:col-span-2">
-          <div className="rounded-2xl border border-slate-200 bg-white shadow-xs">
-            <div className="border-b border-slate-100 px-5 py-4">
-              <h3 className="font-serif-title text-base font-semibold text-slate-900">Activity Timeline</h3>
+          <div className="rounded-2xl border border-[#dfdbcc] bg-white shadow-[0_2px_0_#dfdbcc] overflow-hidden">
+            <div className="border-b border-[#dfdbcc]/80 bg-[#fbfaf6] px-5 py-4">
+              <h3 className="font-display text-base font-bold text-[#14201a]">Activity Timeline</h3>
             </div>
-            <div className="p-5">
-              <ol className="relative space-y-5 border-l border-slate-200 pl-6">
+            <div className="p-6">
+              <ol className="relative space-y-6 border-l-2 border-[#dfdbcc] pl-6">
                 {events.map((ev) => {
                   const raw = eventTypeMeta[ev.eventType];
                   const Icon = raw?.icon ?? Info;
-                  const color = raw?.color ?? 'bg-slate-100 text-slate-500';
+                  const color = raw?.color ?? 'bg-[#eeebe0] text-[#5f6b64]';
                   return (
                     <li key={ev.id} className="relative">
-                      <span className={cn('absolute -left-[31px] flex h-6 w-6 items-center justify-center rounded-full ring-4 ring-white', color)}>
-                        <Icon className="h-3 w-3" />
+                      <span className={cn('absolute -left-[33px] flex h-7 w-7 items-center justify-center rounded-full bg-white ring-4 ring-white shadow-xs', color)}>
+                        <Icon className="h-3.5 w-3.5" />
                       </span>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium capitalize text-slate-800">
+                        <span className="text-sm font-bold capitalize text-[#14201a]">
                           {ev.eventType.replace('_', ' ')}
                         </span>
-                        <span className="text-xs text-slate-400">{timeAgo(ev.occurredAt)}</span>
+                        <span className="text-xs text-[#5f6b64]">{timeAgo(ev.occurredAt)}</span>
                       </div>
-                      <p className="mt-0.5 text-sm text-slate-600">{ev.message}</p>
+                      <p className="mt-1 text-sm text-[#3d4a42]">{ev.message}</p>
                       {ev.actorName && (
-                        <p className="mt-0.5 text-xs text-slate-400">by {ev.actorName}</p>
+                        <p className="mt-0.5 text-xs font-medium text-[#5f6b64]">by {ev.actorName}</p>
                       )}
                     </li>
                   );
                 })}
                 {events.length === 0 && (
-                  <li className="text-sm text-slate-400">No activity recorded yet.</li>
+                  <li className="text-sm text-[#5f6b64]">No activity recorded yet.</li>
                 )}
               </ol>
 
               {/* Comment box */}
               {responder && (
-              <form onSubmit={handleComment} className="mt-6">
-                <div className="flex items-start gap-2">
-                  <textarea
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    placeholder="Add a comment…"
-                    rows={2}
-                    className="flex-1 resize-none rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#25396e] focus:bg-white focus:ring-2 focus:ring-[#25396e]/15"
-                  />
-                  <button
-                    type="submit"
-                    disabled={postingComment || !comment.trim()}
-                    className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#25396e] text-white transition hover:bg-[#1b2b57] disabled:opacity-50"
-                  >
-                    {postingComment ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                  </button>
-                </div>
-              </form>
+                <form onSubmit={handleComment} className="mt-7 pt-5 border-t border-[#dfdbcc]/60">
+                  <div className="flex items-start gap-2.5">
+                    <textarea
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                      placeholder="Add an internal comment or triage note..."
+                      rows={2}
+                      className="flex-1 resize-none rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] px-3.5 py-2 text-sm text-[#14201a] placeholder-[#5f6b64]/50 outline-none transition focus:border-[#177a43] focus:ring-2 focus:ring-[#177a43]/20"
+                    />
+                    <button
+                      type="submit"
+                      disabled={postingComment || !comment.trim()}
+                      className="btn-kizupi-go p-2.5 rounded-xl shrink-0 cursor-pointer disabled:opacity-50"
+                      title="Post comment"
+                      aria-label="Post comment"
+                    >
+                      {postingComment ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </form>
               )}
             </div>
           </div>
         </div>
 
         {/* Linked alerts */}
-        <div>
-          <div className="rounded-2xl border border-slate-200 bg-white shadow-xs">
-            <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-4">
-              <Bell className="h-4 w-4 text-slate-400" />
-              <h3 className="font-serif-title text-base font-semibold text-slate-900">Linked Alerts</h3>
+        <div className="space-y-5">
+          <div className="rounded-2xl border border-[#dfdbcc] bg-white shadow-[0_2px_0_#dfdbcc] overflow-hidden">
+            <div className="flex items-center gap-2 border-b border-[#dfdbcc]/80 bg-[#fbfaf6] px-5 py-4">
+              <Bell className="h-4 w-4 text-[#177a43]" />
+              <h3 className="font-display text-base font-bold text-[#14201a]">Linked Alerts</h3>
             </div>
             <div className="p-5">
               {alerts.length === 0 ? (
-                <p className="text-sm text-slate-400">No alerts linked to this incident.</p>
+                <p className="text-sm text-[#5f6b64]">No raw alerts linked to this incident.</p>
               ) : (
-                <ul className="space-y-3">
+                <ul className="space-y-2.5">
                   {alerts.map((a) => (
-                    <li key={a.id} className="rounded-xl border border-slate-100 bg-slate-50/50 px-3 py-2.5">
-                      <p className="truncate font-mono text-xs text-slate-600">{a.providerEventId}</p>
-                      <p className="mt-0.5 text-xs text-slate-400">
+                    <li key={a.id} className="rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] px-3.5 py-2.5">
+                      <p className="truncate font-mono text-xs font-bold text-[#14201a]">{a.providerEventId}</p>
+                      <p className="mt-0.5 text-xs text-[#5f6b64]">
                         {a.provider} · {timeAgo(a.receivedAt)}
                       </p>
                     </li>
@@ -383,14 +385,14 @@ export default function IncidentDetailPage() {
             </div>
           </div>
 
-          <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+          <div className="rounded-2xl border border-[#dfdbcc] bg-white p-5 shadow-[0_2px_0_#dfdbcc]">
             <div className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-slate-400" />
-              <h3 className="font-serif-title text-sm font-semibold text-slate-900">Lifecycle</h3>
+              <ShieldCheck className="h-4 w-4 text-[#177a43]" />
+              <h3 className="font-display text-sm font-bold text-[#14201a]">Lifecycle & SLA Policy</h3>
             </div>
-            <p className="mt-2 text-xs leading-relaxed text-slate-500">
-              Recovery alerts move an incident to <span className="font-medium text-amber-600">mitigated</span> but never auto-resolve it.
-              Resolving manually marks the service healthy and frees it to accept new alerts.
+            <p className="mt-2 text-xs leading-relaxed text-[#5f6b64]">
+              Recovery alerts transition an incident to <span className="font-semibold text-[#b45309]">mitigated</span>, but require human responder sign-off to formally close.
+              Resolving confirms the service is healthy and unblocks monitoring pipelines.
             </p>
           </div>
         </div>
@@ -402,9 +404,9 @@ export default function IncidentDetailPage() {
 function DetailItem({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div>
-      <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</dt>
-      <dd className="mt-0.5 text-sm font-medium text-slate-800">{value}</dd>
-      {sub && <p className="text-xs text-slate-400">{sub}</p>}
+      <dt className="text-xs font-bold uppercase tracking-wider text-[#5f6b64]">{label}</dt>
+      <dd className="mt-0.5 text-sm font-bold text-[#14201a]">{value}</dd>
+      {sub && <p className="text-xs text-[#5f6b64] mt-0.5">{sub}</p>}
     </div>
   );
 }

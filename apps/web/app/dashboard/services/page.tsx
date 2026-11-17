@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   ExternalLink,
   KeyRound,
+  ShieldCheck,
 } from 'lucide-react';
 import Link from 'next/link';
 import { api, ApiError } from '../../../lib/api';
@@ -41,10 +42,10 @@ const ENVIRONMENTS: ServiceEnvironment[] = ['production', 'staging', 'developmen
 const CRITICALITIES: ServiceCriticality[] = ['low', 'medium', 'high', 'critical'];
 
 const criticalityCls: Record<ServiceCriticality, string> = {
-  low: 'bg-slate-100 text-slate-600',
-  medium: 'bg-blue-100 text-blue-700',
-  high: 'bg-amber-100 text-amber-700',
-  critical: 'bg-rose-100 text-rose-700',
+  low: 'bg-[#f1f5f9] text-[#475569] border border-[#cbd5e1]',
+  medium: 'bg-[#e0f2fe] text-[#0369a1] border border-[#bae6fd]',
+  high: 'bg-[#fef3c7] text-[#92400e] border border-[#fde68a]',
+  critical: 'bg-[#fee2e2] text-[#991b1b] border border-[#fecaca] font-bold',
 };
 
 interface FormState {
@@ -177,19 +178,19 @@ export default function ServicesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#dfdbcc] pb-5">
         <div>
-          <h1 className="font-serif-title text-2xl font-semibold text-slate-900">Services</h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Monitored services across your environments.
+          <h1 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-[#14201a]">Services</h1>
+          <p className="mt-1 text-sm text-[#5f6b64]">
+            Catalog of internal services, APIs, databases, and automated uptime checks.
           </p>
         </div>
         {canManage && (
           <button
             onClick={openCreate}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#25396e] px-4 py-2.5 text-sm font-semibold text-white shadow-xs transition hover:bg-[#1b2b57] active:scale-[0.98]"
+            className="btn-kizupi-go text-sm px-4 py-2.5 cursor-pointer"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-4 w-4 mr-1.5" />
             New Service
           </button>
         )}
@@ -200,141 +201,150 @@ export default function ServicesPage() {
       {services.length === 0 ? (
         <EmptyState
           icon={Server}
-          title="No services yet"
-          description={canManage ? 'Add your first monitored service so alerts can be ingested and grouped into incidents.' : 'An owner or admin needs to add services before alerts can be ingested.'}
+          title="No services registered yet"
+          description={canManage ? 'Add your first monitored service so telemetry and alerts can be ingested and linked to project tasks.' : 'An owner or admin needs to add services before alerts can be ingested.'}
           action={canManage && (
             <button
               onClick={openCreate}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#25396e] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1b2b57]"
+              className="btn-kizupi-go text-sm px-4 py-2.5 cursor-pointer"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4 w-4 mr-1.5" />
               Add a service
             </button>
           )}
         />
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/60 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                <th className="px-5 py-3">Service</th>
-                <th className="px-5 py-3">Health</th>
-                <th className="px-5 py-3">Type</th>
-                <th className="hidden px-5 py-3 lg:table-cell">Environment</th>
-                <th className="hidden px-5 py-3 md:table-cell">Criticality</th>
-                <th className="hidden px-5 py-3 sm:table-cell">Open Incident</th>
-                <th className="px-5 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {services.map((svc) => (
-                <tr key={svc.id} className="group transition hover:bg-slate-50/60">
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-2">
-                      <Server className="h-4 w-4 text-slate-400" />
-                      <div>
-                        <p className="text-sm font-medium text-slate-800">{svc.name}</p>
-                        {svc.description && (
-                          <p className="max-w-xs truncate text-xs text-slate-400">{svc.description}</p>
+        <div className="overflow-hidden rounded-2xl border border-[#dfdbcc] bg-white shadow-[0_2px_0_#dfdbcc]">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-[#dfdbcc] bg-[#fbfaf6] text-xs font-bold uppercase tracking-wide text-[#5f6b64]">
+                  <th className="px-5 py-3">Service</th>
+                  <th className="px-5 py-3">Health</th>
+                  <th className="px-5 py-3">Type</th>
+                  <th className="hidden px-5 py-3 lg:table-cell">Environment</th>
+                  <th className="hidden px-5 py-3 md:table-cell">Criticality</th>
+                  <th className="hidden px-5 py-3 sm:table-cell">Open Incident</th>
+                  <th className="px-5 py-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#dfdbcc]/50 text-sm">
+                {services.map((svc) => (
+                  <tr key={svc.id} className="group transition hover:bg-[#f6f4ec]">
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-[#eeebe0] flex items-center justify-center text-[#177a43] shrink-0">
+                          <Server className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-[#14201a]">{svc.name}</p>
+                          {svc.description && (
+                            <p className="max-w-xs truncate text-xs text-[#5f6b64]">{svc.description}</p>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <HealthBadge status={svc.healthStatus} />
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-[#5f6b64] bg-[#eeebe0] px-2 py-0.5 rounded-md">{svc.serviceType}</span>
+                    </td>
+                    <td className="hidden px-5 py-3.5 lg:table-cell">
+                      <span className="text-xs font-semibold capitalize text-[#3d4a42]">{svc.environment}</span>
+                    </td>
+                    <td className="hidden px-5 py-3.5 md:table-cell">
+                      <span className={cn('inline-flex rounded-md px-2 py-0.5 text-[11px] font-semibold capitalize', criticalityCls[svc.criticality])}>
+                        {svc.criticality}
+                      </span>
+                    </td>
+                    <td className="hidden px-5 py-3.5 sm:table-cell">
+                      {svc.openIncident ? (
+                        <Link href={`/dashboard/incidents/${svc.openIncident.id}`} className="inline-flex items-center gap-1.5 hover:opacity-80 transition">
+                          <SeverityBadge severity={svc.openIncident.severity} />
+                          <StatusBadge status={svc.openIncident.status} />
+                        </Link>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs text-[#177a43] font-semibold">
+                          <ShieldCheck className="w-3.5 h-3.5" /> Normal
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-5 py-3.5 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        {svc.monitoredUrl && (
+                          <a
+                            href={svc.monitoredUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="rounded-lg p-1.5 text-[#5f6b64] hover:bg-[#eeebe0] hover:text-[#14201a] transition"
+                            title="Open monitored URL"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </a>
+                        )}
+                        <button
+                          onClick={() => setKeysFor(svc)}
+                          className="rounded-lg p-1.5 text-[#5f6b64] hover:bg-[#eeebe0] hover:text-[#177a43] transition cursor-pointer"
+                          title="Alert webhook keys"
+                          aria-label={`Webhook keys for ${svc.name}`}
+                        >
+                          <KeyRound className="h-3.5 w-3.5" />
+                        </button>
+                        {canManage && (
+                          <>
+                            <button
+                              onClick={() => openEdit(svc)}
+                              className="rounded-lg p-1.5 text-[#5f6b64] hover:bg-[#eeebe0] hover:text-[#14201a] transition cursor-pointer"
+                              title="Edit"
+                              aria-label={`Edit ${svc.name}`}
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              onClick={() => setConfirmDelete(svc)}
+                              className="rounded-lg p-1.5 text-[#5f6b64] hover:bg-[#fee2e2] hover:text-[#dc2626] transition cursor-pointer"
+                              title="Delete"
+                              aria-label={`Delete ${svc.name}`}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </>
                         )}
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <HealthBadge status={svc.healthStatus} />
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <span className="text-sm capitalize text-slate-600">{svc.serviceType}</span>
-                  </td>
-                  <td className="hidden px-5 py-3.5 lg:table-cell">
-                    <span className="text-sm capitalize text-slate-600">{svc.environment}</span>
-                  </td>
-                  <td className="hidden px-5 py-3.5 md:table-cell">
-                    <span className={cn('inline-flex rounded-md px-2 py-0.5 text-xs font-medium capitalize', criticalityCls[svc.criticality])}>
-                      {svc.criticality}
-                    </span>
-                  </td>
-                  <td className="hidden px-5 py-3.5 sm:table-cell">
-                    {svc.openIncident ? (
-                      <Link href={`/dashboard/incidents/${svc.openIncident.id}`} className="inline-flex items-center gap-2">
-                        <SeverityBadge severity={svc.openIncident.severity} />
-                        <StatusBadge status={svc.openIncident.status} />
-                      </Link>
-                    ) : (
-                      <span className="text-xs text-slate-400">—</span>
-                    )}
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center justify-end gap-1">
-                      {svc.monitoredUrl && (
-                        <a
-                          href={svc.monitoredUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-                          title="Open monitored URL"
-                        >
-                          <ExternalLink className="h-3.5 w-3.5" />
-                        </a>
-                      )}
-                      <button
-                        onClick={() => setKeysFor(svc)}
-                        className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-                        title="Alert webhook keys"
-                        aria-label={`Webhook keys for ${svc.name}`}
-                      >
-                        <KeyRound className="h-3.5 w-3.5" />
-                      </button>
-                      {canManage && (
-                        <>
-                          <button
-                            onClick={() => openEdit(svc)}
-                            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-                            title="Edit"
-                            aria-label={`Edit ${svc.name}`}
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            onClick={() => setConfirmDelete(svc)}
-                            className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
-                            title="Delete"
-                            aria-label={`Delete ${svc.name}`}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
       {/* Create / Edit modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs" onClick={() => setModalOpen(false)} />
-          <div className="relative w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+          <div className="fixed inset-0 bg-[#14201a]/40 backdrop-blur-xs" onClick={() => setModalOpen(false)} />
+          <div className="relative w-full max-w-lg rounded-2xl border border-[#dfdbcc] bg-white p-6 shadow-2xl">
             <div className="flex items-center justify-between">
-              <h2 className="font-serif-title text-lg font-semibold text-slate-900">
-                {modalMode === 'create' ? 'New Service' : 'Edit Service'}
-              </h2>
-              <button onClick={() => setModalOpen(false)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
+              <div>
+                <h2 className="font-display text-xl font-bold text-[#14201a]">
+                  {modalMode === 'create' ? 'Register Service' : 'Edit Service'}
+                </h2>
+                <p className="mt-0.5 text-xs text-[#5f6b64]">Configure service endpoint, metadata, and criticality tier.</p>
+              </div>
+              <button onClick={() => setModalOpen(false)} className="rounded-lg p-1.5 text-[#5f6b64] hover:bg-[#eeebe0] transition cursor-pointer">
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-              <Field label="Name">
+            <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+              <Field label="Service Name">
                 <input
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  placeholder="payments-api"
-                  className="input"
+                  placeholder="payments-checkout-api"
+                  className="w-full rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] px-3.5 py-2 text-sm text-[#14201a] outline-none transition focus:border-[#177a43] focus:ring-2 focus:ring-[#177a43]/20"
                   autoFocus
                 />
               </Field>
@@ -344,7 +354,7 @@ export default function ServicesPage() {
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
                   placeholder="What does this service do?"
                   rows={2}
-                  className="input resize-none"
+                  className="w-full rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] px-3.5 py-2 text-sm text-[#14201a] outline-none transition focus:border-[#177a43] focus:ring-2 focus:ring-[#177a43]/20 resize-none"
                 />
               </Field>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -363,32 +373,32 @@ export default function ServicesPage() {
                   value={form.monitoredUrl}
                   onChange={(e) => setForm({ ...form, monitoredUrl: e.target.value })}
                   placeholder="https://api.example.com/health"
-                  className="input"
+                  className="w-full rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] px-3.5 py-2 text-sm text-[#14201a] outline-none transition focus:border-[#177a43] focus:ring-2 focus:ring-[#177a43]/20"
                 />
               </Field>
 
               {formError && (
-                <div className="flex items-center gap-2 rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-700">
-                  <AlertTriangle className="h-3.5 w-3.5" />
+                <div className="flex items-center gap-2 rounded-xl bg-[#fee2e2] border border-[#fca5a5] px-3.5 py-2 text-xs font-semibold text-[#991b1b]">
+                  <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                   {formError}
                 </div>
               )}
 
-              <div className="flex items-center justify-end gap-2 pt-2">
+              <div className="flex items-center justify-end gap-2.5 pt-2">
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="rounded-lg px-3.5 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
+                  className="btn-kizupi-white text-sm px-4 py-2 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="inline-flex items-center gap-2 rounded-lg bg-[#25396e] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1b2b57] disabled:opacity-60"
+                  className="btn-kizupi-go text-sm px-5 py-2 cursor-pointer disabled:opacity-60"
                 >
-                  {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {modalMode === 'create' ? 'Create service' : 'Save changes'}
+                  {saving && <Loader2 className="h-4 w-4 animate-spin mr-1.5" />}
+                  {modalMode === 'create' ? 'Register service' : 'Save changes'}
                 </button>
               </div>
             </form>
@@ -399,31 +409,31 @@ export default function ServicesPage() {
       {/* Delete confirm */}
       {confirmDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs" onClick={() => setConfirmDelete(null)} />
-          <div className="relative w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+          <div className="fixed inset-0 bg-[#14201a]/40 backdrop-blur-xs" onClick={() => setConfirmDelete(null)} />
+          <div className="relative w-full max-w-sm rounded-2xl border border-[#dfdbcc] bg-white p-6 shadow-2xl">
             <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-50 text-rose-600">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#fee2e2] text-[#dc2626]">
                 <Trash2 className="h-5 w-5" />
               </span>
-              <h2 className="font-serif-title text-lg font-semibold text-slate-900">Delete service?</h2>
+              <h2 className="font-display text-lg font-bold text-[#14201a]">Delete service?</h2>
             </div>
-            <p className="mt-3 text-sm text-slate-600">
-              Deleting <span className="font-medium text-slate-800">{confirmDelete.name}</span> will also remove its incidents and alerts. This cannot be undone.
+            <p className="mt-3 text-sm text-[#5f6b64]">
+              Deleting <span className="font-bold text-[#14201a]">{confirmDelete.name}</span> will also remove its associated incidents and historical alerts. This cannot be undone.
             </p>
-            <div className="mt-5 flex items-center justify-end gap-2">
+            <div className="mt-5 flex items-center justify-end gap-2.5">
               <button
                 onClick={() => setConfirmDelete(null)}
-                className="rounded-lg px-3.5 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
+                className="btn-kizupi-white text-xs px-3.5 py-2 cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
                 disabled={deleting}
-                className="inline-flex items-center gap-2 rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700 disabled:opacity-60"
+                className="btn-kizupi-ink text-xs px-4 py-2 cursor-pointer disabled:opacity-60"
               >
-                {deleting && <Loader2 className="h-4 w-4 animate-spin" />}
-                Delete
+                {deleting && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />}
+                Delete service
               </button>
             </div>
           </div>
@@ -437,9 +447,9 @@ export default function ServicesPage() {
 function Field({ label, optional, children }: { label: string; optional?: boolean; children: React.ReactNode }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-semibold text-slate-700">
+      <label className="mb-1 block text-xs font-semibold text-[#14201a]">
         {label}
-        {optional && <span className="ml-1 font-normal text-slate-400">(optional)</span>}
+        {optional && <span className="ml-1 font-normal text-[#5f6b64]">(optional)</span>}
       </label>
       {children}
     </div>
@@ -448,9 +458,9 @@ function Field({ label, optional, children }: { label: string; optional?: boolea
 
 function Select({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: string[] }) {
   return (
-    <select value={value} onChange={(e) => onChange(e.target.value)} className="input capitalize">
+    <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] px-3 py-2 text-sm text-[#14201a] outline-none transition focus:border-[#177a43] capitalize cursor-pointer">
       {options.map((o) => (
-        <option key={o} value={o} className="capitalize">
+        <option key={o} value={o} className="capitalize bg-white text-[#14201a]">
           {o}
         </option>
       ))}

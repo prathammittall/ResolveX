@@ -1,19 +1,226 @@
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 :root {
-  --font-serif: 'Newsreader', 'Instrument Serif', Georgia, serif;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --paper: #f6f4ec;
+  --paper-2: #eeebe0;
+  --paper-3: #e4e0d1;
+  --card: #ffffff;
+  --ink: #14201a;
+  --ink-2: #3d4a42;
+  --ink-3: #5f6b64;
+  --rule: #dfdbcc;
+  --pine: #177a43;
+  --pine-d: #0f5e32;
+  --pine-deep: #0e4d2a;
+  --pine-l: #dcefd8;
+  --lime: #c6f36b;
+  --lime-d: #9bcb3c;
+  --lime-l: #eafbc8;
+  --honey: #ffb930;
+  --honey-d: #d38a00;
+  --tangerine: #ff7a2f;
+  --berry: #ee4b57;
+  --berry-l: #fde8e9;
+  --sky: #4db3f0;
+  --lavender: #dcd8f7;
+  --lavender-d: #7773d6;
+  --peach: #f5d5c4;
+  --mint: #d3e8d9;
+  --night: #111914;
+  --night-2: #1a251e;
+  --night-rule: #2a372f;
+  --night-ink: #e7eee9;
+  --night-ink-2: #a5b5ab;
+
+  --font-display: 'Bricolage Grotesque', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
 body {
-  font-family: var(--font-sans);
-  background-color: #fafaf9;
-  color: #0f172a;
+  font-family: var(--font-body);
+  background-color: var(--paper);
+  color: var(--ink);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
-.font-serif-title {
-  font-family: 'Newsreader', 'Instrument Serif', Georgia, serif;
+/* Headings with Kizupi display feel */
+h1, h2, .font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.03em;
+  font-weight: 700;
+}
+
+h3, h4 {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
+  font-weight: 700;
+}
+
+/* Kizupi-style highlight */
+mark.why, mark.hl-box, .hl-lime-box {
+  background-color: var(--lime);
+  color: var(--ink);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Kizupi Tactile Buttons */
+.btn-kizupi-go {
+  background-color: var(--pine);
+  color: #ffffff;
+  box-shadow: 0 3px 0 var(--pine-deep), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  font-weight: 700;
+  transition: transform 80ms ease, box-shadow 80ms ease, background-color 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-kizupi-go:hover {
+  background-color: #1b8a4c;
+  color: #ffffff;
+}
+.btn-kizupi-go:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--pine-deep);
+}
+
+.btn-kizupi-lime {
+  background-color: var(--lime);
+  color: var(--ink);
+  box-shadow: 0 3px 0 var(--lime-d);
+  border-radius: 10px;
+  font-weight: 700;
+  transition: transform 80ms ease, box-shadow 80ms ease, background-color 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-kizupi-lime:hover {
+  background-color: #d3f882;
+  color: var(--ink);
+}
+.btn-kizupi-lime:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--lime-d);
+}
+
+.btn-kizupi-white {
+  background-color: var(--card);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--rule), 0 2px 0 var(--rule);
+  border-radius: 10px;
+  font-weight: 700;
+  transition: transform 80ms ease, box-shadow 80ms ease, background-color 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-kizupi-white:hover {
+  background-color: #fbfaf6;
+  color: var(--ink);
+}
+.btn-kizupi-white:active {
+  transform: translateY(1.5px);
+  box-shadow: inset 0 0 0 1px var(--rule), 0 0.5px 0 var(--rule);
+}
+
+.btn-kizupi-honey {
+  background-color: var(--honey);
+  color: var(--ink);
+  box-shadow: 0 3px 0 var(--honey-d);
+  border-radius: 10px;
+  font-weight: 700;
+  transition: transform 80ms ease, box-shadow 80ms ease, background-color 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-kizupi-honey:hover {
+  background-color: #ffc54f;
+  color: var(--ink);
+}
+.btn-kizupi-honey:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--honey-d);
+}
+
+.btn-kizupi-ink {
+  background-color: var(--ink);
+  color: #ffffff;
+  box-shadow: 0 3px 0 #000000;
+  border-radius: 10px;
+  font-weight: 700;
+  transition: transform 80ms ease, box-shadow 80ms ease, background-color 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-kizupi-ink:hover {
+  background-color: #22332a;
+  color: #ffffff;
+}
+.btn-kizupi-ink:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #000000;
+}
+
+.btn-kizupi-ghost {
+  background-color: transparent;
+  color: var(--ink-2);
+  box-shadow: inset 0 0 0 1.5px var(--rule);
+  border-radius: 10px;
+  font-weight: 700;
+  transition: all 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-kizupi-ghost:hover {
+  background-color: var(--paper-2);
+  color: var(--ink);
+}
+
+/* Tactile outline cards */
+.card-tactile {
+  background-color: var(--card);
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+  border-radius: 18px;
+}
+
+.card-tactile-soft {
+  background-color: var(--card);
+  border: 1.5px solid var(--rule);
+  box-shadow: 0 2px 0 var(--rule);
+  border-radius: 16px;
+}
+
+/* Dither pattern decoration */
+.dither-band {
+  background-image: radial-gradient(#14201a 1px, transparent 0);
+  background-size: 8px 8px;
+  opacity: 0.12;
+}
+
+/* Subtle scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--paper-2);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--rule);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c7c1b0;
 }
