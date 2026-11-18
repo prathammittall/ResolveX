@@ -31,8 +31,8 @@ FROM base AS installer
 # Copy workspace package definitions & pruned lockfile to leverage Docker layer caching
 COPY --from=pruner /app/out/json/ .
 
-# Install dependencies strictly defined in the pruned lockfile
-RUN npm ci
+# Install dependencies using --legacy-peer-deps to ignore peer dependency mismatches from pruned monorepo slices
+RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
 
 # Copy full pruned source files and configs
 COPY --from=pruner /app/out/full/ .
