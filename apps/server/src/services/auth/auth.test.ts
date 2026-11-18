@@ -27,6 +27,7 @@ import {
   handleRefreshToken,
   handleRegister,
 } from './route.js';
+import { getOtp } from './otp.js';
 
 describe('Auth Service', () => {
   const testCompaniesToClean: number[] = [];
@@ -159,11 +160,22 @@ describe('Auth Service', () => {
       ).rejects.toThrow(AuthError);
     });
 
-    it('logs in successfully with valid credentials', async () => {
-      const result = await login({
+    it('logs in successfully with valid credentials and requests OTP', async () => {
+      const otpResult = await login({
         email,
         password,
       });
+
+      expect(otpResult.ok).toBe(true);
+      expect(otpResult.requireOtp).toBe(true);
+      if (otpResult.requireOtp) {
+        expect(otpResult.email).toBe(email.toLowerCase());
+        expect(otpResult.otpToken).toBeDefined();
+      }
+
+      // When skipOtp is enabled, direct tokens are returned
+      const result = await login({ email, password }, { skipOtp: true });
+      if (result.requireOtp) throw new Error('Expected direct login with skipOtp: true');
 
       expect(result.ok).toBe(true);
       expect(result.user.id).toBe(createdUserId);
@@ -226,7 +238,8 @@ describe('Auth Service', () => {
     });
 
     it('reuse of a spent refresh token revokes the whole family', async () => {
-      const first = await login({ email, password });
+      const first = await login({ email, password }, { skipOtp: true });
+      if (first.requireOtp) throw new Error('Expected tokens');
       const rotated = await refresh({ refreshToken: first.tokens.refreshToken });
 
       // Replaying the spent token is treated as theft...
@@ -236,7 +249,8 @@ describe('Auth Service', () => {
     });
 
     it('logs out by revoking the session', async () => {
-      const fresh = await login({ email, password });
+      const fresh = await login({ email, password }, { skipOtp: true });
+      if (fresh.requireOtp) throw new Error('Expected tokens');
       currentRefreshToken = fresh.tokens.refreshToken;
       const result = await logout({
         refreshToken: currentRefreshToken,
@@ -298,8 +312,9 @@ describe('Auth Service', () => {
       testCompaniesToClean.push(createdCompanyId);
     });
 
-    it('handles POST /login via authRouter and sets cookies', async () => {
-      const request = new Request('http://localhost:3000/api/auth/login', {
+    it('handles POST /login and POST /verify-otp via authRouter and sets cookies', async () => {
+      // Step 1: POST /login sends OTP
+      const loginRequest = new Request('http://localhost:3000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -308,16 +323,39 @@ describe('Auth Service', () => {
         }),
       });
 
-      const response = await authRouter(request);
-      expect(response.status).toBe(200);
+      const loginResponse = await authRouter(loginRequest);
+      expect(loginResponse.status).toBe(200);
 
-      const body = (await response.json()) as any;
+      const loginBody = (await loginResponse.json()) as any;
+      expect(loginBody.ok).toBe(true);
+      expect(loginBody.requireOtp).toBe(true);
+      expect(loginBody.otpToken).toBeDefined();
+
+      const otpRecord = getOtp(email);
+      expect(otpRecord).not.toBeNull();
+      expect(otpRecord?.code).toBeDefined();
+
+      // Step 2: POST /verify-otp verifies code and sets session cookies
+      const verifyRequest = new Request('http://localhost:3000/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          otp: otpRecord!.code,
+          otpToken: loginBody.otpToken,
+        }),
+      });
+
+      const verifyResponse = await authRouter(verifyRequest);
+      expect(verifyResponse.status).toBe(200);
+
+      const body = (await verifyResponse.json()) as any;
       expect(body.ok).toBe(true);
       expect(body.tokens.accessToken).toBeDefined();
 
-      const setCookies = typeof response.headers.getSetCookie === 'function'
-        ? response.headers.getSetCookie()
-        : [response.headers.get('set-cookie') || ''];
+      const setCookies = typeof verifyResponse.headers.getSetCookie === 'function'
+        ? verifyResponse.headers.getSetCookie()
+        : [verifyResponse.headers.get('set-cookie') || ''];
       expect(setCookies.some((c) => c.includes(`accessToken=${body.tokens.accessToken}`))).toBe(true);
       expect(setCookies.some((c) => c.includes(`refreshToken=${body.tokens.refreshToken}`))).toBe(true);
 

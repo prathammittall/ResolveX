@@ -28,7 +28,6 @@ import {
 import EcosystemBar from './home/EcosystemBar';
 import HowItWorks from './home/HowItWorks';
 import InteractiveSimulator from './home/InteractiveSimulator';
-import { ThemeToggle } from './ThemeToggle';
 import FeaturesGrid from './home/FeaturesGrid';
 import ComparisonMatrix from './home/ComparisonMatrix';
 import PricingPlans from './home/PricingPlans';
@@ -54,36 +53,35 @@ export default function ResolveXLanding() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#f6f4ec] dark:bg-[#0c1410] text-[#14201a] dark:text-[#f0f5f2] selection:bg-[#c6f36b] selection:text-[#14201a] flex flex-col justify-between overflow-x-hidden transition-colors duration-150">
+    <div className="min-h-screen bg-[#f6f4ec] text-[#14201a] selection:bg-[#c6f36b] selection:text-[#14201a] flex flex-col justify-between overflow-x-hidden">
       {/* Kizupi-inspired Sticky Header */}
-      <header className="sticky top-0 z-40 bg-[#f6f4ec]/90 dark:bg-[#0c1410]/90 backdrop-blur-md border-b border-[#dfdbcc] dark:border-[#23372c]">
+      <header className="sticky top-0 z-40 bg-[#f6f4ec]/90 backdrop-blur-md border-b border-[#dfdbcc]">
         <div className="wrap max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
           {/* Left: Brand Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
             <ResolveXLogoMark className="w-7 h-7 transition-transform group-hover:scale-105 duration-200" />
-            <span className="font-display font-extrabold text-2xl tracking-tight text-[#14201a] dark:text-[#f0f5f2]">
-              Resolve<span className="text-[#177a43] dark:text-[#22b163]">X</span>
+            <span className="font-display font-extrabold text-2xl tracking-tight text-[#14201a]">
+              Resolve<span className="text-[#177a43]">X</span>
             </span>
           </Link>
 
           {/* Center Navigation Links */}
-          <nav className="hidden md:flex items-center gap-7 text-sm font-bold text-[#3d4a42] dark:text-[#c4d3cb]">
-            <a href="#features" className="hover:text-[#177a43] dark:hover:text-[#38d47d] transition">Product</a>
-            <a href="#features" className="hover:text-[#177a43] dark:hover:text-[#38d47d] transition">Features</a>
-            <a href="#demo" className="hover:text-[#177a43] dark:hover:text-[#38d47d] transition flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#177a43] dark:bg-[#38d47d] animate-pulse" />
+          <nav className="hidden md:flex items-center gap-7 text-sm font-bold text-[#3d4a42]">
+            <a href="#features" className="hover:text-[#177a43] transition">Product</a>
+            <a href="#features" className="hover:text-[#177a43] transition">Features</a>
+            <a href="#demo" className="hover:text-[#177a43] transition flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#177a43] animate-pulse" />
               Monitoring
             </a>
-            <a href="#pricing" className="hover:text-[#177a43] dark:hover:text-[#38d47d] transition">Pricing</a>
-            <a href="#faq" className="hover:text-[#177a43] dark:hover:text-[#38d47d] transition">FAQ</a>
+            <a href="#pricing" className="hover:text-[#177a43] transition">Pricing</a>
+            <a href="#faq" className="hover:text-[#177a43] transition">FAQ</a>
           </nav>
 
           {/* Right Action Buttons */}
           <div className="hidden sm:flex items-center gap-3">
-            <ThemeToggle />
             <Link
               href="/login"
-              className="text-sm font-bold text-[#3d4a42] dark:text-[#c4d3cb] hover:text-[#14201a] dark:hover:text-[#f0f5f2] px-3.5 py-2 transition"
+              className="text-sm font-bold text-[#3d4a42] hover:text-[#14201a] px-3.5 py-2 transition"
             >
               Sign in
             </Link>
@@ -96,17 +94,14 @@ export default function ResolveXLanding() {
           </div>
 
           {/* Mobile Menu Hamburger */}
-          <div className="flex md:hidden items-center gap-2">
-            <ThemeToggle />
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-xl text-[#14201a] dark:text-[#f0f5f2] hover:bg-[#eeebe0] dark:hover:bg-[#18261e] transition cursor-pointer"
-              aria-label="Toggle Navigation Menu"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 rounded-xl text-[#14201a] hover:bg-[#eeebe0] transition cursor-pointer"
+            aria-label="Toggle Navigation Menu"
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
         </div>
 
         {/* Mobile Navigation Drawer */}

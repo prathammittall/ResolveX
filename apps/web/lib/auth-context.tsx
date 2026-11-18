@@ -17,12 +17,22 @@ export interface AuthUser {
   updatedAt?: string;
 }
 
-type AuthResult = { ok: boolean; error?: string; user?: AuthUser };
+export type AuthResult = {
+  ok: boolean;
+  error?: string;
+  user?: AuthUser;
+  requireOtp?: boolean;
+  email?: string;
+  otpToken?: string;
+  message?: string;
+};
 
 interface AuthContextType {
   user: AuthUser | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<AuthResult>;
+  verifyOtp: (data: { email: string; otp: string; otpToken?: string }) => Promise<AuthResult>;
+  resendOtp: (data: { email: string; otpToken?: string }) => Promise<{ ok: boolean; error?: string; message?: string; otpToken?: string }>;
   loginWithGoogle: (data: { credential?: string; email?: string; name?: string }) => Promise<AuthResult>;
   register: (data: {
     email: string;
@@ -128,11 +138,93 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const login = useCallback(
-    (email: string, password: string) =>
-      authRequest('/api/auth/login', { email, password }, 'Login failed. Please try again.', (data) =>
-        data?.error?.code === 'INVALID_CREDENTIALS' ? 'Invalid email or password' : data?.error?.message || 'Login failed. Please try again.',
-      ),
-    [authRequest],
+    async (email: string, password: string): Promise<AuthResult> => {
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          const message =
+            data?.error?.code === 'INVALID_CREDENTIALS'
+              ? 'Invalid email or password'
+              : data?.error?.message || 'Login failed. Please try again.';
+          return { ok: false, error: message };
+        }
+        if (data.requireOtp) {
+          return {
+            ok: true,
+            requireOtp: true,
+            email: data.email || email,
+            otpToken: data.otpToken,
+            message: data.message || 'Verification code sent to your email',
+          };
+        }
+        const authUser: AuthUser = data.user;
+        setUser(authUser);
+        return { ok: true, user: authUser };
+      } catch (err) {
+        return {
+          ok: false,
+          error: err instanceof Error ? err.message : 'Network error occurred. Please try again.',
+        };
+      }
+    },
+    [],
+  );
+
+  const verifyOtp = useCallback(
+    async (payload: { email: string; otp: string; otpToken?: string }): Promise<AuthResult> => {
+      try {
+        const res = await fetch('/api/auth/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          const message = data?.error?.message || 'OTP verification failed. Please check your code.';
+          return { ok: false, error: message };
+        }
+        const authUser: AuthUser = data.user;
+        setUser(authUser);
+        return { ok: true, user: authUser };
+      } catch (err) {
+        return {
+          ok: false,
+          error: err instanceof Error ? err.message : 'Network error occurred. Please try again.',
+        };
+      }
+    },
+    [],
+  );
+
+  const resendOtp = useCallback(
+    async (payload: { email: string; otpToken?: string }): Promise<{ ok: boolean; error?: string; message?: string; otpToken?: string }> => {
+      try {
+        const res = await fetch('/api/auth/resend-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          return { ok: false, error: data?.error?.message || 'Failed to resend verification code.' };
+        }
+        return { ok: true, message: data.message, otpToken: data.otpToken };
+      } catch (err) {
+        return {
+          ok: false,
+          error: err instanceof Error ? err.message : 'Network error occurred. Please try again.',
+        };
+      }
+    },
+    [],
   );
 
   const loginWithGoogle = useCallback(
@@ -186,7 +278,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, loginWithGoogle, register, logout, switchOrg, refreshUser }}>
+    <AuthContext.Provider value={{ user, isLoading, login, verifyOtp, resendOtp, loginWithGoogle, register, logout, switchOrg, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -6,11 +6,11 @@ import { authRouter } from './services/auth/index.js';
 import { dashboardRouter } from './services/api/index.js';
 import { processAlertWebhook, isAlertProcessingError, type AlertErrorBody } from './services/incident-engine/index.js';
 
-const AUTH_PATHS = ['/api/auth', '/auth', '/register', '/login', '/refresh', '/logout', '/me', '/google'];
+const AUTH_PATHS = ['/api/auth', '/auth', '/register', '/login', '/refresh', '/logout', '/me', '/google', '/verify-otp', '/resend-otp'];
 const BODY_LIMIT = '1mb';
 
 const MIN = 60_000;
-export type RateLimitName = 'login' | 'loginPerEmail' | 'register' | 'refresh' | 'webhook' | 'api';
+export type RateLimitName = 'login' | 'loginPerEmail' | 'register' | 'refresh' | 'webhook' | 'api' | 'otp';
 
 /** Defaults are deliberately conservative for credential endpoints; override per environment via createApp. */
 export const DEFAULT_RATE_LIMITS: Record<RateLimitName, RateLimitRule> = {
@@ -20,11 +20,13 @@ export const DEFAULT_RATE_LIMITS: Record<RateLimitName, RateLimitRule> = {
   refresh: { windowMs: 15 * MIN, max: 120 }, // per IP
   webhook: { windowMs: MIN, max: 600 }, // per IP
   api: { windowMs: MIN, max: 600 }, // per IP, dashboard API
+  otp: { windowMs: 15 * MIN, max: 30 }, // per IP
 };
 
 const LOGIN_PATHS = ['/api/auth/login', '/auth/login', '/login', '/api/auth/google', '/auth/google', '/google'];
 const REGISTER_PATHS = ['/api/auth/register', '/auth/register', '/register'];
 const REFRESH_PATHS = ['/api/auth/refresh', '/auth/refresh', '/refresh'];
+const OTP_PATHS = ['/api/auth/verify-otp', '/auth/verify-otp', '/verify-otp', '/api/auth/resend-otp', '/auth/resend-otp', '/resend-otp'];
 
 /** Comma-separated list of browser origins allowed to call the API with credentials. */
 function parseAllowedOrigins(raw: string | undefined): string[] {
@@ -139,6 +141,7 @@ export function createApp(
   app.post(LOGIN_PATHS, rateLimit('login-email', limits.loginPerEmail, ipAndEmailKey).middleware);
   app.post(REGISTER_PATHS, rateLimit('register', limits.register, ip).middleware);
   app.post(REFRESH_PATHS, rateLimit('refresh', limits.refresh, ip).middleware);
+  app.post(OTP_PATHS, rateLimit('otp', limits.otp, ip).middleware);
   app.post(['/api/webhooks/alerts', '/webhooks/alerts'], rateLimit('webhook', limits.webhook, ip).middleware);
   // Everything else under /api (auth routes and the webhook are limited above and skipped here).
   const apiLimiter = rateLimit('api', limits.api, ip).middleware;

@@ -1,6 +1,8 @@
 import {
   isAuthError,
   login,
+  verifyOtp,
+  resendOtp,
   googleLogin,
   logout,
   refresh,
@@ -44,8 +46,32 @@ export async function handleLogin(req: Request, options?: AuthControllerOptions)
   try {
     const data = await req.json();
     const result = await login(data, options);
+    if (result.requireOtp) {
+      return Response.json(result, { status: 200 });
+    }
     const cookies = buildAuthCookies(result.tokens, options);
     return jsonWithCookies(result, cookies, { status: 200 });
+  } catch (err) {
+    return handleError(err);
+  }
+}
+
+export async function handleVerifyOtp(req: Request, options?: AuthControllerOptions): Promise<Response> {
+  try {
+    const data = await req.json();
+    const result = await verifyOtp(data, options);
+    const cookies = buildAuthCookies(result.tokens, options);
+    return jsonWithCookies(result, cookies, { status: 200 });
+  } catch (err) {
+    return handleError(err);
+  }
+}
+
+export async function handleResendOtp(req: Request, options?: AuthControllerOptions): Promise<Response> {
+  try {
+    const data = await req.json();
+    const result = await resendOtp(data, options);
+    return Response.json(result, { status: 200 });
   } catch (err) {
     return handleError(err);
   }
@@ -165,6 +191,8 @@ export async function authRouter(req: Request, options?: AuthControllerOptions):
   if (method === 'POST') {
     if (pathname.endsWith('/register')) return handleRegister(req, options);
     if (pathname.endsWith('/login')) return handleLogin(req, options);
+    if (pathname.endsWith('/verify-otp')) return handleVerifyOtp(req, options);
+    if (pathname.endsWith('/resend-otp')) return handleResendOtp(req, options);
     if (pathname.endsWith('/google')) return handleGoogleLogin(req, options);
     if (pathname.endsWith('/refresh')) return handleRefreshToken(req, options);
     if (pathname.endsWith('/logout')) return handleLogout(req, options);

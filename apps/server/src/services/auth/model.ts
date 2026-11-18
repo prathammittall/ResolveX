@@ -89,12 +89,41 @@ export const logoutSchema = z
   })
   .strict();
 
+export const verifyOtpSchema = z
+  .object({
+    email: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .email('Please provide a valid email address'),
+    otp: z
+      .string()
+      .trim()
+      .min(4, 'OTP must be at least 4 digits')
+      .max(10, 'OTP cannot exceed 10 digits'),
+    otpToken: z.string().trim().optional(),
+  })
+  .strict();
+
+export const resendOtpSchema = z
+  .object({
+    email: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .email('Please provide a valid email address'),
+    otpToken: z.string().trim().optional(),
+  })
+  .strict();
+
 // --- Types ---
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;
 export type LogoutInput = z.infer<typeof logoutSchema>;
+export type VerifyOtpInput = z.infer<typeof verifyOtpSchema>;
+export type ResendOtpInput = z.infer<typeof resendOtpSchema>;
 
 export type UserTokenPayload = {
   userId: number;

@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { db as defaultDb } from '../../prisma/db.js';
+import { sendOtpEmail } from '../mailer.js';
 import { resolveMembership } from '../org/memberships.js';
 import {
   comparePassword,
@@ -13,6 +14,8 @@ import {
   logoutSchema,
   refreshTokenSchema,
   registerSchema,
+  verifyOtpSchema,
+  resendOtpSchema,
   createSession,
   hashRefreshToken,
   newSessionFamilyId,
@@ -24,8 +27,21 @@ import {
   type LogoutInput,
   type RefreshTokenInput,
   type RegisterInput,
+  type VerifyOtpInput,
+  type ResendOtpInput,
   type TokenPair,
 } from './model.js';
+import {
+  canResendOtp,
+  deleteOtp,
+  generateOtpCode,
+  getOtp,
+  incrementOtpAttempts,
+  MAX_OTP_ATTEMPTS,
+  signOtpToken,
+  storeOtp,
+  verifyOtpToken,
+} from './otp.js';
 
 async function toMembership(user: { id: number; companyId: number; role: string }, preferredOrgId?: string) {
   const m = await resolveMembership(user, preferredOrgId);
@@ -41,7 +57,11 @@ export type AuthErrorCode =
   | 'COMPANY_NOT_FOUND'
   | 'UNAUTHORIZED'
   | 'FORBIDDEN'
-  | 'INTERNAL';
+  | 'INTERNAL'
+  | 'INVALID_OTP'
+  | 'OTP_EXPIRED'
+  | 'TOO_MANY_ATTEMPTS'
+  | 'RATE_LIMITED';
 
 export class AuthError extends Error {
   readonly code: AuthErrorCode;
@@ -65,7 +85,18 @@ export type AuthSuccessResult = {
   ok: true;
   user: AuthUser;
   tokens: TokenPair;
+  requireOtp?: false;
 };
+
+export type LoginOtpRequiredResult = {
+  ok: true;
+  requireOtp: true;
+  email: string;
+  otpToken: string;
+  message: string;
+};
+
+export type LoginResult = AuthSuccessResult | LoginOtpRequiredResult;
 
 export type LogoutSuccessResult = {
   ok: true;
@@ -83,6 +114,7 @@ export type AuthControllerOptions = {
   refreshSecret?: string;
   accessExpiresIn?: string;
   refreshExpiresIn?: string;
+  skipOtp?: boolean;
 };
 
 /**
@@ -157,14 +189,15 @@ export async function register(
 /**
  * Log in an existing user:
  * 1. Validates input email and password.
- * 2. Checks credentials and verifies bcrypt password hash.
- * 3. Generates new access and refresh token pair.
- * 4. Updates stored refresh token.
+ * 2. Verifies bcrypt password hash.
+ * 3. By default, generates a 6-digit OTP, sends it to the user's email via Nodemailer,
+ *    and requires OTP verification to complete authentication.
+ * 4. If skipOtp option is enabled (e.g. for testing), completes session immediately.
  */
 export async function login(
   input: LoginInput | unknown,
   options: AuthControllerOptions = {},
-): Promise<AuthSuccessResult> {
+): Promise<LoginResult> {
   const client = options.db ?? defaultDb;
 
   const parseResult = loginSchema.safeParse(input);
@@ -187,6 +220,142 @@ export async function login(
   const isPasswordValid = await comparePassword(password, user.passwordHash);
   if (!isPasswordValid) {
     throw new AuthError('INVALID_CREDENTIALS', 'Invalid email or password', 401);
+  }
+
+  // If OTP requirement is explicitly skipped (e.g. in test suites)
+  if (options.skipOtp === true || process.env.AUTH_REQUIRE_OTP === 'false') {
+    const membership = await toMembership(user);
+    const tokens = generateTokenPair(
+      {
+        id: user.id,
+        email: user.email,
+        role: membership.role,
+        companyId: user.companyId,
+        orgId: membership.organizationId,
+      },
+      {
+        accessSecret: options.accessSecret,
+        refreshSecret: options.refreshSecret,
+        accessExpiresIn: options.accessExpiresIn,
+        refreshExpiresIn: options.refreshExpiresIn,
+      },
+    );
+
+    await createSession(client, { userId: user.id, familyId: newSessionFamilyId(), refreshToken: tokens.refreshToken });
+
+    return {
+      ok: true,
+      user: formatAuthUser(user, membership),
+      tokens,
+    };
+  }
+
+  // Standard 2-Step OTP Authentication Flow:
+  // Generate 6-digit OTP and store it with 10-minute validity
+  const otp = generateOtpCode();
+  storeOtp(user.email, { code: otp, userId: user.id });
+
+  const otpToken = signOtpToken(
+    { userId: user.id, email: user.email },
+    options.accessSecret,
+  );
+
+  // Dispatch OTP email via Nodemailer
+  await sendOtpEmail({
+    to: user.email,
+    otp,
+    name: user.name ?? undefined,
+  });
+
+  return {
+    ok: true,
+    requireOtp: true,
+    email: user.email,
+    otpToken,
+    message: 'A verification code has been sent to your email.',
+  };
+}
+
+/**
+ * Verify an OTP code submitted by the user after successful password validation:
+ * 1. Validates the OTP input schema.
+ * 2. Validates the signed otpToken if supplied.
+ * 3. Compares the submitted code against the stored OTP code with attempt limiting.
+ * 4. Upon successful verification, creates the authenticated session and returns tokens.
+ */
+export async function verifyOtp(
+  input: VerifyOtpInput | unknown,
+  options: AuthControllerOptions = {},
+): Promise<AuthSuccessResult> {
+  const client = options.db ?? defaultDb;
+
+  const parseResult = verifyOtpSchema.safeParse(input);
+  if (!parseResult.success) {
+    throw new AuthError(
+      'VALIDATION_ERROR',
+      'Validation failed for OTP verification',
+      400,
+      parseResult.error.flatten(),
+    );
+  }
+
+  const { email, otp, otpToken } = parseResult.data;
+
+  // Validate otpToken if provided
+  if (otpToken) {
+    try {
+      const payload = verifyOtpToken(otpToken, options.accessSecret);
+      if (payload.email.toLowerCase() !== email.toLowerCase()) {
+        throw new AuthError('INVALID_OTP', 'OTP session mismatch', 400);
+      }
+    } catch (err) {
+      if (err instanceof AuthError) throw err;
+      throw new AuthError('INVALID_OTP', 'Invalid or expired OTP session. Please sign in again.', 400);
+    }
+  }
+
+  const record = getOtp(email);
+  if (!record) {
+    throw new AuthError(
+      'OTP_EXPIRED',
+      'Verification code has expired or was not requested. Please try again.',
+      400,
+    );
+  }
+
+  if (record.attempts >= MAX_OTP_ATTEMPTS) {
+    deleteOtp(email);
+    throw new AuthError(
+      'TOO_MANY_ATTEMPTS',
+      'Too many invalid attempts. Please request a new verification code.',
+      429,
+    );
+  }
+
+  if (record.code !== otp.trim()) {
+    const attempts = incrementOtpAttempts(email);
+    const remaining = MAX_OTP_ATTEMPTS - attempts;
+    if (remaining <= 0) {
+      deleteOtp(email);
+      throw new AuthError(
+        'TOO_MANY_ATTEMPTS',
+        'Too many invalid attempts. Please request a new verification code.',
+        429,
+      );
+    }
+    throw new AuthError(
+      'INVALID_OTP',
+      `Invalid verification code. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.`,
+      400,
+    );
+  }
+
+  // OTP verified successfully: delete to prevent reuse
+  deleteOtp(email);
+
+  const user = await findUserByEmail(client, email);
+  if (!user) {
+    throw new AuthError('USER_NOT_FOUND', 'User not found', 404);
   }
 
   const membership = await toMembership(user);
@@ -212,6 +381,73 @@ export async function login(
     ok: true,
     user: formatAuthUser(user, membership),
     tokens,
+  };
+}
+
+/**
+ * Resend a new OTP verification code to the user:
+ * 1. Validates input schema and optional otpToken.
+ * 2. Checks resend cooldown (30 seconds).
+ * 3. Generates a new OTP, updates the store, and dispatches via Nodemailer.
+ */
+export async function resendOtp(
+  input: ResendOtpInput | unknown,
+  options: AuthControllerOptions = {},
+): Promise<{ ok: true; message: string; otpToken: string }> {
+  const client = options.db ?? defaultDb;
+
+  const parseResult = resendOtpSchema.safeParse(input);
+  if (!parseResult.success) {
+    throw new AuthError(
+      'VALIDATION_ERROR',
+      'Validation failed for resend OTP input',
+      400,
+      parseResult.error.flatten(),
+    );
+  }
+
+  const { email, otpToken } = parseResult.data;
+
+  if (otpToken) {
+    try {
+      const payload = verifyOtpToken(otpToken, options.accessSecret);
+      if (payload.email.toLowerCase() !== email.toLowerCase()) {
+        throw new AuthError('INVALID_OTP', 'OTP session mismatch', 400);
+      }
+    } catch (err) {
+      if (err instanceof AuthError) throw err;
+      throw new AuthError('INVALID_OTP', 'Invalid or expired OTP session. Please sign in again.', 400);
+    }
+  }
+
+  const user = await findUserByEmail(client, email);
+  if (!user) {
+    throw new AuthError('USER_NOT_FOUND', 'User not found', 404);
+  }
+
+  const cooldown = canResendOtp(email);
+  if (!cooldown.allowed) {
+    throw new AuthError(
+      'RATE_LIMITED',
+      `Please wait ${cooldown.waitSeconds} second${cooldown.waitSeconds === 1 ? '' : 's'} before requesting a new code.`,
+      429,
+    );
+  }
+
+  const otp = generateOtpCode();
+  storeOtp(user.email, { code: otp, userId: user.id });
+  const newOtpToken = signOtpToken({ userId: user.id, email: user.email }, options.accessSecret);
+
+  await sendOtpEmail({
+    to: user.email,
+    otp,
+    name: user.name ?? undefined,
+  });
+
+  return {
+    ok: true,
+    message: 'A new verification code has been sent to your email.',
+    otpToken: newOtpToken,
   };
 }
 
