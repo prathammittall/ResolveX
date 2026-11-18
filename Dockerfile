@@ -1,12 +1,15 @@
 # Multi-stage Dockerfile for ResolveX Express Server (Turborepo)
 
 # -----------------------------------------------------------------------------
-# Base stage: Node.js runtime with common Alpine utilities
+# Base stage: Minimal Node.js Alpine runtime with tsx and utilities
 # -----------------------------------------------------------------------------
 FROM node:22-alpine AS base
 
 # Install libc6-compat for compatibility, openssl for TLS/crypto, and dumb-init for PID 1 signal handling
-RUN apk add --no-cache libc6-compat openssl dumb-init
+RUN apk add --no-cache libc6-compat openssl dumb-init && \
+    npm install -g tsx@^4.23.15 && \
+    npm cache clean --force
+
 WORKDIR /app
 
 # -----------------------------------------------------------------------------
@@ -15,7 +18,8 @@ WORKDIR /app
 FROM base AS pruner
 
 ARG TURBO_VERSION=2.11.10
-RUN npm install -g turbo@${TURBO_VERSION}
+RUN npm install -g turbo@${TURBO_VERSION} && \
+    npm cache clean --force
 
 # Copy the monorepo source files to prepare the pruned build context
 COPY . .
@@ -24,17 +28,19 @@ COPY . .
 RUN turbo prune server --docker
 
 # -----------------------------------------------------------------------------
-# Installer stage: Install pruned dependencies
+# Installer stage: Install production dependencies only
 # -----------------------------------------------------------------------------
 FROM base AS installer
 
-# Copy workspace package definitions & pruned lockfile to leverage Docker layer caching
+# Copy workspace package definitions & pruned lockfile
 COPY --from=pruner /app/out/json/ .
 
-# Install dependencies using --legacy-peer-deps to ignore peer dependency mismatches from pruned monorepo slices
-RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+# Install ONLY production dependencies to keep layer size minimal, then strip source maps and cache
+RUN npm install --omit=dev --legacy-peer-deps --no-audit --no-fund && \
+    npm cache clean --force && \
+    find node_modules -type f -name "*.map" -delete
 
-# Copy full pruned source files and configs
+# Copy pruned source files and configs
 COPY --from=pruner /app/out/full/ .
 
 # -----------------------------------------------------------------------------
@@ -52,8 +58,10 @@ RUN addgroup --system --gid 1001 nodejs && \
 
 WORKDIR /app
 
-# Copy the prepared monorepo workspace & node_modules
-COPY --from=installer --chown=serveruser:nodejs /app /app
+# Copy only the pruned node_modules, root package.json, and apps/server
+COPY --from=installer --chown=serveruser:nodejs /app/node_modules /app/node_modules
+COPY --from=installer --chown=serveruser:nodejs /app/package.json /app/package.json
+COPY --from=installer --chown=serveruser:nodejs /app/apps/server /app/apps/server
 
 # Switch to non-root user
 USER serveruser
