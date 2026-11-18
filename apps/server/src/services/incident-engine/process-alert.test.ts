@@ -130,6 +130,104 @@ describe('processAlertWebhook', () => {
     expect(serviceRow?.healthStatus).toBe('down');
   });
 
+  it('creates escalation state and an initial notification job for a matching policy', async () => {
+    const suffix = randomUUID().slice(0, 8);
+    const service = await db.orm.public.Service.create({
+      companyId: fixture.companyId,
+      name: `policy-${suffix}`,
+      serviceType: 'api',
+      environment: 'production',
+      criticality: 'critical',
+      healthStatus: 'unknown',
+    });
+    const policy = await db.orm.public.EscalationPolicy.create({
+      companyId: fixture.companyId,
+      serviceId: service.id,
+      name: `policy-${suffix}`,
+      enabled: true,
+    });
+    await db.orm.public.EscalationStep.create({
+      policyId: policy.id,
+      position: 0,
+      delaySeconds: 300,
+      targetType: 'team',
+      targetId: 'primary-on-call',
+      notificationChannels: ['in_app', 'email'],
+      acknowledgmentRequired: true,
+    });
+
+    const result = await process(
+      buildBody({
+        serviceId: service.id,
+        message: 'Policy-backed outage',
+      }),
+    );
+
+    const incident = await db.orm.public.Incident.where({ id: result.incidentId! }).first();
+    const escalation = await db.orm.public.IncidentEscalation.where({ incidentId: result.incidentId! }).first();
+    const jobs = await db.orm.public.QueueJob.where({ incidentId: result.incidentId! }).all();
+
+    expect(incident?.escalationPolicyId).toBe(policy.id);
+    expect(incident?.escalationStatus).toBe('active');
+    expect(escalation?.currentStep).toBe(0);
+    expect(escalation?.status).toBe('active');
+    expect(jobs).toHaveLength(1);
+    expect(jobs[0]?.type).toBe('notify');
+    expect(jobs[0]?.status).toBe('pending');
+  });
+
+  it('suppresses escalation jobs during an active maintenance window', async () => {
+    const suffix = randomUUID().slice(0, 8);
+    const service = await db.orm.public.Service.create({
+      companyId: fixture.companyId,
+      name: `maintenance-${suffix}`,
+      serviceType: 'api',
+      environment: 'production',
+      criticality: 'critical',
+      healthStatus: 'unknown',
+    });
+    const policy = await db.orm.public.EscalationPolicy.create({
+      companyId: fixture.companyId,
+      serviceId: service.id,
+      name: `maintenance-policy-${suffix}`,
+      enabled: true,
+    });
+    await db.orm.public.EscalationStep.create({
+      policyId: policy.id,
+      position: 0,
+      delaySeconds: 300,
+      targetType: 'team',
+      targetId: 'primary-on-call',
+      notificationChannels: ['sms'],
+      acknowledgmentRequired: true,
+    });
+    const now = new Date();
+    await db.orm.public.MaintenanceWindow.create({
+      companyId: fixture.companyId,
+      serviceId: service.id,
+      name: `Deploy ${suffix}`,
+      startsAt: new Date(now.getTime() - 60_000).toISOString(),
+      endsAt: new Date(now.getTime() + 3_600_000).toISOString(),
+      timezone: 'UTC',
+      enabled: true,
+    });
+
+    const result = await process(
+      buildBody({
+        serviceId: service.id,
+        message: 'Maintenance-period alert',
+      }),
+    );
+
+    const escalation = await db.orm.public.IncidentEscalation.where({ incidentId: result.incidentId! }).first();
+    const jobs = await db.orm.public.QueueJob.where({ incidentId: result.incidentId! }).all();
+    const events = await db.orm.public.IncidentEvent.where({ incidentId: result.incidentId! }).all();
+
+    expect(escalation).toBeNull();
+    expect(jobs).toHaveLength(0);
+    expect(events.some((event) => event.message.includes('suppressed by maintenance window'))).toBe(true);
+  });
+
   it('rejects an invalid payload', async () => {
     await expect(process(buildBody({ severity: 'critical' }))).rejects.toMatchObject({
       code: 'VALIDATION_ERROR',

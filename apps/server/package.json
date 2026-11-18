@@ -13,9 +13,11 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "start": "tsx src/server.ts",
+    "worker": "tsx src/worker.ts",
+    "dev:worker": "tsx watch src/worker.ts",
     "contract:emit": "prisma contract emit",
     "test": "vitest run",
-    "test:db:migrate": "prisma db migrate --db postgresql://resolvex:resolvex@localhost:5433/resolvex_test",
+    "test:db:migrate": "prisma db migrate --db postgresql://app_user:app_user@localhost:5433/resolvex_test",
     "test:watch": "vitest",
     "check-types": "tsc --noEmit"
   },
@@ -26,6 +28,7 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.4.1",
+    "@types/nodemailer": "^8.0.2",
     "@types/nodemailer": "^8.0.2",
     "prisma": "^8.0.0-rc.24",
     "tsx": "^4.23.15",
@@ -39,7 +42,6 @@
     "dotenv": "^16.0.3",
     "express": "^5.3.0",
     "jsonwebtoken": "^9.0.3",
-    "nodemailer": "^10.6.0",
     "zod": "^4.0.0"
   }
 }

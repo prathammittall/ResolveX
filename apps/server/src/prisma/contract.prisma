@@ -80,6 +80,45 @@ enum AlertProcessingStatus {
   failed     = "failed"
 }
 
+enum EscalationTargetType {
+  @@type("pg/text@1")
+  user    = "user"
+  team    = "team"
+  webhook = "webhook"
+}
+
+enum EscalationStatus {
+  @@type("pg/text@1")
+  active       = "active"
+  acknowledged = "acknowledged"
+  exhausted    = "exhausted"
+  cancelled    = "cancelled"
+}
+
+enum QueueJobType {
+  @@type("pg/text@1")
+  escalate = "escalate"
+  notify   = "notify"
+}
+
+enum QueueJobStatus {
+  @@type("pg/text@1")
+  pending    = "pending"
+  processing = "processing"
+  completed  = "completed"
+  failed     = "failed"
+  cancelled  = "cancelled"
+}
+
+enum NotificationDeliveryStatus {
+  @@type("pg/text@1")
+  pending   = "pending"
+  sent      = "sent"
+  delivered = "delivered"
+  failed    = "failed"
+  cancelled = "cancelled"
+}
+
 enum TaskType {
   @@type("pg/text@1")
   epic    = "epic"
@@ -115,6 +154,10 @@ model Company {
   webhookKeys WebhookKey[]
   organization Organization?
   incidents Incident[]
+  escalationPolicies EscalationPolicy[]
+  maintenanceWindows MaintenanceWindow[]
+  queueJobs QueueJob[]
+  notificationDeliveries NotificationDelivery[]
   createdAt TimestamptzString @default(now())
   updatedAt temporal.updatedAtString()
 
@@ -140,6 +183,7 @@ model User {
   taskComments TaskComment[]
   assignedIncidents Incident[]     @relation("IncidentAssignee")
   incidentEvents    IncidentEvent[] @relation("IncidentEventActor")
+  createdMaintenanceWindows MaintenanceWindow[] @relation("MaintenanceWindowCreator")
   createdAt TimestamptzString @default(now())
   updatedAt temporal.updatedAtString()
 
@@ -212,6 +256,8 @@ model Service {
   incidents     Incident[]
   alertEvents   AlertEvent[]
   webhookKeys   WebhookKey[]
+  escalationPolicies EscalationPolicy[] @relation("ServiceEscalationPolicies")
+  maintenanceWindows MaintenanceWindow[]
   createdAt     TimestamptzString    @default(now())
   updatedAt     temporal.updatedAtString()
 
@@ -235,9 +281,18 @@ model Incident {
   assignedResponder   User?            @relation("IncidentAssignee", fields: [assignedResponderId], references: [id], onDelete: SetNull)
   detectedAt          TimestamptzString
   acknowledgedAt      TimestamptzString?
+  firstAcknowledgedAt TimestamptzString?
+  acknowledgmentDueAt TimestamptzString?
+  mttaSeconds         Int?
+  escalationStatus    EscalationStatus?
+  escalationPolicyId  Int?
+  escalationPolicy    EscalationPolicy? @relation(fields: [escalationPolicyId], references: [id], onDelete: SetNull)
   resolvedAt          TimestamptzString?
   events              IncidentEvent[]
   alertEvents         AlertEvent[]
+  escalation           IncidentEscalation?
+  queueJobs           QueueJob[]
+  notificationDeliveries NotificationDelivery[]
   createdAt           TimestamptzString @default(now())
   updatedAt           temporal.updatedAtString()
 
@@ -246,6 +301,7 @@ model Incident {
   @@index([companyId, severity])
   @@index([serviceId])
   @@index([assignedResponderId])
+  @@index([escalationPolicyId])
   // At most one unresolved incident per service (grouping key for v1).
   @@index([serviceId], where: sql`(status <> 'resolved')`, unique: true, name: "incident_one_unresolved_per_service")
 }
@@ -283,6 +339,126 @@ model AlertEvent {
   @@index([incidentId])
   @@index([processingStatus])
   @@index([receivedAt])
+}
+
+model EscalationPolicy {
+  id          Int      @id @default(autoincrement())
+  companyId   Int
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  serviceId   Int?
+  service     Service? @relation("ServiceEscalationPolicies", fields: [serviceId], references: [id], onDelete: Cascade)
+  name        String
+  enabled     Boolean  @default(true)
+  steps       EscalationStep[]
+  incidents   Incident[]
+  escalations IncidentEscalation[]
+  createdAt   TimestamptzString @default(now())
+  updatedAt   temporal.updatedAtString()
+
+  @@unique([companyId, name])
+  @@index([companyId, enabled])
+  @@index([serviceId, enabled])
+}
+
+model EscalationStep {
+  id                 Int                  @id @default(autoincrement())
+  policyId           Int
+  policy             EscalationPolicy     @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  position           Int
+  delaySeconds       Int
+  targetType         EscalationTargetType
+  targetId           String
+  notificationChannels Jsonb
+  acknowledgmentRequired Boolean          @default(true)
+  createdAt          TimestamptzString    @default(now())
+
+  @@unique([policyId, position])
+  @@index([policyId])
+}
+
+model MaintenanceWindow {
+  id                  Int      @id @default(autoincrement())
+  companyId           Int
+  company             Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  serviceId           Int?
+  service             Service? @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  name                String
+  startsAt            TimestamptzString
+  endsAt              TimestamptzString
+  timezone            String
+  enabled             Boolean  @default(true)
+  bypassSeverity     IncidentSeverity?
+  createdById         Int?
+  createdBy           User?    @relation("MaintenanceWindowCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt           TimestamptzString @default(now())
+  updatedAt           temporal.updatedAtString()
+
+  @@index([companyId, startsAt, endsAt])
+  @@index([serviceId, startsAt, endsAt])
+}
+
+model IncidentEscalation {
+  id              Int              @id @default(autoincrement())
+  incidentId      Int              @unique
+  incident        Incident          @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  policyId        Int
+  policy          EscalationPolicy  @relation(fields: [policyId], references: [id], onDelete: Restrict)
+  currentStep     Int               @default(0)
+  status          EscalationStatus  @default(active)
+  acknowledgedAt  TimestamptzString?
+  nextEscalationAt TimestamptzString?
+  createdAt       TimestamptzString @default(now())
+  updatedAt       temporal.updatedAtString()
+
+  @@index([policyId])
+  @@index([status, nextEscalationAt])
+}
+
+model QueueJob {
+  id             Int           @id @default(autoincrement())
+  companyId      Int
+  company        Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  incidentId     Int?
+  incident       Incident?     @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  type           QueueJobType
+  status         QueueJobStatus @default(pending)
+  runAt          TimestamptzString
+  attempts       Int            @default(0)
+  lockedUntil    TimestamptzString?
+  idempotencyKey String         @unique
+  payload        Jsonb
+  lastError      String?
+  deliveries     NotificationDelivery[]
+  createdAt      TimestamptzString @default(now())
+  updatedAt      temporal.updatedAtString()
+
+  @@index([status, runAt])
+  @@index([companyId, status, runAt])
+  @@index([incidentId])
+}
+
+model NotificationDelivery {
+  id             Int                        @id @default(autoincrement())
+  companyId      Int
+  company        Company                    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  incidentId     Int
+  incident       Incident                   @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  queueJobId     Int?
+  queueJob       QueueJob?                  @relation(fields: [queueJobId], references: [id], onDelete: SetNull)
+  channel        String
+  recipient      String
+  status         NotificationDeliveryStatus @default(pending)
+  sentAt         TimestamptzString?
+  deliveredAt    TimestamptzString?
+  acknowledgedAt TimestamptzString?
+  error          String?
+  idempotencyKey String                     @unique
+  createdAt      TimestamptzString          @default(now())
+  updatedAt      temporal.updatedAtString()
+
+  @@index([companyId, incidentId])
+  @@index([incidentId, status])
+  @@index([queueJobId])
 }
 
 // --- Tenancy (Phase 4). New tables use UUID primary keys. ---

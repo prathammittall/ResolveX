@@ -28,6 +28,11 @@ function shapeIncident(i: {
   assignedResponderId: number | null;
   detectedAt: string;
   acknowledgedAt: string | null;
+  firstAcknowledgedAt: string | null;
+  acknowledgmentDueAt: string | null;
+  mttaSeconds: number | null;
+  escalationStatus: string | null;
+  escalationPolicyId: number | null;
   resolvedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -43,6 +48,11 @@ function shapeIncident(i: {
     assignedResponderId: i.assignedResponderId,
     detectedAt: i.detectedAt,
     acknowledgedAt: i.acknowledgedAt,
+    firstAcknowledgedAt: i.firstAcknowledgedAt,
+    acknowledgmentDueAt: i.acknowledgmentDueAt,
+    mttaSeconds: i.mttaSeconds,
+    escalationStatus: i.escalationStatus,
+    escalationPolicyId: i.escalationPolicyId,
     resolvedAt: i.resolvedAt,
     createdAt: i.createdAt,
     updatedAt: i.updatedAt,
@@ -101,10 +111,16 @@ export async function getIncident(companyId: number, id: number): Promise<Respon
       return notFoundResponse('Incident not found');
     }
 
-    const [service, events, alerts] = await Promise.all([
+    const [service, events, alerts, escalation, steps, queueJobs, deliveries] = await Promise.all([
       db.orm.public.Service.where({ id: incident.serviceId }).first(),
       db.orm.public.IncidentEvent.where({ incidentId: id }).all(),
       db.orm.public.AlertEvent.where({ incidentId: id }).all(),
+      db.orm.public.IncidentEscalation.where({ incidentId: id }).first(),
+      incident.escalationPolicyId
+        ? db.orm.public.EscalationStep.where({ policyId: incident.escalationPolicyId }).all()
+        : Promise.resolve([]),
+      db.orm.public.QueueJob.where({ incidentId: id }).all(),
+      db.orm.public.NotificationDelivery.where({ incidentId: id }).all(),
     ]);
 
     // Resolve actor names for the timeline (bounded by number of unique actors).
@@ -124,6 +140,9 @@ export async function getIncident(companyId: number, id: number): Promise<Respon
 
     events.sort((a, b) => a.occurredAt.localeCompare(b.occurredAt));
     alerts.sort((a, b) => b.receivedAt.localeCompare(a.receivedAt));
+    steps.sort((a, b) => a.position - b.position);
+    queueJobs.sort((a, b) => a.runAt.localeCompare(b.runAt));
+    deliveries.sort((a, b) => (b.sentAt ?? b.createdAt).localeCompare(a.sentAt ?? a.createdAt));
 
     return Response.json({
       ok: true,
@@ -148,6 +167,38 @@ export async function getIncident(companyId: number, id: number): Promise<Respon
         processingStatus: a.processingStatus,
         receivedAt: a.receivedAt,
       })),
+      escalation: escalation
+        ? {
+            id: escalation.id,
+            currentStep: escalation.currentStep,
+            status: escalation.status,
+            nextEscalationAt: escalation.nextEscalationAt,
+            steps: steps.map((step) => ({
+              position: step.position,
+              delaySeconds: step.delaySeconds,
+              targetType: step.targetType,
+              targetId: step.targetId,
+              notificationChannels: step.notificationChannels,
+            })),
+            queue: queueJobs.map((job) => ({
+              id: job.id,
+              type: job.type,
+              status: job.status,
+              runAt: job.runAt,
+              attempts: job.attempts,
+              lastError: job.lastError,
+            })),
+            deliveries: deliveries.map((delivery) => ({
+              id: delivery.id,
+              channel: delivery.channel,
+              recipient: delivery.recipient,
+              status: delivery.status,
+              sentAt: delivery.sentAt,
+              deliveredAt: delivery.deliveredAt,
+              error: delivery.error,
+            })),
+          }
+        : null,
     });
   } catch (err) {
     console.error('[api/incidents] get error:', err);
@@ -165,29 +216,65 @@ export async function acknowledgeIncident(
   _body: unknown,
 ): Promise<Response> {
   try {
-    const incident = await db.orm.public.Incident.where({ id }).first();
-    if (!incident || incident.companyId !== companyId) {
-      return notFoundResponse('Incident not found');
-    }
-    if (incident.status === 'resolved') {
-      return conflictResponse('Incident is already resolved');
-    }
+    const result = await db.transaction(async (tx) => {
+      const incident = await tx.orm.public.Incident.where({ id }).forUpdate().first();
+      if (!incident || incident.companyId !== companyId) return { kind: 'not_found' as const };
+      if (incident.status === 'resolved') return { kind: 'resolved' as const };
+      if (incident.acknowledgedAt) return { kind: 'already_acknowledged' as const, incident };
 
-    const now = new Date().toISOString();
-    await db.orm.public.Incident.where({ id }).update({
-      status: 'acknowledged',
-      acknowledgedAt: now,
-    });
-    await db.orm.public.IncidentEvent.create({
-      incidentId: id,
-      actorId: userId,
-      eventType: 'acknowledged',
-      message: 'Incident acknowledged',
-      occurredAt: now,
+      const now = new Date();
+      const acknowledgedAt = now.toISOString();
+      const detectedAt = Date.parse(incident.detectedAt);
+      const mttaSeconds = Number.isFinite(detectedAt)
+        ? Math.max(0, Math.round((now.getTime() - detectedAt) / 1000))
+        : null;
+
+      await tx.orm.public.Incident.where({ id }).update({
+        status: 'acknowledged',
+        acknowledgedAt,
+        firstAcknowledgedAt: acknowledgedAt,
+        acknowledgmentDueAt: null,
+        mttaSeconds,
+        escalationStatus: 'acknowledged',
+      });
+
+      const escalation = await tx.orm.public.IncidentEscalation.where({ incidentId: id }).forUpdate().first();
+      if (escalation) {
+        await tx.orm.public.IncidentEscalation.where({ id: escalation.id }).update({
+          status: 'acknowledged',
+          acknowledgedAt,
+          nextEscalationAt: null,
+        });
+      }
+
+      const jobs = await tx.orm.public.QueueJob.where({ incidentId: id }).all();
+      for (const job of jobs) {
+        if (job.status === 'pending') {
+          await tx.orm.public.QueueJob.where({ id: job.id }).update({
+            status: 'cancelled',
+            lockedUntil: null,
+          });
+        }
+      }
+
+      await tx.orm.public.IncidentEvent.create({
+        incidentId: id,
+        actorId: userId,
+        eventType: 'acknowledged',
+        message: 'Incident actively acknowledged; pending escalation jobs cancelled',
+        occurredAt: acknowledgedAt,
+      });
+
+      const updated = await tx.orm.public.Incident.where({ id }).first();
+      return { kind: 'updated' as const, incident: updated };
     });
 
-    const updated = await db.orm.public.Incident.where({ id }).first();
-    return Response.json({ ok: true, incident: updated ? shapeIncident(updated) : null });
+    if (result.kind === 'not_found') return notFoundResponse('Incident not found');
+    if (result.kind === 'resolved') return conflictResponse('Incident is already resolved');
+    if (result.kind === 'already_acknowledged') {
+      return Response.json({ ok: true, incident: shapeIncident(result.incident) });
+    }
+    return Response.json({ ok: true, incident: result.incident ? shapeIncident(result.incident) : null });
   } catch (err) {
     console.error('[api/incidents] acknowledge error:', err);
     return serverErrorResponse();

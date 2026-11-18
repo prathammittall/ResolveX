@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { Check, Copy, MailPlus, Trash2, UserPlus, Users, X } from 'lucide-react';
@@ -73,8 +73,13 @@ export default function TeamPage() {
     setError(null);
     setIssued(null);
     try {
-      const res = await api.post<{ token: string }>('/api/org/invitations', { email, role: inviteRole });
+      const res = await api.post<{ token: string; emailSent: boolean }>('/api/org/invitations', { email, role: inviteRole });
       setIssued({ email, token: res.token });
+      setNotice(
+        res.emailSent
+          ? `Invitation email sent to ${email}.`
+          : `Invitation created, but the email could not be sent. Share the invitation link below.`,
+      );
       setEmail('');
       await load();
     } catch (err) {
