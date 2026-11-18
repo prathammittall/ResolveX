@@ -38,9 +38,9 @@ RUN npm ci
 COPY --from=pruner /app/out/full/ .
 
 # -----------------------------------------------------------------------------
-# Runner stage: Minimal, secure production runtime
+# Production stage: Minimal, secure production runtime (targeted by Dokploy / PaaS)
 # -----------------------------------------------------------------------------
-FROM base AS runner
+FROM base AS production
 
 ENV NODE_ENV=production
 ENV PORT=3000
@@ -71,3 +71,6 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 # dumb-init ensures SIGTERM / SIGINT signals are cleanly propagated for graceful shutdown
 ENTRYPOINT ["dumb-init", "--"]
 CMD ["npm", "run", "start"]
+
+# Alias for platforms/tools targeting 'runner'
+FROM production AS runner
