@@ -128,3 +128,47 @@ function escapeHtml(value: string): string {
       })[character] ?? character,
   );
 }
+
+export function isMailerConfigured(): boolean {
+  try {
+    return getConfig() !== null;
+  } catch {
+    return false;
+  }
+}
+
+function appUrl(path: string): string {
+  const base = (process.env.APP_URL || process.env.WEB_APP_URL || 'http://localhost:3001').replace(/\/$/, '');
+  return path.startsWith('http') ? path : `${base}${path.startsWith('/') ? '' : '/'}${path}`;
+}
+
+/** Generic transactional email (notifications, verification, password reset). Returns false when SMTP is not configured. */
+export async function sendGenericEmail(args: {
+  to: string;
+  subject: string;
+  heading: string;
+  body?: string | null;
+  link?: string | null;
+  linkLabel?: string;
+}): Promise<boolean> {
+  const config = getConfig();
+  if (!config) return false;
+  const url = args.link ? appUrl(args.link) : null;
+  await getTransporter(config).sendMail({
+    from: config.from,
+    to: args.to,
+    subject: args.subject,
+    text: [args.heading, '', args.body ?? '', url ? `\n${args.linkLabel ?? 'Open in ResolveX'}: ${url}` : ''].join('\n'),
+    html: [
+      `<div style="font-family:system-ui,sans-serif;max-width:560px">`,
+      `<h2 style="margin:0 0 12px">${escapeHtml(args.heading)}</h2>`,
+      args.body ? `<p style="white-space:pre-wrap;color:#333">${escapeHtml(args.body)}</p>` : '',
+      url
+        ? `<p><a href="${escapeHtml(url)}" style="display:inline-block;background:#177a43;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none">${escapeHtml(args.linkLabel ?? 'Open in ResolveX')}</a></p>`
+        : '',
+      `<p style="color:#888;font-size:12px">You can change which emails you receive in ResolveX → Settings → Notifications.</p>`,
+      `</div>`,
+    ].join(''),
+  });
+  return true;
+}

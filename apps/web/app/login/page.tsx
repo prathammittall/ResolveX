@@ -16,7 +16,6 @@ import {
   EyeOff,
   AlertCircle,
   Loader2,
-  Check,
   Sparkles,
   KeyRound,
   RefreshCw,
@@ -70,10 +69,6 @@ function LoginContent() {
     return () => clearInterval(timer);
   }, [isOtpStep, otpCooldown]);
 
-  // Forgot password modal state
-  const [forgotModalOpen, setForgotModalOpen] = useState(false);
-  const [forgotEmail, setForgotEmail] = useState('');
-  const [forgotSuccess, setForgotSuccess] = useState(false);
 
   // Google sign in modal / developer preview state
   const [googleModalOpen, setGoogleModalOpen] = useState(false);
@@ -221,17 +216,6 @@ function LoginContent() {
     setOtpToken(null);
     setErrorMessage(null);
     setSuccessMessage(null);
-  };
-
-  const handleForgotPassword = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!forgotEmail) return;
-    setForgotSuccess(true);
-    setTimeout(() => {
-      setForgotModalOpen(false);
-      setForgotSuccess(false);
-      setForgotEmail('');
-    }, 2500);
   };
 
   // Execute Google Authentication with server
@@ -658,16 +642,12 @@ function LoginContent() {
                   Password
                 </label>
                 {mode === 'login' ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setForgotEmail(email);
-                      setForgotModalOpen(true);
-                    }}
+                  <Link
+                    href="/forgot-password"
                     className="text-xs font-semibold text-[#177a43] hover:underline transition cursor-pointer"
                   >
                     Forgot password?
-                  </button>
+                  </Link>
                 ) : (
                   <span className="text-[11px] text-[#5f6b64]">Min. 6 characters</span>
                 )}
@@ -697,21 +677,7 @@ function LoginContent() {
             </div>
 
             {/* Login Extras: Remember Me */}
-            {mode === 'login' && (
-              <div className="flex items-center justify-between text-xs pt-0.5">
-                <label className="inline-flex items-center gap-2 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 rounded accent-[#177a43] border-[#dfdbcc]"
-                  />
-                  <span className="text-xs font-medium text-[#3d4a42]">
-                    Remember this device for 30 days
-                  </span>
-                </label>
-              </div>
-            )}
+            
 
             {/* Primary Action Button */}
             <button
@@ -895,55 +861,6 @@ function LoginContent() {
         </div>
       )}
 
-      {/* Forgot Password Modal */}
-      {forgotModalOpen && (
-        <div className="fixed inset-0 z-50 bg-[#14201a]/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-[#dfdbcc] bg-white text-[#14201a]">
-            <h3 className="font-display text-xl font-bold">Reset Password</h3>
-            <p className="mt-1 text-xs text-[#5f6b64]">
-              Enter your registered email address and we will dispatch a secure reset token.
-            </p>
-
-            {forgotSuccess ? (
-              <div className="mt-4 p-3 rounded-xl bg-[#dcefd8] border border-[#b2e2a8] text-[#15803d] text-xs font-bold flex items-center gap-2">
-                <Check className="w-4 h-4 text-[#177a43]" />
-                Password reset instructions dispatched!
-              </div>
-            ) : (
-              <form onSubmit={handleForgotPassword} className="mt-4 space-y-3.5">
-                <div>
-                  <label className="block text-xs font-bold mb-1 text-[#14201a]">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={forgotEmail}
-                    onChange={(e) => setForgotEmail(e.target.value)}
-                    placeholder="sarah@example.com"
-                    className="w-full px-3.5 py-2 rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] text-[#14201a] text-sm focus:outline-none focus:ring-2 focus:ring-[#177a43]/20 focus:border-[#177a43]"
-                  />
-                </div>
-                <div className="flex items-center justify-end gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setForgotModalOpen(false)}
-                    className="btn-kizupi-white text-xs px-3.5 py-1.5 cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="btn-kizupi-go text-xs px-4 py-1.5 cursor-pointer"
-                  >
-                    Send Recovery Link
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

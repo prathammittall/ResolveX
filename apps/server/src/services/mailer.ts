@@ -164,6 +164,8 @@ export async function sendOtpEmail(options: SendOtpOptions): Promise<{ success: 
   console.log('━'.repeat(64) + '\n');
 
   if (!isSmtpConfigured()) {
+    // In development, still return success so auth isn't blocked;
+    // in production, you must configure SMTP_USER/SMTP_PASS
     return { success: true };
   }
 

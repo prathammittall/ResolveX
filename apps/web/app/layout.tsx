@@ -23,7 +23,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Apply the saved theme before first paint. Defaults to white/light mode. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(location.pathname.indexOf('/dashboard')===0){var t=localStorage.getItem('rx-theme');document.documentElement.dataset.theme=(t==='dark'?'dark':'light')}}catch(e){}`,
+          }}
+        />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <AuthProvider>
           {children}

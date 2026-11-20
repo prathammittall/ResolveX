@@ -19,7 +19,9 @@
     "test": "vitest run",
     "test:db:migrate": "prisma db migrate --db postgresql://app_user:app_user@localhost:5433/resolvex_test",
     "test:watch": "vitest",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "db:migrate": "prisma db migrate",
+    "db:status": "prisma migration status"
   },
   "devDependencies": {
     "@prisma/cli-engine": "^0.9.0",

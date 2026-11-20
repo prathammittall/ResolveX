@@ -24,7 +24,19 @@ import { can, type Permission } from '../org/permissions.js';
 import { orgRoutes } from './org-routes.js';
 import { workRoutes } from './work-routes.js';
 import { createServiceWebhookKey, listServiceWebhookKeys, revokeServiceWebhookKey } from './webhook-keys.js';
+import { buildContext, runModules } from '../../lib/http.js';
+import { sha256 } from '../../lib/crypto.js';
+import { rememberOrgForCompany } from '../../lib/tenant-bridge.js';
+import { db } from '../../prisma/db.js';
+import type { UserTokenPayload } from '../auth/model.js';
+import { agileRoutes } from './modules/agile.js';
+import { opsRoutes } from './modules/ops.js';
+import { incidentRoutes } from './modules/incidents.js';
+import { collabRoutes } from './modules/collab.js';
+import { integrationRoutes } from './modules/integrations.js';
+import { analyticsRoutes } from './modules/analytics.js';
 import {
+  deleteEscalationPolicy,
   createEscalationPolicy,
   createMaintenanceWindow,
   deleteMaintenanceWindow,
@@ -58,6 +70,24 @@ function parseId(value: string | undefined): number | null {
 }
 
 /**
+ * API keys (`Authorization: Bearer rxk_...`) act as their creator within the key's organization,
+ * limited to the role recorded on the key.
+ */
+async function authenticateApiKey(req: Request): Promise<UserTokenPayload | null> {
+  const header = req.headers.get('authorization');
+  const m = header ? /^Bearer\s+(rxk_\S+)$/.exec(header) : null;
+  if (!m?.[1]) return null;
+  const key = await db.orm.public.ApiKey.where({ keyHash: sha256(m[1]) }).first();
+  if (!key || key.revokedAt || (key.expiresAt && Date.parse(key.expiresAt) < Date.now())) return null;
+  const user = await db.orm.public.User.where({ id: key.userId }).first();
+  if (!user) return null;
+  if (!key.lastUsedAt || Date.now() - Date.parse(key.lastUsedAt) > 60_000) {
+    await db.orm.public.ApiKey.where({ id: key.id }).update({ lastUsedAt: new Date().toISOString() });
+  }
+  return { userId: user.id, email: user.email, role: key.role, companyId: key.companyId, orgId: key.organizationId };
+}
+
+/**
  * Dashboard API router. Every route requires a valid access token and is
  * automatically scoped to the caller's companyId via the handlers.
  */
@@ -67,8 +97,9 @@ export async function dashboardRouter(req: Request): Promise<Response> {
   const path = normalizePath(pathname);
   const segments = path.split('/').filter(Boolean);
 
-  const auth = authenticate(req);
+  const auth = authenticate(req) ?? (await authenticateApiKey(req));
   if (!auth) return unauthorizedResponse();
+  await rememberOrgForCompany(auth.companyId, auth.orgId).catch(() => undefined);
 
   const isWrite = method !== 'GET' && method !== 'HEAD';
   const need = (permission: Permission): Response | null => (can(auth.role, permission) ? null : forbiddenResponse());
@@ -77,13 +108,20 @@ export async function dashboardRouter(req: Request): Promise<Response> {
   const baseDenied = need('org:read');
   if (baseDenied) return baseDenied;
 
+  // Platform modules (each checks its own permissions; errors use the standard envelope).
+  let bodyCache: Promise<unknown> | null = null;
+  const readBody = () => (bodyCache ??= readJson(req));
+  const ctx = buildContext(auth, req, segments, searchParams, readBody);
+  const moduleResponse = await runModules(ctx, [agileRoutes, incidentRoutes, opsRoutes, collabRoutes, integrationRoutes, analyticsRoutes]);
+  if (moduleResponse) return moduleResponse;
+
   // Organization, members, invitations, audit log (own permission checks).
   const orgResponse = await orgRoutes(
     auth,
     method,
     segments,
     searchParams,
-    () => readJson(req),
+    readBody,
     req.headers.get('x-request-id'),
   );
   if (orgResponse) return orgResponse;
@@ -94,7 +132,7 @@ export async function dashboardRouter(req: Request): Promise<Response> {
     method,
     segments,
     searchParams,
-    () => readJson(req),
+    readBody,
     req.headers.get('x-request-id'),
   );
   if (workResponse) return workResponse;
@@ -124,12 +162,13 @@ export async function dashboardRouter(req: Request): Promise<Response> {
   if (segments[0] === 'escalation-policies') {
     if (segments.length === 1 && method === 'GET') return listEscalationPolicies(auth.companyId);
     if (segments.length === 1 && method === 'POST') {
-      return createEscalationPolicy(auth.companyId, await readJson(req));
+      return createEscalationPolicy(auth.companyId, await readBody());
     }
     if (segments.length === 2) {
       const id = parseId(segments[1]);
       if (id === null) return badRequestResponse('Invalid escalation policy id');
-      if (method === 'PATCH') return updateEscalationPolicy(auth.companyId, id, await readJson(req));
+      if (method === 'PATCH') return updateEscalationPolicy(auth.companyId, id, await readBody());
+      if (method === 'DELETE') return deleteEscalationPolicy(auth.companyId, id);
     }
   }
 
@@ -137,12 +176,12 @@ export async function dashboardRouter(req: Request): Promise<Response> {
   if (segments[0] === 'maintenance-windows') {
     if (segments.length === 1 && method === 'GET') return listMaintenanceWindows(auth.companyId);
     if (segments.length === 1 && method === 'POST') {
-      return createMaintenanceWindow(auth.companyId, auth.userId, await readJson(req));
+      return createMaintenanceWindow(auth.companyId, auth.userId, await readBody());
     }
     if (segments.length === 2) {
       const id = parseId(segments[1]);
       if (id === null) return badRequestResponse('Invalid maintenance window id');
-      if (method === 'PATCH') return updateMaintenanceWindow(auth.companyId, id, await readJson(req));
+      if (method === 'PATCH') return updateMaintenanceWindow(auth.companyId, id, await readBody());
       if (method === 'DELETE') return deleteMaintenanceWindow(auth.companyId, id);
     }
   }
@@ -153,7 +192,7 @@ export async function dashboardRouter(req: Request): Promise<Response> {
     if (serviceId === null) return badRequestResponse('Invalid service id');
     if (segments.length === 3 && method === 'GET') return listServiceWebhookKeys(auth.companyId, serviceId);
     if (segments.length === 3 && method === 'POST') {
-      return createServiceWebhookKey(auth.companyId, serviceId, auth.userId, await readJson(req));
+      return createServiceWebhookKey(auth.companyId, serviceId, auth.userId, await readBody());
     }
     if (segments.length === 4 && method === 'DELETE') {
       const keyId = parseId(segments[3]);
@@ -166,13 +205,13 @@ export async function dashboardRouter(req: Request): Promise<Response> {
   if (segments[0] === 'services') {
     if (segments.length === 1) {
       if (method === 'GET') return listServices(auth.companyId, searchParams);
-      if (method === 'POST') return createService(await readJson(req), auth.companyId);
+      if (method === 'POST') return createService(await readBody(), auth.companyId);
     }
     if (segments.length === 2) {
       const id = parseId(segments[1]);
       if (id === null) return badRequestResponse('Invalid service id');
       if (method === 'GET') return getService(auth.companyId, id);
-      if (method === 'PATCH') return updateService(auth.companyId, id, await readJson(req));
+      if (method === 'PATCH') return updateService(auth.companyId, id, await readBody());
       if (method === 'DELETE') return deleteService(auth.companyId, id);
     }
   }
@@ -191,7 +230,7 @@ export async function dashboardRouter(req: Request): Promise<Response> {
       const id = parseId(segments[1]);
       if (id === null) return badRequestResponse('Invalid incident id');
       const action = segments[2];
-      const body = await readJson(req);
+      const body = await readBody();
       if (action === 'acknowledge') return acknowledgeIncident(auth.companyId, id, auth.userId, body);
       if (action === 'resolve') return resolveIncident(auth.companyId, id, auth.userId, body);
       if (action === 'comments') return commentIncident(auth.companyId, id, auth.userId, body);

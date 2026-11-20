@@ -3,13 +3,15 @@
 import { refreshSession } from './api';
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 
-export type UserRole = 'owner' | 'admin' | 'responder' | 'member' | 'viewer';
+export type UserRole = 'owner' | 'admin' | 'manager' | 'developer' | 'responder' | 'member' | 'viewer';
 
 export interface AuthUser {
   id: number;
   email: string;
   name: string | null;
   username: string | null;
+  avatarUrl?: string | null;
+  emailVerified?: boolean;
   role: UserRole;
   companyId: number;
   orgId: string;

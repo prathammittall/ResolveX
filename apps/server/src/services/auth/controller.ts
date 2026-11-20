@@ -179,6 +179,12 @@ export async function register(
 
   await createSession(client, { userId: newUser.id, familyId: newSessionFamilyId(), refreshToken: tokens.refreshToken });
 
+  // Bridge the legacy company to the new organization (workers need it) and send the verification email.
+  await client.orm.public.Company.where({ id: newUser.companyId }).update({ organizationId: membership.organizationId }).catch(() => null);
+  void import('../api/public-routes.js')
+    .then(({ sendVerificationEmail }) => sendVerificationEmail(newUser.id, newUser.email))
+    .catch(() => false);
+
   return {
     ok: true,
     user: formatAuthUser(newUser, membership),
@@ -261,11 +267,13 @@ export async function login(
   );
 
   // Dispatch OTP email via Nodemailer
-  await sendOtpEmail({
+  const emailResult = await sendOtpEmail({
     to: user.email,
     otp,
     name: user.name ?? undefined,
   });
+  // Note: In development without SMTP configured, OTP codes are logged to console.
+  // In production, ensure SMTP_USER/SMTP_PASS are set in .env for real email delivery.
 
   return {
     ok: true,

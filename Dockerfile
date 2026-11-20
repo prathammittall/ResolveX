@@ -3,7 +3,7 @@
 # -----------------------------------------------------------------------------
 # Base stage: Minimal Node.js Alpine runtime with tsx and utilities
 # -----------------------------------------------------------------------------
-FROM node:22-alpine AS base
+FROM node:24-alpine AS base
 
 # Install libc6-compat for compatibility, openssl for TLS/crypto, and dumb-init for PID 1 signal handling
 RUN apk add --no-cache libc6-compat openssl dumb-init && \
@@ -82,3 +82,17 @@ CMD ["npm", "run", "start"]
 
 # Alias for platforms/tools targeting 'runner'
 FROM production AS runner
+
+# -----------------------------------------------------------------------------
+# Migrate stage: one-shot job that applies Prisma migrations (needs the dev-only Prisma CLI).
+#   docker build --target migrate -t resolvex-migrate .  &&  docker run --env DATABASE_URL=... resolvex-migrate
+# -----------------------------------------------------------------------------
+FROM base AS migrate
+COPY --from=pruner /app/out/json/ .
+RUN npm install --legacy-peer-deps --no-audit --no-fund && npm cache clean --force
+COPY --from=pruner /app/out/full/ .
+WORKDIR /app/apps/server
+CMD ["npm", "run", "db:migrate"]
+
+# Final default target stays the API runtime.
+FROM production AS api

@@ -11,14 +11,32 @@ import { EmptyState, ErrorBanner, PageLoader, SectionCard, cn, formatDateTime, t
 const roleStyle: Record<OrgRole, string> = {
   owner: 'bg-[#ede9fe] text-[#6d28d9] border border-[#ddd6fe] font-bold',
   admin: 'bg-[#e0f2fe] text-[#0369a1] border border-[#bae6fd] font-bold',
+  manager: 'bg-[#e0f2fe] text-[#0369a1] border border-[#bae6fd] font-semibold',
+  developer: 'bg-[#dcefd8] text-[#177a43] border border-[#b2e2a8] font-semibold',
   responder: 'bg-[#dcefd8] text-[#15803d] border border-[#b2e2a8] font-bold',
   member: 'bg-[#f1f5f9] text-[#475569] border border-[#cbd5e1] font-semibold',
   viewer: 'bg-[#fef3c7] text-[#92400e] border border-[#fde68a] font-semibold',
 };
 
+/** Members may carry an avatar and job title (GET /org/members). */
+type MemberRow = MemberItem & { avatarUrl?: string | null; jobTitle?: string | null };
+
+function MemberAvatar({ m }: { m: MemberRow }) {
+  const label = m.name || m.email;
+  if (m.avatarUrl) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={m.avatarUrl} alt="" className="h-8 w-8 shrink-0 rounded-full border border-[#dfdbcc] object-cover" />;
+  }
+  return (
+    <span aria-hidden="true" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#eeebe0] text-xs font-bold text-[#3d4a42]">
+      {label.slice(0, 1).toUpperCase()}
+    </span>
+  );
+}
+
 function RoleBadge({ role }: { role: OrgRole }) {
   return (
-    <span className={cn('inline-flex rounded-full px-2.5 py-0.5 text-xs', roleStyle[role])}>
+    <span title={ROLE_HELP[role]} className={cn('inline-flex rounded-full px-2.5 py-0.5 text-xs', roleStyle[role] ?? roleStyle.member)}>
       {ROLE_LABEL[role]}
     </span>
   );
@@ -33,7 +51,7 @@ export default function TeamPage() {
   const admin = isAdmin(user?.role);
   const roles = assignableRoles(user?.role);
 
-  const [members, setMembers] = useState<MemberItem[]>([]);
+  const [members, setMembers] = useState<MemberRow[]>([]);
   const [invitations, setInvitations] = useState<InvitationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +68,7 @@ export default function TeamPage() {
   const load = useCallback(async () => {
     setError(null);
     try {
-      const m = await api.get<{ members: MemberItem[] }>('/api/org/members');
+      const m = await api.get<{ members: MemberRow[] }>('/api/org/members');
       setMembers(m.members);
       if (admin) {
         const i = await api.get<{ invitations: InvitationItem[] }>('/api/org/invitations');
@@ -233,7 +251,7 @@ export default function TeamPage() {
                     className="w-full rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] px-3.5 py-2 text-sm text-[#14201a] outline-none transition focus:border-[#177a43] cursor-pointer"
                   >
                     {roles.map((r) => (
-                      <option key={r} value={r} className="bg-white text-[#14201a]">
+                      <option key={r} value={r} title={ROLE_HELP[r]} className="bg-white text-[#14201a]">
                         {ROLE_LABEL[r]}
                       </option>
                     ))}
@@ -301,11 +319,19 @@ export default function TeamPage() {
                   return (
                     <tr key={m.userId} className="hover:bg-[#f6f4ec] transition">
                       <td className="px-5 py-3.5">
-                        <p className="font-bold text-[#14201a]">
-                          {m.name || m.email.split('@')[0]}
-                          {self && <span className="ml-2 text-xs font-semibold text-[#177a43] bg-[#dcefd8] px-2 py-0.5 rounded-full">(you)</span>}
-                        </p>
-                        <p className="text-xs text-[#5f6b64]">{m.email}</p>
+                        <div className="flex items-center gap-3">
+                          <MemberAvatar m={m} />
+                          <div className="min-w-0">
+                            <p className="font-bold text-[#14201a]">
+                              {m.name || m.email.split('@')[0]}
+                              {self && <span className="ml-2 text-xs font-semibold text-[#177a43] bg-[#dcefd8] px-2 py-0.5 rounded-full">(you)</span>}
+                            </p>
+                            <p className="text-xs text-[#5f6b64]">
+                              {m.email}
+                              {m.jobTitle && <span> · {m.jobTitle}</span>}
+                            </p>
+                          </div>
+                        </div>
                       </td>
                       <td className="px-5 py-3.5">
                         {editable ? (
@@ -317,7 +343,7 @@ export default function TeamPage() {
                             className="rounded-xl border border-[#dfdbcc] bg-[#fbfaf6] px-2.5 py-1 text-xs text-[#14201a] outline-none focus:border-[#177a43] cursor-pointer"
                           >
                             {roles.map((r) => (
-                              <option key={r} value={r} className="bg-white text-[#14201a]">
+                              <option key={r} value={r} title={ROLE_HELP[r]} className="bg-white text-[#14201a]">
                                 {ROLE_LABEL[r]}
                               </option>
                             ))}

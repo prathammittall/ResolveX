@@ -6,13 +6,14 @@ import type { UserTokenPayload } from '../auth/model.js';
 import {
   addStatus,
   createProject,
+  deleteProject,
   deleteStatus,
   getProject,
   listProjects,
   updateProject,
   updateStatus,
 } from '../work/projects.js';
-import { addComment, createTask, deleteTask, getTask, listTasks, updateTask } from '../work/tasks.js';
+import { addComment, createTask, deleteTask, getTask, listTasks, updateTask, type TaskFilter } from '../work/tasks.js';
 
 const uuid = z.string().uuid();
 const category = z.enum(['todo', 'in_progress', 'done']);
@@ -34,6 +35,9 @@ const projectCreate = z
       .toUpperCase()
       .regex(/^[A-Z][A-Z0-9]{1,9}$/, 'Key must be 2-10 letters/digits starting with a letter'),
     description: z.string().trim().max(2000).nullable().optional(),
+    leadId: z.number().int().positive().nullable().optional(),
+    teamId: uuid.nullable().optional(),
+    color: z.string().regex(/^#[0-9a-fA-F]{6}$/).nullable().optional(),
   })
   .strict();
 const projectUpdate = z
@@ -41,8 +45,19 @@ const projectUpdate = z
     name: z.string().trim().min(1).max(100).optional(),
     description: z.string().trim().max(2000).nullable().optional(),
     archived: z.boolean().optional(),
+    leadId: z.number().int().positive().nullable().optional(),
+    teamId: uuid.nullable().optional(),
+    color: z.string().regex(/^#[0-9a-fA-F]{6}$/).nullable().optional(),
   })
   .strict();
+const taskExtra = {
+  sprintId: uuid.nullable().optional(),
+  storyPoints: z.number().int().min(0).max(1000).nullable().optional(),
+  position: z.number().finite().optional(),
+  startDate: dueDate.optional(),
+  serviceId: z.number().int().positive().nullable().optional(),
+  incidentId: z.number().int().positive().nullable().optional(),
+};
 const statusCreate = z.object({ name: z.string().trim().min(1).max(40), category }).strict();
 const statusUpdate = z
   .object({ name: z.string().trim().min(1).max(40).optional(), category: category.optional(), position: z.number().int().min(0).max(100).optional() })
@@ -59,6 +74,7 @@ const taskCreate = z
     dueDate: dueDate.optional(),
     labels: labels.optional(),
     parentId: uuid.nullable().optional(),
+    ...taskExtra,
   })
   .strict();
 const taskUpdate = z
@@ -72,6 +88,7 @@ const taskUpdate = z
     dueDate: dueDate.optional(),
     labels: labels.optional(),
     parentId: uuid.nullable().optional(),
+    ...taskExtra,
   })
   .strict();
 const commentCreate = z.object({ body: z.string().trim().min(1).max(10000) }).strict();
@@ -140,6 +157,12 @@ export async function workRoutes(
         if ('error' in parsed) return parsed.error;
         return json({ ok: true, project: await updateProject(actor, projectId, parsed.data) });
       }
+      if (segments.length === 2 && method === 'DELETE') {
+        const denied = denyIf('projects:manage');
+        if (denied) return denied;
+        await deleteProject(actor, projectId);
+        return json({ ok: true });
+      }
 
       // /projects/:id/tasks
       if (segments[2] === 'tasks' && segments.length === 3) {
@@ -187,8 +210,10 @@ export async function workRoutes(
       const denied = denyIf('projects:read');
       if (denied) return denied;
       const filters = filtersFrom(searchParams);
-      // `assignee=me` is the "My work" view.
+      // Personal views: assignee=me (My work), reporter=me (Created by me), watching=me.
       if (searchParams.get('assignee') === 'me') filters.assigneeId = auth.userId;
+      if (searchParams.get('reporter') === 'me') filters.reporterId = auth.userId;
+      if (searchParams.get('watching') === 'me') filters.watcherId = auth.userId;
       return json({ ok: true, ...(await listTasks(auth.orgId, filters)) });
     }
 
@@ -228,15 +253,40 @@ export async function workRoutes(
   }
 }
 
-function filtersFrom(params: URLSearchParams) {
-  const filters: { assigneeId?: number; statusId?: string; type?: z.infer<typeof taskType>; limit?: number } = {};
-  const assignee = Number(params.get('assigneeId'));
-  if (Number.isInteger(assignee) && assignee > 0) filters.assigneeId = assignee;
+function filtersFrom(params: URLSearchParams): TaskFilter {
+  const filters: TaskFilter = {};
+  const assignee = params.get('assigneeId');
+  if (assignee === 'none') filters.assigneeId = null;
+  else if (Number.isInteger(Number(assignee)) && Number(assignee) > 0) filters.assigneeId = Number(assignee);
   const status = params.get('statusId');
   if (status && uuid.safeParse(status).success) filters.statusId = status;
+  const cat = params.get('statusCategory');
+  if (cat === 'todo' || cat === 'in_progress' || cat === 'done' || cat === 'open') filters.statusCategory = cat;
   const type = taskType.safeParse(params.get('type'));
   if (type.success) filters.type = type.data;
+  const prio = priority.safeParse(params.get('priority'));
+  if (prio.success) filters.priority = prio.data;
+  const sprint = params.get('sprintId');
+  if (sprint === 'backlog') filters.sprintId = null;
+  else if (sprint && uuid.safeParse(sprint).success) filters.sprintId = sprint;
+  const label = params.get('label');
+  if (label) filters.label = label.slice(0, 30);
+  const q = params.get('q');
+  if (q && q.trim()) filters.q = q.trim().slice(0, 100);
+  if (params.get('overdue') === 'true') filters.overdue = true;
+  for (const key of ['dueFrom', 'dueTo', 'updatedSince'] as const) {
+    const v = params.get(key);
+    if (v && !Number.isNaN(Date.parse(v))) filters[key] = new Date(v).toISOString();
+  }
+  const serviceId = Number(params.get('serviceId'));
+  if (Number.isInteger(serviceId) && serviceId > 0) filters.serviceId = serviceId;
+  const sort = params.get('sort');
+  if (sort === 'created' || sort === 'updated' || sort === 'due' || sort === 'priority' || sort === 'position' || sort === 'number') filters.sort = sort;
+  const order = params.get('order');
+  if (order === 'asc' || order === 'desc') filters.order = order;
   const limit = Number(params.get('limit'));
   if (Number.isInteger(limit) && limit > 0) filters.limit = limit;
+  const offset = Number(params.get('offset'));
+  if (Number.isInteger(offset) && offset > 0) filters.offset = offset;
   return filters;
 }

@@ -14,6 +14,9 @@ export type ProjectView = {
   name: string;
   description: string | null;
   archived: boolean;
+  leadId: number | null;
+  teamId: string | null;
+  color: string | null;
   createdAt: string;
 };
 
@@ -31,6 +34,9 @@ export function toProjectView(p: {
   name: string;
   description: string | null;
   archivedAt: string | null;
+  leadId?: number | null;
+  teamId?: string | null;
+  color?: string | null;
   createdAt: string;
 }): ProjectView {
   return {
@@ -39,6 +45,9 @@ export function toProjectView(p: {
     name: p.name,
     description: p.description,
     archived: p.archivedAt !== null,
+    leadId: p.leadId ?? null,
+    teamId: p.teamId ?? null,
+    color: p.color ?? null,
     createdAt: p.createdAt,
   };
 }
@@ -52,7 +61,7 @@ const toStatusView = (s: { id: string; name: string; category: string; position:
 
 export async function createProject(
   actor: Actor,
-  input: { name: string; key: string; description?: string | null },
+  input: { name: string; key: string; description?: string | null; leadId?: number | null; teamId?: string | null; color?: string | null },
 ): Promise<{ project: ProjectView; statuses: StatusView[] }> {
   try {
     return await withTenant(actor.orgId, async (tx) => {
@@ -62,7 +71,11 @@ export async function createProject(
         name: input.name,
         description: input.description ?? null,
         createdById: actor.userId,
+        leadId: input.leadId ?? actor.userId,
+        teamId: input.teamId ?? null,
+        color: input.color ?? null,
       });
+      await tx.orm.public.ProjectMember.create({ organizationId: actor.orgId, projectId: project.id, userId: actor.userId, role: 'lead' });
       const statuses: StatusView[] = [];
       for (const [position, s] of DEFAULT_STATUSES.entries()) {
         const row = await tx.orm.public.ProjectStatus.create({
@@ -116,7 +129,7 @@ export async function getProject(orgId: string, projectId: string) {
 export async function updateProject(
   actor: Actor,
   projectId: string,
-  patch: { name?: string; description?: string | null; archived?: boolean },
+  patch: { name?: string; description?: string | null; archived?: boolean; leadId?: number | null; teamId?: string | null; color?: string | null },
 ): Promise<ProjectView> {
   return withTenant(actor.orgId, async (tx) => {
     const project = await tx.orm.public.Project.where({ id: projectId, organizationId: actor.orgId }).forUpdate().first();
@@ -125,6 +138,9 @@ export async function updateProject(
     if (patch.name !== undefined) data.name = patch.name;
     if (patch.description !== undefined) data.description = patch.description;
     if (patch.archived !== undefined) data.archivedAt = patch.archived ? new Date().toISOString() : null;
+    if (patch.leadId !== undefined) data.leadId = patch.leadId;
+    if (patch.teamId !== undefined) data.teamId = patch.teamId;
+    if (patch.color !== undefined) data.color = patch.color;
     if (Object.keys(data).length > 0) {
       await tx.orm.public.Project.where({ id: projectId }).update(data as never);
       await recordAudit(tx, {
@@ -209,5 +225,26 @@ export async function deleteStatus(actor: Actor, projectId: string, statusId: st
     const inUse = await tx.orm.public.Task.where({ projectId, statusId, organizationId: actor.orgId }).first();
     if (inUse) throw new OrgError('CONFLICT', 'Move or close the tickets in this status first', 409);
     await tx.orm.public.ProjectStatus.where({ id: statusId }).delete();
+  });
+}
+
+/** Permanently delete a project and everything in it (tickets, sprints, statuses). Archive is the soft option. */
+export async function deleteProject(actor: Actor, projectId: string): Promise<void> {
+  await withTenant(actor.orgId, async (tx) => {
+    const project = await tx.orm.public.Project.where({ id: projectId, organizationId: actor.orgId }).first();
+    if (!project) throw new OrgError('NOT_FOUND', 'Project not found', 404);
+    if (!project.archivedAt) throw new OrgError('CONFLICT', 'Archive the project before deleting it', 409);
+    // Tasks reference statuses with ON DELETE RESTRICT, so remove tasks first.
+    await tx.orm.public.Task.where({ projectId, organizationId: actor.orgId }).deleteAll();
+    await tx.orm.public.Project.where({ id: projectId }).delete();
+    await recordAudit(tx, {
+      organizationId: actor.orgId,
+      actorId: actor.userId,
+      action: 'project.deleted',
+      entityType: 'project',
+      entityId: projectId,
+      metadata: { key: project.key, name: project.name },
+      requestId: actor.requestId,
+    });
   });
 }

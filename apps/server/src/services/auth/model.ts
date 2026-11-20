@@ -155,9 +155,11 @@ export type AuthUser = {
   email: string;
   username: string | null;
   name: string | null;
-  role: 'owner' | 'admin' | 'responder' | 'member' | 'viewer';
+  role: 'owner' | 'admin' | 'manager' | 'developer' | 'responder' | 'member' | 'viewer';
   companyId: number;
   orgId: string;
+  avatarUrl?: string | null;
+  emailVerified?: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -260,6 +262,8 @@ export function formatAuthUser(
     username: string | null;
     name: string | null;
     companyId: number;
+    avatarUrl?: string | null;
+    emailVerifiedAt?: string | null;
     createdAt: string;
     updatedAt: string;
   },
@@ -274,6 +278,8 @@ export function formatAuthUser(
     role: membership.role,
     companyId: user.companyId,
     orgId: membership.organizationId,
+    avatarUrl: user.avatarUrl ?? null,
+    emailVerified: Boolean(user.emailVerifiedAt),
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };

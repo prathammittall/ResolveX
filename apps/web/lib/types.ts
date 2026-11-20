@@ -1,9 +1,9 @@
 // Domain types shared across dashboard views. These mirror the server response shapes.
 
-export type ServiceType = 'http' | 'api' | 'database' | 'queue' | 'worker' | 'other';
+export type ServiceType = 'http' | 'api' | 'database' | 'queue' | 'worker' | 'frontend' | 'backend' | 'microservice' | 'external' | 'other';
 export type ServiceEnvironment = 'production' | 'staging' | 'development';
 export type ServiceCriticality = 'low' | 'medium' | 'high' | 'critical';
-export type ServiceHealthStatus = 'healthy' | 'degraded' | 'down' | 'unknown';
+export type ServiceHealthStatus = 'healthy' | 'degraded' | 'down' | 'unknown' | 'pending' | 'maintenance';
 export type IncidentSeverity = 'sev1' | 'sev2' | 'sev3' | 'sev4';
 export type IncidentStatus =
   | 'open'
@@ -18,7 +18,14 @@ export type IncidentEventType =
   | 'comment'
   | 'assignment'
   | 'resolved'
-  | 'system';
+  | 'system'
+  | 'severity_change'
+  | 'alert'
+  | 'recovery'
+  | 'escalation'
+  | 'notification'
+  | 'deployment'
+  | 'task_linked';
 export type AlertProcessingStatus = 'pending' | 'processed' | 'ignored' | 'failed';
 
 export interface ServiceItem {
@@ -31,6 +38,17 @@ export interface ServiceItem {
   environment: ServiceEnvironment;
   criticality: ServiceCriticality;
   healthStatus: ServiceHealthStatus;
+  slug?: string | null;
+  teamId?: string | null;
+  ownerId?: number | null;
+  backupOwnerId?: number | null;
+  projectId?: string | null;
+  repositoryUrl?: string | null;
+  docsUrl?: string | null;
+  runbookUrl?: string | null;
+  tags?: string[];
+  currentVersion?: string | null;
+  lastDeployedAt?: string | null;
   createdAt: string;
   updatedAt: string;
   openIncident?: {
@@ -213,7 +231,7 @@ export interface MessageResponse {
 
 // --- Organization, members, invitations, audit log ---
 
-export type OrgRole = 'owner' | 'admin' | 'responder' | 'member' | 'viewer';
+export type OrgRole = 'owner' | 'admin' | 'manager' | 'developer' | 'responder' | 'member' | 'viewer';
 
 export interface OrganizationInfo {
   id: string;

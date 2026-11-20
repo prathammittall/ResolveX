@@ -6,6 +6,8 @@ enum UserRole {
   @@type("pg/text@1")
   owner     = "owner"
   admin     = "admin"
+  manager   = "manager"
+  developer = "developer"
   responder = "responder"
   member    = "member"
   viewer    = "viewer"
@@ -18,6 +20,10 @@ enum ServiceType {
   database  = "database"
   queue     = "queue"
   worker    = "worker"
+  frontend  = "frontend"
+  backend   = "backend"
+  microservice = "microservice"
+  external  = "external"
   other     = "other"
 }
 
@@ -42,6 +48,8 @@ enum ServiceHealthStatus {
   degraded = "degraded"
   down     = "down"
   unknown  = "unknown"
+  pending  = "pending"
+  maintenance = "maintenance"
 }
 
 enum IncidentSeverity {
@@ -70,6 +78,13 @@ enum IncidentEventType {
   assignment    = "assignment"
   resolved      = "resolved"
   system        = "system"
+  severity_change = "severity_change"
+  alert         = "alert"
+  recovery      = "recovery"
+  escalation    = "escalation"
+  notification  = "notification"
+  deployment    = "deployment"
+  task_linked   = "task_linked"
 }
 
 enum AlertProcessingStatus {
@@ -85,6 +100,7 @@ enum EscalationTargetType {
   user    = "user"
   team    = "team"
   webhook = "webhook"
+  schedule = "schedule"
 }
 
 enum EscalationStatus {
@@ -99,6 +115,7 @@ enum QueueJobType {
   @@type("pg/text@1")
   escalate = "escalate"
   notify   = "notify"
+  webhook_delivery = "webhook_delivery"
 }
 
 enum QueueJobStatus {
@@ -149,6 +166,9 @@ enum StatusCategory {
 model Company {
   id        Int        @id @default(autoincrement())
   name      String
+  // Bridge to the tenancy model so background workers (which only know companyId) can enter the
+  // organization's RLS context. Filled at registration and lazily on first authenticated request.
+  organizationId Uuid?
   users     User[]
   services  Service[]
   webhookKeys WebhookKey[]
@@ -158,6 +178,21 @@ model Company {
   maintenanceWindows MaintenanceWindow[]
   queueJobs QueueJob[]
   notificationDeliveries NotificationDelivery[]
+  monitors  Monitor[]
+  monitorChecks MonitorCheck[]
+  notifications Notification[]
+  notificationPreferences NotificationPreference[]
+  statusPages StatusPage[]
+  onCallSchedules OnCallSchedule[]
+  postmortems Postmortem[]
+  serviceDependencies ServiceDependency[]
+  deployments Deployment[]
+  webhookEndpoints WebhookEndpoint[]
+  webhookDeliveries WebhookDelivery[]
+  apiKeys   ApiKey[]
+  githubConnections GitHubConnection[]
+  repositoryLinks RepositoryLink[]
+  githubEvents GitHubEvent[]
   createdAt TimestamptzString @default(now())
   updatedAt temporal.updatedAtString()
 
@@ -172,6 +207,10 @@ model User {
   passwordHash String?
   refreshToken String?
   role         UserRole  @default(member)
+  avatarUrl    String?
+  jobTitle     String?
+  timezone     String?
+  emailVerifiedAt TimestamptzString?
   companyId Int
   company   Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
   posts     Post[]
@@ -184,6 +223,7 @@ model User {
   assignedIncidents Incident[]     @relation("IncidentAssignee")
   incidentEvents    IncidentEvent[] @relation("IncidentEventActor")
   createdMaintenanceWindows MaintenanceWindow[] @relation("MaintenanceWindowCreator")
+  userTokens UserToken[]
   createdAt TimestamptzString @default(now())
   updatedAt temporal.updatedAtString()
 
@@ -253,7 +293,25 @@ model Service {
   environment   ServiceEnvironment
   criticality   ServiceCriticality
   healthStatus  ServiceHealthStatus  @default(unknown)
+  // Catalog metadata (ownership, links, deployment info).
+  slug          String?
+  teamId        Uuid?
+  ownerId       Int?
+  backupOwnerId Int?
+  projectId     Uuid?
+  repositoryUrl String?
+  docsUrl       String?
+  runbookUrl    String?
+  tags          Jsonb?
+  currentVersion String?
+  lastDeployedAt TimestamptzString?
   incidents     Incident[]
+  monitors      Monitor[]
+  monitorChecks MonitorCheck[]
+  statusPageServices StatusPageService[]
+  dependencies  ServiceDependency[] @relation("ServiceDependsOn")
+  dependents    ServiceDependency[] @relation("ServiceDependedOnBy")
+  deployments   Deployment[]
   alertEvents   AlertEvent[]
   webhookKeys   WebhookKey[]
   escalationPolicies EscalationPolicy[] @relation("ServiceEscalationPolicies")
@@ -263,6 +321,7 @@ model Service {
 
   @@unique([companyId, name])
   @@index([companyId])
+  @@index([companyId, ownerId])
   @@index([companyId, healthStatus])
   @@index([companyId, environment])
 }
@@ -288,7 +347,18 @@ model Incident {
   escalationPolicyId  Int?
   escalationPolicy    EscalationPolicy? @relation(fields: [escalationPolicyId], references: [id], onDelete: SetNull)
   resolvedAt          TimestamptzString?
+  mitigatedAt         TimestamptzString?
+  // monitor | webhook | manual
+  source              String?
+  projectId           Uuid?
+  taskId              Uuid?
+  createdById         Int?
+  // Rule-based correlation: incidents opened close together on related services share a group.
+  correlationGroupId  Int?
+  correlationReason   String?
+  customerImpact      String?
   events              IncidentEvent[]
+  postmortem          Postmortem?
   alertEvents         AlertEvent[]
   escalation           IncidentEscalation?
   queueJobs           QueueJob[]
@@ -302,6 +372,8 @@ model Incident {
   @@index([serviceId])
   @@index([assignedResponderId])
   @@index([escalationPolicyId])
+  @@index([companyId, detectedAt])
+  @@index([companyId, correlationGroupId])
   // At most one unresolved incident per service (grouping key for v1).
   @@index([serviceId], where: sql`(status <> 'resolved')`, unique: true, name: "incident_one_unresolved_per_service")
 }
@@ -349,6 +421,12 @@ model EscalationPolicy {
   service     Service? @relation("ServiceEscalationPolicies", fields: [serviceId], references: [id], onDelete: Cascade)
   name        String
   enabled     Boolean  @default(true)
+  // Routing conditions (null = any). Higher priority wins among matching policies.
+  severities  Jsonb?
+  environment String?
+  teamId      Uuid?
+  activeHours Jsonb?
+  priority    Int      @default(0)
   steps       EscalationStep[]
   incidents   Incident[]
   escalations IncidentEscalation[]
@@ -388,6 +466,12 @@ model MaintenanceWindow {
   timezone            String
   enabled             Boolean  @default(true)
   bypassSeverity     IncidentSeverity?
+  description         String?
+  // none | daily | weekly
+  recurrence          String?
+  recurrenceUntil     TimestamptzString?
+  serviceIds          Jsonb?
+  notifiedAt          TimestamptzString?
   createdById         Int?
   createdBy           User?    @relation("MaintenanceWindowCreator", fields: [createdById], references: [id], onDelete: SetNull)
   createdAt           TimestamptzString @default(now())
@@ -481,6 +565,13 @@ model Organization {
   tasks       Task[]
   taskComments TaskComment[]
   taskActivities TaskActivity[]
+  sprints     Sprint[]
+  taskDependencies TaskDependency[]
+  taskWatchers TaskWatcher[]
+  taskAttachments TaskAttachment[]
+  savedFilters SavedFilter[]
+  projectMembers ProjectMember[]
+  commentReactions CommentReaction[]
   createdAt   TimestamptzString @default(now())
   updatedAt   temporal.updatedAtString()
   @@rls
@@ -583,8 +674,13 @@ model Project {
   nextTaskNumber Int                @default(1)
   createdById    Int?
   archivedAt     TimestamptzString?
+  leadId         Int?
+  teamId         Uuid?
+  color          String?
   statuses       ProjectStatus[]
   tasks          Task[]
+  sprints        Sprint[]
+  members        ProjectMember[]
   createdAt      TimestamptzString  @default(now())
   updatedAt      temporal.updatedAtString()
 
@@ -632,9 +728,22 @@ model Task {
   // Epic for stories/tasks, or parent task for subtasks. Validated in code (same project, sensible type).
   parentId       Uuid?
   dueDate        TimestamptzString?
+  startDate      TimestamptzString?
   labels         Jsonb
+  sprintId       Uuid?
+  sprint         Sprint?            @relation(fields: [sprintId], references: [id], onDelete: SetNull)
+  storyPoints    Int?
+  // Manual order inside a board column (lower first).
+  position       Float              @default(0)
+  serviceId      Int?
+  incidentId     Int?
+  completedAt    TimestamptzString?
   comments       TaskComment[]
   activities     TaskActivity[]
+  watchers       TaskWatcher[]
+  attachments    TaskAttachment[]
+  dependencies   TaskDependency[]   @relation("TaskBlocked")
+  blocking       TaskDependency[]   @relation("TaskBlocker")
   createdAt      TimestamptzString  @default(now())
   updatedAt      temporal.updatedAtString()
 
@@ -642,6 +751,10 @@ model Task {
   @@index([projectId, statusId])
   @@index([organizationId, assigneeId])
   @@index([parentId])
+  @@index([sprintId])
+  @@index([organizationId, dueDate])
+  @@index([incidentId])
+  @@index([serviceId])
   @@rls
 }
 
@@ -654,6 +767,8 @@ model TaskComment {
   authorId       Int?
   author         User?             @relation(fields: [authorId], references: [id], onDelete: SetNull)
   body           String
+  editedAt       TimestamptzString?
+  reactions      CommentReaction[]
   createdAt      TimestamptzString @default(now())
 
   @@index([taskId, createdAt])
@@ -677,6 +792,511 @@ model TaskActivity {
   @@index([organizationId])
   @@rls
 }
+
+// --- Platform expansion (monitoring, notifications, agile, ops intelligence, integrations). ---
+// Ops-domain tables follow the legacy convention (integer companyId, application-level scoping);
+// work-domain tables follow the organization convention (UUID, organizationId, RLS).
+
+// Single-use, hashed tokens for email verification and password reset.
+model UserToken {
+  id         Int               @id @default(autoincrement())
+  userId     Int
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // verify_email | reset_password
+  purpose    String
+  tokenHash  String            @unique
+  expiresAt  TimestamptzString
+  usedAt     TimestamptzString?
+  createdAt  TimestamptzString @default(now())
+
+  @@index([userId, purpose])
+}
+
+// HTTP(S) synthetic check attached to a service. Request header values are stored encrypted.
+model Monitor {
+  id                   Int               @id @default(autoincrement())
+  companyId            Int
+  company              Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  serviceId            Int
+  service              Service           @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  name                 String
+  url                  String
+  method               String            @default("GET")
+  // AES-GCM encrypted JSON object of request headers (may contain credentials).
+  headersEncrypted     String?
+  headerNames          Jsonb?
+  body                 String?
+  timeoutMs            Int               @default(10000)
+  intervalSeconds      Int               @default(60)
+  expectedStatusCodes  Jsonb
+  // [{ type: 'body_contains' | 'body_not_contains' | 'header_equals' | 'json_path_equals', ... }]
+  assertions           Jsonb?
+  retries              Int               @default(1)
+  failureThreshold     Int               @default(3)
+  recoveryThreshold    Int               @default(2)
+  degradedLatencyMs    Int?
+  severity             IncidentSeverity  @default(sev2)
+  autoCreateTask       Boolean           @default(true)
+  enabled              Boolean           @default(true)
+  status               ServiceHealthStatus @default(pending)
+  consecutiveFailures  Int               @default(0)
+  consecutiveSuccesses Int               @default(0)
+  lastCheckedAt        TimestamptzString?
+  nextCheckAt          TimestamptzString?
+  lastLatencyMs        Int?
+  lastStatusCode       Int?
+  lastError            String?
+  lockedUntil          TimestamptzString?
+  checks               MonitorCheck[]
+  createdAt            TimestamptzString @default(now())
+  updatedAt            temporal.updatedAtString()
+
+  @@index([companyId])
+  @@index([serviceId])
+  @@index([enabled, nextCheckAt])
+}
+
+model MonitorCheck {
+  id          Int                 @id @default(autoincrement())
+  companyId   Int
+  company     Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  monitorId   Int
+  monitor     Monitor             @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+  serviceId   Int
+  service     Service             @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  status      ServiceHealthStatus
+  statusCode  Int?
+  latencyMs   Int?
+  error       String?
+  attempt     Int                 @default(1)
+  checkedAt   TimestamptzString   @default(now())
+
+  @@index([monitorId, checkedAt])
+  @@index([serviceId, checkedAt])
+  @@index([companyId, checkedAt])
+}
+
+// In-app notification; the same row drives the optional email copy (status + retries tracked here).
+model Notification {
+  id           Int               @id @default(autoincrement())
+  companyId    Int
+  company      Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  userId       Int
+  type         String
+  title        String
+  body         String?
+  link         String?
+  entityType   String?
+  entityId     String?
+  readAt       TimestamptzString?
+  // skipped | pending | sent | failed
+  emailStatus  String            @default("skipped")
+  emailAttempts Int              @default(0)
+  emailError   String?
+  emailNextAttemptAt TimestamptzString?
+  dedupeKey    String?           @unique
+  createdAt    TimestamptzString @default(now())
+
+  @@index([userId, companyId, createdAt])
+  @@index([userId, companyId, readAt])
+  @@index([emailStatus, emailNextAttemptAt])
+}
+
+model NotificationPreference {
+  id        Int               @id @default(autoincrement())
+  companyId Int
+  company   Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  userId    Int
+  // { [type]: { inApp: boolean, email: boolean } }
+  settings  Jsonb
+  updatedAt temporal.updatedAtString()
+
+  @@unique([userId, companyId])
+}
+
+model Sprint {
+  id             Uuid               @id @default(uuid())
+  organizationId Uuid
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  projectId      Uuid
+  project        Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name           String
+  goal           String?
+  // planned | active | completed
+  status         String             @default("planned")
+  startDate      TimestamptzString?
+  endDate        TimestamptzString?
+  startedAt      TimestamptzString?
+  completedAt    TimestamptzString?
+  // Snapshot at completion: { committedPoints, completedPoints, committedCount, completedCount }
+  summary        Jsonb?
+  tasks          Task[]
+  createdAt      TimestamptzString  @default(now())
+  updatedAt      temporal.updatedAtString()
+
+  @@index([projectId, status])
+  @@index([organizationId])
+  @@rls
+}
+
+model ProjectMember {
+  id             Uuid              @id @default(uuid())
+  organizationId Uuid
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  projectId      Uuid
+  project        Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId         Int
+  // lead | member
+  role           String            @default("member")
+  createdAt      TimestamptzString @default(now())
+
+  @@unique([projectId, userId])
+  @@index([organizationId])
+  @@rls
+}
+
+model TaskDependency {
+  id             Uuid              @id @default(uuid())
+  organizationId Uuid
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  // `taskId` is blocked by `dependsOnId`.
+  taskId         Uuid
+  task           Task              @relation("TaskBlocked", fields: [taskId], references: [id], onDelete: Cascade)
+  dependsOnId    Uuid
+  dependsOn      Task              @relation("TaskBlocker", fields: [dependsOnId], references: [id], onDelete: Cascade)
+  createdAt      TimestamptzString @default(now())
+
+  @@unique([taskId, dependsOnId])
+  @@index([dependsOnId])
+  @@index([organizationId])
+  @@rls
+}
+
+model TaskWatcher {
+  id             Uuid              @id @default(uuid())
+  organizationId Uuid
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  taskId         Uuid
+  task           Task              @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId         Int
+  createdAt      TimestamptzString @default(now())
+
+  @@unique([taskId, userId])
+  @@index([organizationId, userId])
+  @@rls
+}
+
+// Small files stored in the database as base64 (size-capped in the API).
+model TaskAttachment {
+  id             Uuid              @id @default(uuid())
+  organizationId Uuid
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  taskId         Uuid
+  task           Task              @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  uploaderId     Int?
+  fileName       String
+  contentType    String
+  sizeBytes      Int
+  contentBase64  String
+  createdAt      TimestamptzString @default(now())
+
+  @@index([taskId])
+  @@index([organizationId])
+  @@rls
+}
+
+model SavedFilter {
+  id             Uuid              @id @default(uuid())
+  organizationId Uuid
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         Int
+  name           String
+  // tasks | incidents
+  scope          String            @default("tasks")
+  query          Jsonb
+  shared         Boolean           @default(false)
+  createdAt      TimestamptzString @default(now())
+
+  @@index([organizationId, userId])
+  @@rls
+}
+
+model CommentReaction {
+  id             Uuid              @id @default(uuid())
+  organizationId Uuid
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  commentId      Uuid
+  comment        TaskComment       @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  userId         Int
+  emoji          String
+  createdAt      TimestamptzString @default(now())
+
+  @@unique([commentId, userId, emoji])
+  @@index([organizationId])
+  @@rls
+}
+
+model StatusPage {
+  id            Int                 @id @default(autoincrement())
+  companyId     Int
+  company       Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name          String
+  slug          String              @unique
+  description   String?
+  isPublic      Boolean             @default(false)
+  brandColor    String?
+  logoUrl       String?
+  supportUrl    String?
+  showIncidentHistory Boolean       @default(true)
+  services      StatusPageService[]
+  createdAt     TimestamptzString   @default(now())
+  updatedAt     temporal.updatedAtString()
+
+  @@index([companyId])
+}
+
+model StatusPageService {
+  id           Int               @id @default(autoincrement())
+  statusPageId Int
+  statusPage   StatusPage        @relation(fields: [statusPageId], references: [id], onDelete: Cascade)
+  serviceId    Int
+  service      Service           @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  displayName  String?
+  position     Int               @default(0)
+
+  @@unique([statusPageId, serviceId])
+  @@index([serviceId])
+}
+
+model OnCallSchedule {
+  id                  Int               @id @default(autoincrement())
+  companyId           Int
+  company             Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name                String
+  description         String?
+  teamId              Uuid?
+  timezone            String            @default("UTC")
+  // Rotation length; participants hand off in order every `rotationHours`, starting at `rotationStart`.
+  rotationHours       Int               @default(168)
+  rotationStart       TimestamptzString
+  // Ordered list of user ids for the primary rotation; secondary is the next person in the rotation.
+  participants        Jsonb
+  overrides           OnCallOverride[]
+  createdAt           TimestamptzString @default(now())
+  updatedAt           temporal.updatedAtString()
+
+  @@index([companyId])
+}
+
+model OnCallOverride {
+  id          Int               @id @default(autoincrement())
+  scheduleId  Int
+  schedule    OnCallSchedule    @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  userId      Int
+  startsAt    TimestamptzString
+  endsAt      TimestamptzString
+  reason      String?
+  createdById Int?
+  createdAt   TimestamptzString @default(now())
+
+  @@index([scheduleId, startsAt, endsAt])
+}
+
+model Postmortem {
+  id                  Int               @id @default(autoincrement())
+  companyId           Int
+  company             Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  incidentId          Int               @unique
+  incident            Incident          @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  // draft | in_review | published
+  status              String            @default("draft")
+  summary             String?
+  rootCause           String?
+  customerImpact      String?
+  contributingFactors String?
+  resolution          String?
+  preventiveMeasures  String?
+  lessonsLearned      String?
+  authorId            Int?
+  publishedAt         TimestamptzString?
+  actionItems         PostmortemActionItem[]
+  createdAt           TimestamptzString @default(now())
+  updatedAt           temporal.updatedAtString()
+
+  @@index([companyId])
+}
+
+model PostmortemActionItem {
+  id           Int               @id @default(autoincrement())
+  postmortemId Int
+  postmortem   Postmortem        @relation(fields: [postmortemId], references: [id], onDelete: Cascade)
+  title        String
+  ownerId      Int?
+  dueDate      TimestamptzString?
+  // open | done
+  status       String            @default("open")
+  taskId       Uuid?
+  createdAt    TimestamptzString @default(now())
+
+  @@index([postmortemId])
+}
+
+model ServiceDependency {
+  id          Int               @id @default(autoincrement())
+  companyId   Int
+  company     Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  // `serviceId` depends on `dependsOnId` (upstream).
+  serviceId   Int
+  service     Service           @relation("ServiceDependsOn", fields: [serviceId], references: [id], onDelete: Cascade)
+  dependsOnId Int
+  dependsOn   Service           @relation("ServiceDependedOnBy", fields: [dependsOnId], references: [id], onDelete: Cascade)
+  // hard | soft
+  kind        String            @default("hard")
+  createdAt   TimestamptzString @default(now())
+
+  @@unique([serviceId, dependsOnId])
+  @@index([companyId])
+  @@index([dependsOnId])
+}
+
+model Deployment {
+  id            Int               @id @default(autoincrement())
+  companyId     Int
+  company       Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  serviceId     Int
+  service       Service           @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  environment   String
+  version       String
+  commitSha     String?
+  repositoryUrl String?
+  author        String?
+  // pending | in_progress | succeeded | failed | rolled_back
+  status        String            @default("succeeded")
+  description   String?
+  url           String?
+  // manual | webhook | github
+  source        String            @default("manual")
+  externalId    String?
+  deployedAt    TimestamptzString
+  createdById   Int?
+  createdAt     TimestamptzString @default(now())
+
+  @@index([companyId, deployedAt])
+  @@index([serviceId, deployedAt])
+  @@unique([serviceId, source, externalId])
+}
+
+// Outgoing webhooks: ResolveX signs and POSTs events to customer endpoints.
+model WebhookEndpoint {
+  id              Int               @id @default(autoincrement())
+  companyId       Int
+  company         Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name            String
+  url             String
+  secretEncrypted String
+  secretPrefix    String
+  events          Jsonb
+  enabled         Boolean           @default(true)
+  createdById     Int?
+  deliveries      WebhookDelivery[]
+  createdAt       TimestamptzString @default(now())
+  updatedAt       temporal.updatedAtString()
+
+  @@index([companyId])
+}
+
+model WebhookDelivery {
+  id              Int               @id @default(autoincrement())
+  companyId       Int
+  company         Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  endpointId      Int
+  endpoint        WebhookEndpoint   @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+  event           String
+  eventId         String
+  payload         Jsonb
+  // pending | delivered | failed
+  status          String            @default("pending")
+  attempts        Int               @default(0)
+  responseStatus  Int?
+  responseSnippet String?
+  error           String?
+  nextAttemptAt   TimestamptzString?
+  deliveredAt     TimestamptzString?
+  createdAt       TimestamptzString @default(now())
+
+  @@unique([endpointId, eventId])
+  @@index([status, nextAttemptAt])
+  @@index([companyId, createdAt])
+}
+
+// Personal/org API keys for the REST API. Only the SHA-256 hash is stored.
+model ApiKey {
+  id             Int               @id @default(autoincrement())
+  companyId      Int
+  company        Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  organizationId Uuid
+  userId         Int
+  name           String
+  keyPrefix      String
+  keyHash        String            @unique
+  // Role the key acts with (never above its creator's role at creation time).
+  role           UserRole          @default(viewer)
+  lastUsedAt     TimestamptzString?
+  expiresAt      TimestamptzString?
+  revokedAt      TimestamptzString?
+  createdAt      TimestamptzString @default(now())
+
+  @@index([companyId])
+}
+
+model GitHubConnection {
+  id                   Int               @id @default(autoincrement())
+  companyId            Int               @unique
+  company              Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  accountLogin         String
+  accessTokenEncrypted String
+  scopes               String?
+  connectedById        Int?
+  createdAt            TimestamptzString @default(now())
+  updatedAt            temporal.updatedAtString()
+}
+
+model RepositoryLink {
+  id                     Int               @id @default(autoincrement())
+  companyId              Int
+  company                Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  fullName               String
+  projectId              Uuid?
+  serviceId              Int?
+  webhookSecretEncrypted String
+  defaultBranch          String?
+  createdAt              TimestamptzString @default(now())
+
+  @@unique([companyId, fullName])
+  @@index([fullName])
+}
+
+model GitHubEvent {
+  id          Int               @id @default(autoincrement())
+  companyId   Int
+  company     Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  repository  String
+  // commit | pull_request | deployment
+  kind        String
+  externalId  String
+  title       String
+  url         String?
+  author      String?
+  state       String?
+  branch      String?
+  taskRefs    Jsonb
+  occurredAt  TimestamptzString
+  createdAt   TimestamptzString @default(now())
+
+  @@unique([companyId, kind, externalId])
+  @@index([companyId, occurredAt])
+}
+
 
 // --- Row-level security: every row is visible only inside the organization set by `withTenant`. ---
 // `app.org_id` is a transaction-local setting; unset => no rows (fail closed).
@@ -761,6 +1381,48 @@ policy_all task_comment_isolation {
 
 policy_all task_activity_isolation {
   target    = TaskActivity
+  using     = sql`"organizationId" = NULLIF(current_setting('app.org_id', true), '')::uuid`
+  withCheck = sql`"organizationId" = NULLIF(current_setting('app.org_id', true), '')::uuid`
+}
+
+policy_all sprint_isolation {
+  target    = Sprint
+  using     = sql`"organizationId" = NULLIF(current_setting('app.org_id', true), '')::uuid`
+  withCheck = sql`"organizationId" = NULLIF(current_setting('app.org_id', true), '')::uuid`
+}
+
+policy_all project_member_isolation {
+  target    = ProjectMember
+  using     = sql`"organizationId" = NULLIF(current_setting('app.org_id', true), '')::uuid`
+  withCheck = sql`"organizationId" = NULLIF(current_setting('app.org_id', true), '')::uuid`
+}
+
+policy_all task_dependency_isolation {
+  target    = TaskDependency
+  using     = sql`"organizationId" = NULLIF(current_setting('app.org_id', true), '')::uuid`
+  withCheck = sql`"organizationId" = NULLIF(current_setting('app.org_id', true), '')::uuid`
+}
+
+policy_all task_watcher_isolation {
+  target    = TaskWatcher
+  using     = sql`"organizationId" = NULLIF(current_setting('app.org_id', true), '')::uuid`
+  withCheck = sql`"organizationId" = NULLIF(current_setting('app.org_id', true), '')::uuid`
+}
+
+policy_all task_attachment_isolation {
+  target    = TaskAttachment
+  using     = sql`"organizationId" = NULLIF(current_setting('app.org_id', true), '')::uuid`
+  withCheck = sql`"organizationId" = NULLIF(current_setting('app.org_id', true), '')::uuid`
+}
+
+policy_all saved_filter_isolation {
+  target    = SavedFilter
+  using     = sql`"organizationId" = NULLIF(current_setting('app.org_id', true), '')::uuid`
+  withCheck = sql`"organizationId" = NULLIF(current_setting('app.org_id', true), '')::uuid`
+}
+
+policy_all comment_reaction_isolation {
+  target    = CommentReaction
   using     = sql`"organizationId" = NULLIF(current_setting('app.org_id', true), '')::uuid`
   withCheck = sql`"organizationId" = NULLIF(current_setting('app.org_id', true), '')::uuid`
 }

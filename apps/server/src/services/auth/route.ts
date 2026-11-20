@@ -25,8 +25,15 @@ function handleError(error: unknown): Response {
       { status: error.status },
     );
   }
+  console.error('[auth.route] Unhandled error:', error);
   return Response.json(
-    { ok: false, error: { code: 'INTERNAL', message: 'Internal server error' } },
+    {
+      ok: false,
+      error: {
+        code: 'INTERNAL',
+        message: error instanceof Error ? error.message : 'Internal server error',
+      },
+    },
     { status: 500 },
   );
 }

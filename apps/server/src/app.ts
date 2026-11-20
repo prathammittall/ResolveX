@@ -5,6 +5,10 @@ import { ipAndEmailKey, rateLimit, type RateLimitRule } from './rate-limit.js';
 import { authRouter } from './services/auth/index.js';
 import { dashboardRouter } from './services/api/index.js';
 import { processAlertWebhook, isAlertProcessingError, type AlertErrorBody } from './services/incident-engine/index.js';
+import { afterIncidentOpened } from './services/incident-engine/lifecycle.js';
+import { publicRoutes } from './services/api/public-routes.js';
+import { db } from './prisma/db.js';
+import { log } from './lib/logger.js';
 
 const AUTH_PATHS = ['/api/auth', '/auth', '/register', '/login', '/refresh', '/logout', '/me', '/google', '/verify-otp', '/resend-otp'];
 const BODY_LIMIT = '1mb';
@@ -133,8 +137,20 @@ export function createApp(
 
   app.use(csrfGuard(allowedOrigins));
 
-  // Raw body for every route: the webhook needs the exact bytes for HMAC verification.
+  // Raw body for every route: webhooks need the exact bytes for HMAC verification. Attachment and avatar
+  // uploads get a larger (still bounded) limit; everything else keeps the 1 MB cap.
+  app.use(['/api/tasks/:ref/attachments', '/api/account/profile'], express.raw({ type: () => true, limit: process.env.UPLOAD_BODY_LIMIT || '4mb' }));
   app.use(express.raw({ type: () => true, limit: BODY_LIMIT }));
+
+  // Request log line with correlation id (no bodies, no query strings: they may hold tokens).
+  app.use((req, res, next) => {
+    const started = Date.now();
+    res.on('finish', () => {
+      if (req.path === '/health' || req.path === '/api/health') return;
+      log.info('http', { requestId: req.headers['x-request-id'], method: req.method, path: req.path, status: res.statusCode, ms: Date.now() - started });
+    });
+    next();
+  });
 
   const ip = (req: ExpressRequest) => req.ip ?? 'unknown';
   app.post(LOGIN_PATHS, rateLimit('login', limits.login, ip).middleware);
@@ -142,7 +158,8 @@ export function createApp(
   app.post(REGISTER_PATHS, rateLimit('register', limits.register, ip).middleware);
   app.post(REFRESH_PATHS, rateLimit('refresh', limits.refresh, ip).middleware);
   app.post(OTP_PATHS, rateLimit('otp', limits.otp, ip).middleware);
-  app.post(['/api/webhooks/alerts', '/webhooks/alerts'], rateLimit('webhook', limits.webhook, ip).middleware);
+  app.post(['/api/auth/forgot-password', '/api/auth/reset-password', '/api/auth/verify-email', '/api/auth/verify-email/request'], rateLimit('recovery', limits.otp, ip).middleware);
+  app.post(['/api/webhooks/alerts', '/webhooks/alerts', '/api/webhooks/deployments', '/api/webhooks/github'], rateLimit('webhook', limits.webhook, ip).middleware);
   // Everything else under /api (auth routes and the webhook are limited above and skipped here).
   const apiLimiter = rateLimit('api', limits.api, ip).middleware;
   app.use('/api', (req, res, next) =>
@@ -151,6 +168,38 @@ export function createApp(
 
   app.get(['/', '/health', '/api/health'], (_req, res) => {
     res.json({ ok: true, service: 'ResolveX Server', status: 'healthy', timestamp: new Date().toISOString() });
+  });
+  // Readiness: also proves the database answers.
+  app.get(['/ready', '/api/ready'], async (_req, res) => {
+    try {
+      await db.orm.public.Company.select('id').limit(1).all();
+      res.json({ ok: true, database: 'up' });
+    } catch {
+      res.status(503).json({ ok: false, database: 'down' });
+    }
+  });
+
+  // Unauthenticated routes: public status pages, deployment/GitHub webhooks, OAuth callback, account recovery.
+  app.use(async (req, res, next) => {
+    const p = req.path;
+    if (
+      !p.startsWith('/api/public/') &&
+      p !== '/api/webhooks/deployments' &&
+      p !== '/api/webhooks/github' &&
+      p !== '/api/integrations/github/callback' &&
+      !['/api/auth/verify-email', '/api/auth/verify-email/request', '/api/auth/forgot-password', '/api/auth/reset-password'].includes(p)
+    ) {
+      next();
+      return;
+    }
+    try {
+      const rawBody = Buffer.isBuffer(req.body) ? req.body.toString('utf8') : '';
+      const response = await publicRoutes(toWebRequest(req), rawBody);
+      if (response) await sendWebResponse(res, response);
+      else next();
+    } catch (err) {
+      next(err);
+    }
   });
 
   app.use(AUTH_PATHS, async (req, res, next) => {
@@ -169,6 +218,9 @@ export function createApp(
         headers: { authorization: req.get('authorization') ?? null },
       });
       res.status(result.duplicate ? 200 : 201).json(result);
+      if (result.outcome === 'incident_created' && result.incidentId) {
+        void afterIncidentOpened(result.incidentId).catch(() => undefined);
+      }
     } catch (error) {
       if (isAlertProcessingError(error)) {
         const body: AlertErrorBody = {

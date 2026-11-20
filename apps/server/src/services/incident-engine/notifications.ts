@@ -1,5 +1,9 @@
 import { db } from "../../prisma/db.js";
 import { sendAlertEmail } from "../email/mailer.js";
+import { notifyUsers } from "../notify/index.js";
+import { currentOnCallForSchedule } from "../oncall/resolve.js";
+import { orgIdForCompany } from "../../lib/tenant-bridge.js";
+import { withTenant } from "../../prisma/tenant.js";
 
 export type NotificationRequest = {
   channel: string;
@@ -95,7 +99,21 @@ async function postJson(
 export async function sendNotification(
   request: NotificationRequest,
 ): Promise<NotificationResult> {
-  if (request.channel === "in_app") return { delivered: true };
+  if (request.channel === "in_app") {
+    if (request.companyId === undefined) return { delivered: false, error: "Missing company" };
+    const userIds = await resolveTargetUserIds(request);
+    if (userIds.length === 0) return { delivered: false, error: "No recipients found for notification target" };
+    await notifyUsers(request.companyId, userIds, {
+      type: "incident.escalated",
+      title: `[${request.severity.toUpperCase()}] ${request.title}`,
+      body: `Escalation step ${request.step + 1} — acknowledge to stop further escalation.`,
+      link: `/dashboard/incidents/${request.incidentId}`,
+      entityType: "incident",
+      entityId: request.incidentId,
+      dedupeKey: `incident:${request.incidentId}:escalation:${request.step}`,
+    });
+    return { delivered: true };
+  }
 
   if (request.channel === "webhook") {
     const configured = endpoint(request.targetId, "Webhook");
@@ -159,36 +177,45 @@ export async function sendNotification(
   };
 }
 
-async function resolveEmailRecipients(
-  request: NotificationRequest,
-): Promise<string[]> {
+/**
+ * Users addressed by an escalation step: a user, every member of a team (lead first), or whoever is on
+ * call for a schedule right now (primary). Only current members of the incident's organization qualify.
+ */
+export async function resolveTargetUserIds(request: NotificationRequest): Promise<number[]> {
+  let ids: number[] = [];
   if (request.targetType === "user") {
     const userId = Number(request.targetId);
-    if (!Number.isInteger(userId) || userId < 1) return [];
-    const user = await db.orm.public.User.where({ id: userId }).first();
-    return user &&
-      (request.companyId === undefined || user.companyId === request.companyId)
-      ? [user.email]
-      : [];
+    if (Number.isInteger(userId) && userId > 0) ids = [userId];
+  } else if (request.targetType === "schedule") {
+    const scheduleId = Number(request.targetId);
+    if (Number.isInteger(scheduleId) && scheduleId > 0 && request.companyId !== undefined) {
+      const onCall = await currentOnCallForSchedule(scheduleId, request.companyId);
+      ids = [onCall?.primary, onCall?.secondary].filter((v): v is number => typeof v === "number");
+      // Primary first; secondary only from the second escalation step onward.
+      if (request.step === 0) ids = ids.slice(0, 1);
+    }
+  } else if (request.targetType === "team") {
+    const orgId = request.companyId !== undefined ? await orgIdForCompany(request.companyId) : null;
+    if (orgId) {
+      const members = await withTenant(orgId, (tx) => tx.orm.public.TeamMember.where({ teamId: request.targetId, organizationId: orgId }).all());
+      members.sort((a, b) => Number(b.isLead) - Number(a.isLead) || a.createdAt.localeCompare(b.createdAt));
+      ids = members.map((m) => m.userId);
+    }
   }
+  if (ids.length === 0 || request.companyId === undefined) return [];
+  const orgId = await orgIdForCompany(request.companyId);
+  if (!orgId) return [];
+  const members = await withTenant(orgId, (tx) => tx.orm.public.Membership.where({ organizationId: orgId }).all());
+  const allowed = new Set(members.map((m) => m.userId));
+  return [...new Set(ids)].filter((id) => allowed.has(id));
+}
 
-  if (request.targetType !== "team") return [];
-  const members = await db.orm.public.TeamMember.where({
-    teamId: request.targetId,
-  }).all();
-  members.sort(
-    (a, b) =>
-      Number(b.isLead) - Number(a.isLead) ||
-      a.createdAt.localeCompare(b.createdAt),
-  );
-  const recipients: string[] = [];
-  for (const member of members) {
-    const user = await db.orm.public.User.where({ id: member.userId }).first();
-    if (
-      user &&
-      (request.companyId === undefined || user.companyId === request.companyId)
-    )
-      recipients.push(user.email);
+async function resolveEmailRecipients(request: NotificationRequest): Promise<string[]> {
+  const ids = await resolveTargetUserIds(request);
+  const emails: string[] = [];
+  for (const id of ids) {
+    const user = await db.orm.public.User.where({ id }).first();
+    if (user) emails.push(user.email);
   }
-  return [...new Set(recipients)];
+  return [...new Set(emails)];
 }

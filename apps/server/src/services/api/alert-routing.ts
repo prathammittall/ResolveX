@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { db } from '../../prisma/db.js';
+import { announceMaintenance } from '../incident-engine/maintenance.js';
 import {
   badRequestResponse,
   conflictResponse,
@@ -8,7 +9,7 @@ import {
 } from './auth.js';
 
 const severityEnum = z.enum(['sev1', 'sev2', 'sev3', 'sev4']);
-const targetTypeEnum = z.enum(['user', 'team', 'webhook']);
+const targetTypeEnum = z.enum(['user', 'team', 'webhook', 'schedule']);
 const channelEnum = z.enum(['in_app', 'email', 'webhook', 'sms']);
 const isoTimestamp = z.string().refine((value) => !Number.isNaN(Date.parse(value)), 'Must be a valid timestamp');
 
@@ -28,6 +29,14 @@ const policySchema = z
     name: z.string().trim().min(1).max(100),
     serviceId: z.number().int().positive().nullable().optional(),
     enabled: z.boolean().default(true),
+    severities: z.array(severityEnum).max(4).nullable().optional(),
+    environment: z.enum(['production', 'staging', 'development']).nullable().optional(),
+    teamId: z.string().uuid().nullable().optional(),
+    activeHours: z
+      .object({ start: z.number().int().min(0).max(23), end: z.number().int().min(0).max(24), days: z.array(z.number().int().min(0).max(6)).max(7).optional(), timezone: z.string().max(64).optional() })
+      .nullable()
+      .optional(),
+    priority: z.number().int().min(-100).max(100).optional(),
     steps: z.array(stepSchema).min(1).max(20),
   })
   .strict();
@@ -44,6 +53,10 @@ const maintenanceFields = z.object({
   timezone: z.string().trim().min(1).max(100),
   enabled: z.boolean().default(true),
   bypassSeverity: severityEnum.nullable().optional(),
+  description: z.string().trim().max(2000).nullable().optional(),
+  recurrence: z.enum(['none', 'daily', 'weekly']).nullable().optional(),
+  recurrenceUntil: isoTimestamp.nullable().optional(),
+  serviceIds: z.array(z.number().int().positive()).max(100).nullable().optional(),
 });
 
 const maintenanceSchema = maintenanceFields
@@ -62,6 +75,10 @@ const maintenanceUpdateSchema = z
     timezone: z.string().trim().min(1).max(100).optional(),
     enabled: z.boolean().optional(),
     bypassSeverity: severityEnum.nullable().optional(),
+    description: z.string().trim().max(2000).nullable().optional(),
+    recurrence: z.enum(['none', 'daily', 'weekly']).nullable().optional(),
+    recurrenceUntil: isoTimestamp.nullable().optional(),
+    serviceIds: z.array(z.number().int().positive()).max(100).nullable().optional(),
   })
   .strict()
   .refine(
@@ -148,6 +165,11 @@ export async function createEscalationPolicy(companyId: number, body: unknown): 
         serviceId: parsed.data.serviceId ?? null,
         name: parsed.data.name,
         enabled: parsed.data.enabled,
+        severities: (parsed.data.severities ?? null) as never,
+        environment: parsed.data.environment ?? null,
+        teamId: parsed.data.teamId ?? null,
+        activeHours: (parsed.data.activeHours ?? null) as never,
+        priority: parsed.data.priority ?? 0,
       });
       for (const [index, step] of parsed.data.steps.entries()) {
         await tx.orm.public.EscalationStep.create({
@@ -195,10 +217,15 @@ export async function updateEscalationPolicy(companyId: number, id: number, body
       if (parsed.data.name !== undefined) update.name = parsed.data.name;
       if (parsed.data.serviceId !== undefined) update.serviceId = parsed.data.serviceId;
       if (parsed.data.enabled !== undefined) update.enabled = parsed.data.enabled;
+      if (parsed.data.severities !== undefined) update.severities = parsed.data.severities;
+      if (parsed.data.environment !== undefined) update.environment = parsed.data.environment;
+      if (parsed.data.teamId !== undefined) update.teamId = parsed.data.teamId;
+      if (parsed.data.activeHours !== undefined) update.activeHours = parsed.data.activeHours;
+      if (parsed.data.priority !== undefined) update.priority = parsed.data.priority;
       await tx.orm.public.EscalationPolicy.where({ id }).update(update);
 
       if (parsed.data.steps) {
-        await tx.orm.public.EscalationStep.where({ policyId: id }).delete();
+        await tx.orm.public.EscalationStep.where({ policyId: id }).deleteAll();
         for (const [index, step] of parsed.data.steps.entries()) {
           await tx.orm.public.EscalationStep.create({
             policyId: id,
@@ -253,8 +280,13 @@ export async function createMaintenanceWindow(
       timezone: parsed.data.timezone,
       enabled: parsed.data.enabled,
       bypassSeverity: parsed.data.bypassSeverity ?? null,
+      description: parsed.data.description ?? null,
+      recurrence: parsed.data.recurrence && parsed.data.recurrence !== 'none' ? parsed.data.recurrence : null,
+      recurrenceUntil: parsed.data.recurrenceUntil ?? null,
+      serviceIds: (parsed.data.serviceIds ?? null) as never,
       createdById: userId,
     });
+    void announceMaintenance(companyId, window.id);
     return Response.json({ ok: true, maintenanceWindow: window }, { status: 201 });
   } catch (error) {
     console.error('[api/alert-routing] create maintenance error:', error);
@@ -276,7 +308,7 @@ export async function updateMaintenanceWindow(companyId: number, id: number, bod
     }
 
     const update: Record<string, unknown> = {};
-    for (const field of ['serviceId', 'name', 'startsAt', 'endsAt', 'timezone', 'enabled', 'bypassSeverity'] as const) {
+    for (const field of ['serviceId', 'name', 'startsAt', 'endsAt', 'timezone', 'enabled', 'bypassSeverity', 'description', 'recurrence', 'recurrenceUntil', 'serviceIds'] as const) {
       if (parsed.data[field] !== undefined) update[field] = parsed.data[field];
     }
     await db.orm.public.MaintenanceWindow.where({ id }).update(update);
@@ -296,6 +328,21 @@ export async function deleteMaintenanceWindow(companyId: number, id: number): Pr
     return Response.json({ ok: true });
   } catch (error) {
     console.error('[api/alert-routing] delete maintenance error:', error);
+    return serverErrorResponse();
+  }
+}
+
+export async function deleteEscalationPolicy(companyId: number, id: number): Promise<Response> {
+  try {
+    const existing = await db.orm.public.EscalationPolicy.where({ id }).first();
+    if (!existing || existing.companyId !== companyId) return notFoundResponse('Escalation policy not found');
+    const inUse = await db.orm.public.IncidentEscalation.where({ policyId: id, status: 'active' }).first();
+    if (inUse) return conflictResponse('This policy is escalating an open incident; disable it instead');
+    await db.orm.public.IncidentEscalation.where({ policyId: id }).deleteAll();
+    await db.orm.public.EscalationPolicy.where({ id }).delete();
+    return Response.json({ ok: true });
+  } catch (error) {
+    console.error('[api/alert-routing] delete policy error:', error);
     return serverErrorResponse();
   }
 }

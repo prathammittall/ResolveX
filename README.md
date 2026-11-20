@@ -88,3 +88,33 @@ Traditional project trackers like Jira are completely blind to production health
                                  ┌─────────▼─────────┐
                                  │ Customer APIs     │
                                  └───────────────────┘
+## Running ResolveX
+
+### Local development
+```bash
+npm install
+cp apps/server/.env.example apps/server/.env   # fill DATABASE_URL, JWT secrets, SECRETS_ENCRYPTION_KEY
+npm run db:migrate --workspace=server          # apply Prisma migrations
+npm run dev                                    # API on :3000, web on :3001
+npm run dev:worker                             # background worker (monitors, escalation, email, webhooks)
+```
+The worker must run for monitoring, escalation timers, notification emails and outgoing webhooks — it does not depend on anyone being logged in.
+
+### Docker Compose (self-hosted)
+```bash
+cp .env.compose.example .env    # set passwords and secrets
+docker compose up -d --build    # postgres → migrate → api + worker → web
+```
+- Web: http://localhost:3001 · API liveness `/health`, readiness `/ready` · worker liveness on `WORKER_HEALTH_PORT`.
+- Every environment variable is documented in `apps/server/.env.example`.
+
+### Processes
+| Process | Command | Role |
+|---|---|---|
+| API | `npm run start --workspace=server` | REST API, auth, webhooks, public status pages |
+| Worker | `npm run worker --workspace=server` | API monitors, incident escalation, email + webhook delivery, retention |
+| Web | `npm run start --workspace=web` | Next.js app; proxies `/api/*` to `BACKEND_URL` |
+
+Background jobs use PostgreSQL (lease timestamps claimed with conditional updates and row locks), so no Redis is required and several worker replicas can run side by side.
+
+API reference: [`docs/API.md`](docs/API.md) (also browsable in-app under **API & docs**).

@@ -12,6 +12,8 @@ export type MemberView = {
   name: string | null;
   role: Role;
   joinedAt: string;
+  avatarUrl?: string | null;
+  jobTitle?: string | null;
 };
 
 export async function getOrganization(orgId: string) {
@@ -23,10 +25,12 @@ export async function getOrganization(orgId: string) {
 export async function listMembers(orgId: string): Promise<MemberView[]> {
   const memberships = await withTenant(orgId, async (tx) => await tx.orm.public.Membership.where({ organizationId: orgId }).all());
   const members: MemberView[] = [];
+  const ids = memberships.map((m) => m.userId);
+  const users = ids.length ? await db.orm.public.User.where((u) => u.id.in(ids)).all() : [];
   for (const m of memberships) {
     if (!isRole(m.role)) continue;
-    const user = await db.orm.public.User.where({ id: m.userId }).first();
-    if (user) members.push({ userId: user.id, email: user.email, name: user.name, role: m.role, joinedAt: m.createdAt });
+    const user = users.find((u) => u.id === m.userId);
+    if (user) members.push({ userId: user.id, email: user.email, name: user.name, role: m.role, joinedAt: m.createdAt, avatarUrl: user.avatarUrl, jobTitle: user.jobTitle });
   }
   return members.sort((a, b) => a.joinedAt.localeCompare(b.joinedAt));
 }

@@ -224,3 +224,125 @@ mark.why, mark.hl-box, .hl-lime-box {
 ::-webkit-scrollbar-thumb:hover {
   background: #c7c1b0;
 }
+
+/* ---- Dark theme: remaps the dashboard palette (set via <html data-theme="dark">) ---- */
+html[data-theme="dark"] { color-scheme: dark; --paper:#111914; --paper-2:#1a251e; --paper-3:#26322a; --card:#151d18; --ink:#e7eee9; --ink-2:#c3cec7; --ink-3:#93a39a; --rule:#2a372f; --pine-l:#173726; }
+html[data-theme="dark"] body { background-color: #111914; color: #e7eee9; }
+html[data-theme="dark"] .bg-white { background-color: #151d18 !important; }
+html[data-theme="dark"] input, html[data-theme="dark"] select, html[data-theme="dark"] textarea { background-color: #18211b; color: #e7eee9; border-color: #2a372f; }
+html[data-theme="dark"] .bg-\[\#ffffff\] { background-color: #151d18 !important; }
+html[data-theme="dark"] .bg-\[\#fbfaf6\] { background-color: #18211b !important; }
+html[data-theme="dark"] .bg-\[\#f6f4ec\] { background-color: #111914 !important; }
+html[data-theme="dark"] .bg-\[\#eeebe0\] { background-color: #1f2a23 !important; }
+html[data-theme="dark"] .bg-\[\#e4e0d1\] { background-color: #26322a !important; }
+html[data-theme="dark"] .bg-\[\#dcefd8\] { background-color: #173726 !important; }
+html[data-theme="dark"] .bg-\[\#fee2e2\] { background-color: #3b1618 !important; }
+html[data-theme="dark"] .bg-\[\#fef3c7\] { background-color: #3a2d0d !important; }
+html[data-theme="dark"] .bg-\[\#f1f5f9\] { background-color: #1e2730 !important; }
+html[data-theme="dark"] .bg-\[\#e0f2fe\] { background-color: #0e2a3b !important; }
+html[data-theme="dark"] .bg-\[\#ede9fe\] { background-color: #251d40 !important; }
+html[data-theme="dark"] .bg-\[\#fef9c3\] { background-color: #33300d !important; }
+html[data-theme="dark"] .bg-\[\#ffedd5\] { background-color: #3a2410 !important; }
+html[data-theme="dark"] .bg-\[\#faefe3\] { background-color: #2c2218 !important; }
+html[data-theme="dark"] .bg-\[\#14201a\] { background-color: #e7eee9 !important; }
+html[data-theme="dark"] .hover\:bg-\[\#ffffff\]:hover { background-color: #151d18 !important; }
+html[data-theme="dark"] .hover\:bg-\[\#fbfaf6\]:hover { background-color: #18211b !important; }
+html[data-theme="dark"] .hover\:bg-\[\#f6f4ec\]:hover { background-color: #111914 !important; }
+html[data-theme="dark"] .hover\:bg-\[\#eeebe0\]:hover { background-color: #1f2a23 !important; }
+html[data-theme="dark"] .hover\:bg-\[\#e4e0d1\]:hover { background-color: #26322a !important; }
+html[data-theme="dark"] .hover\:bg-\[\#dcefd8\]:hover { background-color: #173726 !important; }
+html[data-theme="dark"] .hover\:bg-\[\#fee2e2\]:hover { background-color: #3b1618 !important; }
+html[data-theme="dark"] .hover\:bg-\[\#fef3c7\]:hover { background-color: #3a2d0d !important; }
+html[data-theme="dark"] .hover\:bg-\[\#f1f5f9\]:hover { background-color: #1e2730 !important; }
+html[data-theme="dark"] .hover\:bg-\[\#e0f2fe\]:hover { background-color: #0e2a3b !important; }
+html[data-theme="dark"] .hover\:bg-\[\#ede9fe\]:hover { background-color: #251d40 !important; }
+html[data-theme="dark"] .hover\:bg-\[\#fef9c3\]:hover { background-color: #33300d !important; }
+html[data-theme="dark"] .hover\:bg-\[\#ffedd5\]:hover { background-color: #3a2410 !important; }
+html[data-theme="dark"] .hover\:bg-\[\#faefe3\]:hover { background-color: #2c2218 !important; }
+html[data-theme="dark"] .hover\:bg-\[\#14201a\]:hover { background-color: #e7eee9 !important; }
+html[data-theme="dark"] .text-\[\#14201a\] { color: #e7eee9 !important; }
+html[data-theme="dark"] .text-\[\#3d4a42\] { color: #c3cec7 !important; }
+html[data-theme="dark"] .text-\[\#5f6b64\] { color: #93a39a !important; }
+html[data-theme="dark"] .text-\[\#177a43\] { color: #5fd18d !important; }
+html[data-theme="dark"] .text-\[\#0f5e32\] { color: #7fe0a6 !important; }
+html[data-theme="dark"] .text-\[\#92400e\] { color: #f6c46b !important; }
+html[data-theme="dark"] .text-\[\#991b1b\] { color: #fca5a5 !important; }
+html[data-theme="dark"] .text-\[\#dc2626\] { color: #f87171 !important; }
+html[data-theme="dark"] .text-\[\#15803d\] { color: #6ee7a0 !important; }
+html[data-theme="dark"] .text-\[\#475569\] { color: #a9b6c4 !important; }
+html[data-theme="dark"] .text-\[\#64748b\] { color: #a9b6c4 !important; }
+html[data-theme="dark"] .text-\[\#0369a1\] { color: #7dd3fc !important; }
+html[data-theme="dark"] .text-\[\#b45309\] { color: #fbbf24 !important; }
+html[data-theme="dark"] .text-\[\#6d28d9\] { color: #c4b5fd !important; }
+html[data-theme="dark"] .text-\[\#0284c7\] { color: #7dd3fc !important; }
+html[data-theme="dark"] .text-\[\#d97706\] { color: #fbbf24 !important; }
+html[data-theme="dark"] .text-\[\#a16207\] { color: #facc15 !important; }
+html[data-theme="dark"] .text-\[\#9a3412\] { color: #fdba74 !important; }
+html[data-theme="dark"] .text-\[\#7c3aed\] { color: #c4b5fd !important; }
+html[data-theme="dark"] .text-\[\#b91c1c\] { color: #fca5a5 !important; }
+html[data-theme="dark"] .text-\[\#854d0e\] { color: #facc15 !important; }
+html[data-theme="dark"] .text-\[\#5553a8\] { color: #b8b5f5 !important; }
+html[data-theme="dark"] .text-\[\#25396e\] { color: #a5b8f0 !important; }
+html[data-theme="dark"] .text-\[\#075985\] { color: #7dd3fc !important; }
+html[data-theme="dark"] .text-\[\#ea580c\] { color: #fdba74 !important; }
+html[data-theme="dark"] .hover\:text-\[\#14201a\]:hover { color: #e7eee9 !important; }
+html[data-theme="dark"] .hover\:text-\[\#3d4a42\]:hover { color: #c3cec7 !important; }
+html[data-theme="dark"] .hover\:text-\[\#5f6b64\]:hover { color: #93a39a !important; }
+html[data-theme="dark"] .hover\:text-\[\#177a43\]:hover { color: #5fd18d !important; }
+html[data-theme="dark"] .hover\:text-\[\#0f5e32\]:hover { color: #7fe0a6 !important; }
+html[data-theme="dark"] .hover\:text-\[\#92400e\]:hover { color: #f6c46b !important; }
+html[data-theme="dark"] .hover\:text-\[\#991b1b\]:hover { color: #fca5a5 !important; }
+html[data-theme="dark"] .hover\:text-\[\#dc2626\]:hover { color: #f87171 !important; }
+html[data-theme="dark"] .hover\:text-\[\#15803d\]:hover { color: #6ee7a0 !important; }
+html[data-theme="dark"] .hover\:text-\[\#475569\]:hover { color: #a9b6c4 !important; }
+html[data-theme="dark"] .hover\:text-\[\#64748b\]:hover { color: #a9b6c4 !important; }
+html[data-theme="dark"] .hover\:text-\[\#0369a1\]:hover { color: #7dd3fc !important; }
+html[data-theme="dark"] .hover\:text-\[\#b45309\]:hover { color: #fbbf24 !important; }
+html[data-theme="dark"] .hover\:text-\[\#6d28d9\]:hover { color: #c4b5fd !important; }
+html[data-theme="dark"] .hover\:text-\[\#0284c7\]:hover { color: #7dd3fc !important; }
+html[data-theme="dark"] .hover\:text-\[\#d97706\]:hover { color: #fbbf24 !important; }
+html[data-theme="dark"] .hover\:text-\[\#a16207\]:hover { color: #facc15 !important; }
+html[data-theme="dark"] .hover\:text-\[\#9a3412\]:hover { color: #fdba74 !important; }
+html[data-theme="dark"] .hover\:text-\[\#7c3aed\]:hover { color: #c4b5fd !important; }
+html[data-theme="dark"] .hover\:text-\[\#b91c1c\]:hover { color: #fca5a5 !important; }
+html[data-theme="dark"] .hover\:text-\[\#854d0e\]:hover { color: #facc15 !important; }
+html[data-theme="dark"] .hover\:text-\[\#5553a8\]:hover { color: #b8b5f5 !important; }
+html[data-theme="dark"] .hover\:text-\[\#25396e\]:hover { color: #a5b8f0 !important; }
+html[data-theme="dark"] .hover\:text-\[\#075985\]:hover { color: #7dd3fc !important; }
+html[data-theme="dark"] .hover\:text-\[\#ea580c\]:hover { color: #fdba74 !important; }
+html[data-theme="dark"] .border-\[\#dfdbcc\] { border-color: #2a372f !important; }
+html[data-theme="dark"] .border-\[\#b2e2a8\] { border-color: #25553a !important; }
+html[data-theme="dark"] .border-\[\#fde68a\] { border-color: #5b4712 !important; }
+html[data-theme="dark"] .border-\[\#cbd5e1\] { border-color: #334155 !important; }
+html[data-theme="dark"] .border-\[\#fecaca\] { border-color: #5c2326 !important; }
+html[data-theme="dark"] .border-\[\#fca5a5\] { border-color: #7f2a2e !important; }
+html[data-theme="dark"] .border-\[\#bae6fd\] { border-color: #164e6b !important; }
+html[data-theme="dark"] .border-\[\#ddd6fe\] { border-color: #3d3270 !important; }
+html[data-theme="dark"] .border-\[\#f5d5c4\] { border-color: #4a3426 !important; }
+html[data-theme="dark"] .border-\[\#14201a\] { border-color: #e7eee9 !important; }
+html[data-theme="dark"] .divide-\[\#dfdbcc\] > :not(:last-child) { border-color: #2a372f !important; }
+html[data-theme="dark"] .divide-\[\#b2e2a8\] > :not(:last-child) { border-color: #25553a !important; }
+html[data-theme="dark"] .divide-\[\#fde68a\] > :not(:last-child) { border-color: #5b4712 !important; }
+html[data-theme="dark"] .divide-\[\#cbd5e1\] > :not(:last-child) { border-color: #334155 !important; }
+html[data-theme="dark"] .divide-\[\#fecaca\] > :not(:last-child) { border-color: #5c2326 !important; }
+html[data-theme="dark"] .divide-\[\#fca5a5\] > :not(:last-child) { border-color: #7f2a2e !important; }
+html[data-theme="dark"] .divide-\[\#bae6fd\] > :not(:last-child) { border-color: #164e6b !important; }
+html[data-theme="dark"] .divide-\[\#ddd6fe\] > :not(:last-child) { border-color: #3d3270 !important; }
+html[data-theme="dark"] .divide-\[\#f5d5c4\] > :not(:last-child) { border-color: #4a3426 !important; }
+html[data-theme="dark"] .divide-\[\#14201a\] > :not(:last-child) { border-color: #e7eee9 !important; }
+html[data-theme="dark"] .bg-\[\#14201a\].text-white, html[data-theme="dark"] .bg-\[\#14201a\] .text-white { color: #111914 !important; }
+html[data-theme="dark"] .shadow-xl, html[data-theme="dark"] .shadow-2xl { box-shadow: 0 20px 40px rgba(0,0,0,.55) !important; }
+
+/* ---- Shared motion / utility ---- */
+@keyframes rx-shimmer { 0% { background-position: -400px 0 } 100% { background-position: 400px 0 } }
+.rx-skeleton { background: linear-gradient(90deg, var(--paper-2) 0%, var(--paper-3) 50%, var(--paper-2) 100%); background-size: 800px 100%; animation: rx-shimmer 1.4s infinite linear; border-radius: 8px; }
+@keyframes rx-toast-in { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
+.rx-toast { animation: rx-toast-in .18s ease-out; }
+.rx-prose h1,.rx-prose h2,.rx-prose h3 { font-weight: 700; margin: .8em 0 .4em; }
+.rx-prose h1 { font-size: 1.25rem } .rx-prose h2 { font-size: 1.1rem } .rx-prose h3 { font-size: 1rem }
+.rx-prose p { margin: .5em 0 } .rx-prose ul { list-style: disc; padding-left: 1.4em } .rx-prose ol { list-style: decimal; padding-left: 1.4em }
+.rx-prose code { font-family: var(--font-mono); font-size: .85em; background: var(--paper-2); padding: .1em .35em; border-radius: 4px }
+.rx-prose pre { background: var(--paper-2); padding: .8em; border-radius: 8px; overflow-x: auto } .rx-prose pre code { background: none; padding: 0 }
+.rx-prose a { color: var(--pine); text-decoration: underline } .rx-prose blockquote { border-left: 3px solid var(--rule); padding-left: .8em; color: var(--ink-3) }
+.rx-prose .mention { color: var(--pine); font-weight: 600 }
+

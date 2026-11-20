@@ -1,0 +1,89 @@
+# Self-hosted ResolveX: PostgreSQL + migrations + API + background worker + web.
+#   cp .env.compose.example .env   # then fill in secrets
+#   docker compose up -d --build
+# Web: http://localhost:3001   API: http://localhost:3000 (health: /health, readiness: /ready)
+name: resolvex
+
+x-server-env: &server-env
+  NODE_ENV: production
+  DATABASE_URL: postgresql://${POSTGRES_USER:-resolvex}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-resolvex}
+  JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?set JWT_ACCESS_SECRET}
+  JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?set JWT_REFRESH_SECRET}
+  SECRETS_ENCRYPTION_KEY: ${SECRETS_ENCRYPTION_KEY:?set SECRETS_ENCRYPTION_KEY}
+  CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3001}
+  APP_URL: ${APP_URL:-http://localhost:3001}
+  PUBLIC_API_URL: ${PUBLIC_API_URL:-http://localhost:3001}
+  TRUST_PROXY: ${TRUST_PROXY:-true}
+  SMTP_HOST: ${SMTP_HOST:-}
+  SMTP_PORT: ${SMTP_PORT:-587}
+  SMTP_SECURE: ${SMTP_SECURE:-false}
+  SMTP_USER: ${SMTP_USER:-}
+  SMTP_PASS: ${SMTP_PASS:-}
+  SMTP_FROM: ${SMTP_FROM:-}
+  GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+  GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+  AI_PROVIDER: ${AI_PROVIDER:-}
+  AI_API_KEY: ${AI_API_KEY:-}
+  AI_MODEL: ${AI_MODEL:-}
+  AI_BASE_URL: ${AI_BASE_URL:-}
+  ALLOW_PRIVATE_NETWORK_TARGETS: ${ALLOW_PRIVATE_NETWORK_TARGETS:-false}
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-resolvex}
+      POSTGRES_USER: ${POSTGRES_USER:-resolvex}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-resolvex} -d ${POSTGRES_DB:-resolvex}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  migrate:
+    build: { context: ., dockerfile: Dockerfile, target: migrate }
+    environment: *server-env
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: "no"
+
+  api:
+    build: { context: ., dockerfile: Dockerfile, target: production }
+    restart: unless-stopped
+    environment: *server-env
+    ports: ["3000:3000"]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    stop_grace_period: 15s
+
+  worker:
+    build: { context: ., dockerfile: Dockerfile, target: production }
+    restart: unless-stopped
+    command: ["npm", "run", "worker"]
+    environment:
+      <<: *server-env
+      WORKER_HEALTH_PORT: "3010"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3010/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    stop_grace_period: 30s
+
+  web:
+    build: { context: ., dockerfile: apps/web/Dockerfile }
+    restart: unless-stopped
+    environment:
+      BACKEND_URL: http://api:3000
+    ports: ["3001:3001"]
+    depends_on: [api]
+
+volumes:
+  pgdata:

@@ -79,6 +79,16 @@ const healthConfig: Record<
     cls: 'bg-[#f1f5f9] text-[#475569] border border-[#cbd5e1]',
     Icon: HelpCircle,
   },
+  pending: {
+    label: 'Pending',
+    cls: 'bg-[#f1f5f9] text-[#475569] border border-[#cbd5e1]',
+    Icon: Loader2,
+  },
+  maintenance: {
+    label: 'Maintenance',
+    cls: 'bg-[#e0f2fe] text-[#0369a1] border border-[#bae6fd]',
+    Icon: HelpCircle,
+  },
 };
 
 export function HealthBadge({ status }: { status: ServiceHealthStatus }) {

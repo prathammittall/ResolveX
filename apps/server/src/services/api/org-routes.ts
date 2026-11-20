@@ -19,7 +19,7 @@ import {
 } from '../org/index.js';
 import type { UserTokenPayload } from '../auth/model.js';
 
-const roleSchema = z.enum(['owner', 'admin', 'responder', 'member', 'viewer']);
+const roleSchema = z.enum(['owner', 'admin', 'manager', 'developer', 'responder', 'member', 'viewer']);
 const inviteSchema = z.object({ email: z.string().trim().toLowerCase().email().max(255), role: roleSchema }).strict();
 const roleChangeSchema = z.object({ role: roleSchema }).strict();
 const acceptSchema = z.object({ token: z.string().min(1).max(200) }).strict();
