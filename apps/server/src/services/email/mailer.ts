@@ -137,10 +137,19 @@ export function isMailerConfigured(): boolean {
   }
 }
 
-function appUrl(path: string): string {
-  const base = (process.env.APP_URL || process.env.WEB_APP_URL || 'http://localhost:3001').replace(/\/$/, '');
-  return path.startsWith('http') ? path : `${base}${path.startsWith('/') ? '' : '/'}${path}`;
-}
+import {
+  appUrl,
+  sendPasswordResetEmail,
+  sendForgotPasswordEmail,
+  type SendPasswordResetOptions,
+} from '../mailer.js';
+
+export {
+  appUrl,
+  sendPasswordResetEmail,
+  sendForgotPasswordEmail,
+  type SendPasswordResetOptions,
+};
 
 /** Generic transactional email (notifications, verification, password reset). Returns false when SMTP is not configured. */
 export async function sendGenericEmail(args: {

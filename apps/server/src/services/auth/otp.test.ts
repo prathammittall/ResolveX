@@ -10,7 +10,12 @@ import {
   verifyOtpToken,
   MAX_OTP_ATTEMPTS,
 } from './otp.js';
-import { sendOtpEmail, isSmtpConfigured } from '../mailer.js';
+import {
+  sendOtpEmail,
+  sendPasswordResetEmail,
+  sendForgotPasswordEmail,
+  isSmtpConfigured,
+} from '../mailer.js';
 
 describe('OTP & Mailer Service', () => {
   const testEmail = 'otp_tester@example.com';
@@ -110,6 +115,49 @@ describe('OTP & Mailer Service', () => {
       const message = JSON.parse(info.message);
       expect(message.to[0].address).toBe(testEmail);
       expect(message.subject).toContain('123456');
+    });
+  });
+
+  describe('Nodemailer Forgot Password / Password Reset Dispatcher', () => {
+    it('handles password reset dispatch safely with token', async () => {
+      const result = await sendPasswordResetEmail({
+        to: testEmail,
+        token: 'sample-reset-token-1234567890',
+        name: 'Jordan Case',
+      });
+
+      expect(result.success).toBe(true);
+    });
+
+    it('handles password reset dispatch safely with explicit resetUrl', async () => {
+      const result = await sendForgotPasswordEmail({
+        to: testEmail,
+        resetUrl: 'https://resolvex.ai/reset-password?token=sample-reset-token-987654321',
+        name: 'Jordan Case',
+      });
+
+      expect(result.success).toBe(true);
+    });
+
+    it('sends password reset mail through nodemailer JSON transport', async () => {
+      const nodemailer = await import('nodemailer');
+      const transport = nodemailer.createTransport({
+        jsonTransport: true,
+      });
+
+      const resetUrl = 'https://resolvex.ai/reset-password?token=test-token-abc';
+      const info = await transport.sendMail({
+        from: 'ResolveX <noreply@resolvex.ai>',
+        to: testEmail,
+        subject: 'Reset your ResolveX password',
+        text: `Reset your password: ${resetUrl}`,
+        html: `<p><a href="${resetUrl}">Reset Password</a></p>`,
+      });
+
+      expect(info.messageId).toBeDefined();
+      const message = JSON.parse(info.message);
+      expect(message.to[0].address).toBe(testEmail);
+      expect(message.subject).toBe('Reset your ResolveX password');
     });
   });
 });

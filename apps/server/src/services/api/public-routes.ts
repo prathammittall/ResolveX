@@ -6,6 +6,7 @@ import { log } from '../../lib/logger.js';
 import { authenticateWebhookKey } from '../incident-engine/webhook-keys.js';
 import { isAlertProcessingError } from '../incident-engine/errors.js';
 import { sendGenericEmail } from '../email/mailer.js';
+import { sendPasswordResetEmail } from '../mailer.js';
 import { hashPassword } from '../auth/model.js';
 import { handleGithubCallback, handleGithubWebhook } from '../integrations/github.js';
 import { deploymentSchema, recordDeployment, renderStatusPage } from './modules/ops.js';
@@ -99,17 +100,24 @@ export async function publicRoutes(req: Request, rawBody: string): Promise<Respo
     }
 
     // ---- Password reset (always answers the same way so it cannot be used to probe accounts) ----
-    if (path === '/api/auth/forgot-password' && method === 'POST') {
+    if ((path === '/api/auth/forgot-password' || path === '/auth/forgot-password') && method === 'POST') {
       const parsed = z.object({ email: z.string().trim().toLowerCase().email().max(255) }).safeParse(body());
       if (!parsed.success) return fail('VALIDATION_ERROR', 'Enter a valid email', 400);
       const user = await db.orm.public.User.where({ email: parsed.data.email }).first();
       if (user) {
         const token = await issueUserToken(user.id, 'reset_password');
-        await sendGenericEmail({ to: user.email, subject: 'Reset your ResolveX password', heading: 'Reset your password', body: 'This link expires in 1 hour. If you did not ask for it, ignore this email.', link: `/reset-password?token=${encodeURIComponent(token)}`, linkLabel: 'Choose a new password' }).catch(() => false);
+        await sendPasswordResetEmail({
+          to: user.email,
+          token,
+          name: user.name ?? undefined,
+        }).catch((err) => {
+          log.warn('auth.forgot-password.email_failed', { error: err instanceof Error ? err.message : 'unknown' });
+          return { success: false };
+        });
       }
       return json({ ok: true, message: 'If an account exists for that email, a reset link is on its way.' });
     }
-    if (path === '/api/auth/reset-password' && method === 'POST') {
+    if ((path === '/api/auth/reset-password' || path === '/auth/reset-password') && method === 'POST') {
       const parsed = z.object({ token: z.string().min(10).max(200), password: z.string().min(8).max(200) }).safeParse(body());
       if (!parsed.success) return fail('VALIDATION_ERROR', 'Password must be at least 8 characters', 400, parsed.error.flatten());
       const row = await consumeUserToken(parsed.data.token, 'reset_password');

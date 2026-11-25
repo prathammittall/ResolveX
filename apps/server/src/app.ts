@@ -158,7 +158,7 @@ export function createApp(
   app.post(REGISTER_PATHS, rateLimit('register', limits.register, ip).middleware);
   app.post(REFRESH_PATHS, rateLimit('refresh', limits.refresh, ip).middleware);
   app.post(OTP_PATHS, rateLimit('otp', limits.otp, ip).middleware);
-  app.post(['/api/auth/forgot-password', '/api/auth/reset-password', '/api/auth/verify-email', '/api/auth/verify-email/request'], rateLimit('recovery', limits.otp, ip).middleware);
+  app.post(['/api/auth/forgot-password', '/api/auth/reset-password', '/auth/forgot-password', '/auth/reset-password', '/api/auth/verify-email', '/api/auth/verify-email/request'], rateLimit('recovery', limits.otp, ip).middleware);
   app.post(['/api/webhooks/alerts', '/webhooks/alerts', '/api/webhooks/deployments', '/api/webhooks/github'], rateLimit('webhook', limits.webhook, ip).middleware);
   // Everything else under /api (auth routes and the webhook are limited above and skipped here).
   const apiLimiter = rateLimit('api', limits.api, ip).middleware;
@@ -187,7 +187,7 @@ export function createApp(
       p !== '/api/webhooks/deployments' &&
       p !== '/api/webhooks/github' &&
       p !== '/api/integrations/github/callback' &&
-      !['/api/auth/verify-email', '/api/auth/verify-email/request', '/api/auth/forgot-password', '/api/auth/reset-password'].includes(p)
+      !['/api/auth/verify-email', '/api/auth/verify-email/request', '/api/auth/forgot-password', '/api/auth/reset-password', '/auth/forgot-password', '/auth/reset-password'].includes(p)
     ) {
       next();
       return;
