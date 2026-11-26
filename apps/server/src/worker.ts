@@ -21,20 +21,22 @@ assertAuthConfig();
  *  - outgoing webhook delivery (WebhookDelivery)
  *  - retention (MonitorCheck history)
  */
-const controller = new AbortController();
-const { signal } = controller;
 const lastTick: Record<string, string> = {};
 
-const sleep = (ms: number) =>
+const sleep = (ms: number, signal: AbortSignal) =>
   new Promise<void>((resolve) => {
     const t = setTimeout(resolve, ms);
-    signal.addEventListener('abort', () => {
-      clearTimeout(t);
-      resolve();
-    }, { once: true });
+    signal.addEventListener(
+      'abort',
+      () => {
+        clearTimeout(t);
+        resolve();
+      },
+      { once: true },
+    );
   });
 
-function loop(name: string, intervalMs: number, step: () => Promise<number | boolean | void>): Promise<void> {
+function loop(name: string, intervalMs: number, step: () => Promise<number | boolean | void>, signal: AbortSignal): Promise<void> {
   return (async () => {
     while (!signal.aborted) {
       let busy = false;
@@ -45,45 +47,60 @@ function loop(name: string, intervalMs: number, step: () => Promise<number | boo
         log.error('worker.loop_error', { loop: name, error: error instanceof Error ? error.message : 'unknown' });
       }
       lastTick[name] = new Date().toISOString();
-      if (!busy) await sleep(intervalMs);
+      if (!busy) await sleep(intervalMs, signal);
     }
   })();
 }
 
-log.info('worker.started', { pid: process.pid });
-
-const loops = [
-  loop('escalation', 1_000, () => processNextQueueJob()),
-  loop('monitors', 2_000, () => runDueMonitors()),
-  loop('emails', 5_000, () => deliverPendingEmails()),
-  loop('webhooks', 5_000, () => deliverPendingWebhooks()),
-  loop('retention', 3_600_000, async () => {
-    await pruneMonitorChecks();
-  }),
-];
-
-// Optional liveness endpoint for orchestrators (WORKER_HEALTH_PORT).
-const healthPort = Number(process.env.WORKER_HEALTH_PORT);
-const healthServer = Number.isInteger(healthPort) && healthPort > 0
-  ? http
-      .createServer((_req, res) => {
-        res.writeHead(signal.aborted ? 503 : 200, { 'content-type': 'application/json' });
-        res.end(JSON.stringify({ ok: !signal.aborted, loops: lastTick }));
-      })
-      .listen(healthPort)
-  : null;
-
-function shutdown(sig: string) {
-  if (signal.aborted) return;
-  log.info('worker.stopping', { signal: sig });
-  controller.abort();
-  healthServer?.close();
-  // In-flight steps finish; hard exit if something hangs.
-  setTimeout(() => process.exit(1), 25_000).unref();
+/**
+ * Start the background worker loops (monitoring, escalation, email, webhooks, retention).
+ * Can be run embedded in the Express API process or independently in a dedicated worker process.
+ */
+export function startWorkerLoops(signal: AbortSignal): Promise<void>[] {
+  log.info('worker.started', { pid: process.pid });
+  return [
+    loop('escalation', 1_000, () => processNextQueueJob(), signal),
+    loop('monitors', 2_000, () => runDueMonitors(), signal),
+    loop('emails', 5_000, () => deliverPendingEmails(), signal),
+    loop('webhooks', 5_000, () => deliverPendingWebhooks(), signal),
+    loop('retention', 3_600_000, async () => {
+      await pruneMonitorChecks();
+    }, signal),
+  ];
 }
-process.on('SIGTERM', () => shutdown('SIGTERM'));
-process.on('SIGINT', () => shutdown('SIGINT'));
 
-await Promise.all(loops);
-log.info('worker.stopped');
-process.exit(0);
+// Standalone runner: when invoked directly via `tsx src/worker.ts` or `npm run worker`
+const isDirectRun =
+  process.argv[1] &&
+  (process.argv[1].endsWith('worker.ts') || process.argv[1].endsWith('worker.js'));
+
+if (isDirectRun) {
+  const controller = new AbortController();
+  const { signal } = controller;
+
+  const healthPort = Number(process.env.WORKER_HEALTH_PORT);
+  const healthServer =
+    Number.isInteger(healthPort) && healthPort > 0
+      ? http
+          .createServer((_req, res) => {
+            res.writeHead(signal.aborted ? 503 : 200, { 'content-type': 'application/json' });
+            res.end(JSON.stringify({ ok: !signal.aborted, loops: lastTick }));
+          })
+          .listen(healthPort)
+      : null;
+
+  function shutdown(sig: string) {
+    if (signal.aborted) return;
+    log.info('worker.stopping', { signal: sig });
+    controller.abort();
+    healthServer?.close();
+    setTimeout(() => process.exit(1), 25_000).unref();
+  }
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
+
+  const loops = startWorkerLoops(signal);
+  await Promise.all(loops);
+  log.info('worker.stopped');
+  process.exit(0);
+}

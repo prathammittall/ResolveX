@@ -95,6 +95,118 @@ export async function handleGoogleLogin(req: Request, options?: AuthControllerOp
   }
 }
 
+export function handleGoogleRedirect(req: Request): Response {
+  const url = new URL(req.url);
+  const appUrl = (process.env.APP_URL || `${url.protocol}//${url.host}`).replace(/\/$/, '');
+  const redirectUri = `${appUrl}/api/auth/google/callback`;
+  const next = url.searchParams.get('next') || '/dashboard';
+
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  if (!clientId) {
+    return Response.redirect(`${appUrl}/login?error=Google+login+is+not+configured`, 302);
+  }
+
+  const googleAuthUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+  googleAuthUrl.searchParams.set('client_id', clientId);
+  googleAuthUrl.searchParams.set('redirect_uri', redirectUri);
+  googleAuthUrl.searchParams.set('response_type', 'code');
+  googleAuthUrl.searchParams.set('scope', 'openid email profile');
+  googleAuthUrl.searchParams.set('prompt', 'select_account');
+  googleAuthUrl.searchParams.set('access_type', 'offline');
+  googleAuthUrl.searchParams.set('state', next);
+
+  return Response.redirect(googleAuthUrl.toString(), 302);
+}
+
+export async function handleGoogleCallback(req: Request, options?: AuthControllerOptions): Promise<Response> {
+  const url = new URL(req.url);
+  const code = url.searchParams.get('code');
+  const error = url.searchParams.get('error');
+  const state = url.searchParams.get('state') || '/dashboard';
+  const target = state.startsWith('/') && !state.startsWith('//') && !state.includes('\\') ? state : '/dashboard';
+  const appUrl = (process.env.APP_URL || `${url.protocol}//${url.host}`).replace(/\/$/, '');
+
+  if (error || !code) {
+    const errorMsg = error || 'Google sign-in was canceled';
+    return Response.redirect(`${appUrl}/login?error=${encodeURIComponent(errorMsg)}`, 302);
+  }
+
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const redirectUri = `${appUrl}/api/auth/google/callback`;
+
+  try {
+    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: clientId || '',
+        client_secret: clientSecret || '',
+        redirect_uri: redirectUri,
+        grant_type: 'authorization_code',
+      }),
+    });
+
+    if (!tokenRes.ok) {
+      const errText = await tokenRes.text().catch(() => '');
+      console.warn('Google token exchange failed:', tokenRes.status, errText);
+      return Response.redirect(`${appUrl}/login?error=Google+authentication+failed`, 302);
+    }
+
+    const tokenData = (await tokenRes.json()) as { id_token?: string; access_token?: string };
+    let email: string | undefined;
+    let name: string | undefined;
+
+    if (tokenData.id_token) {
+      try {
+        const parts = tokenData.id_token.split('.');
+        if (parts.length === 3) {
+          const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
+          email = typeof payload.email === 'string' ? payload.email : undefined;
+          name = typeof payload.name === 'string' ? payload.name : undefined;
+        }
+      } catch {
+        // fallback
+      }
+    }
+
+    if (!email && tokenData.access_token) {
+      try {
+        const userinfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenData.access_token}` },
+        });
+        if (userinfoRes.ok) {
+          const userinfo = (await userinfoRes.json()) as { email?: string; name?: string };
+          email = typeof userinfo.email === 'string' ? userinfo.email : undefined;
+          name = typeof userinfo.name === 'string' ? userinfo.name : undefined;
+        }
+      } catch {
+        // fallback
+      }
+    }
+
+    if (!email) {
+      return Response.redirect(`${appUrl}/login?error=No+verified+email+received+from+Google`, 302);
+    }
+
+    const result = await googleLogin({ email, name, credential: tokenData.id_token }, options);
+    const cookies = buildAuthCookies(result.tokens, options);
+
+    const redirectResponse = new Response(null, {
+      status: 302,
+      headers: { Location: `${appUrl}${target}` },
+    });
+    for (const cookie of cookies) {
+      redirectResponse.headers.append('Set-Cookie', cookie);
+    }
+    return redirectResponse;
+  } catch (err) {
+    console.error('Failed to complete Google login callback:', err);
+    return Response.redirect(`${appUrl}/login?error=Unexpected+login+error`, 302);
+  }
+}
+
 export async function handleRefreshToken(req: Request, options?: AuthControllerOptions): Promise<Response> {
   try {
     let data: Record<string, unknown> = {};
@@ -205,8 +317,14 @@ export async function authRouter(req: Request, options?: AuthControllerOptions):
     if (pathname.endsWith('/logout')) return handleLogout(req, options);
     if (pathname.endsWith('/switch-org')) return handleSwitchOrg(req, options);
   }
-  if (method === 'GET' && pathname.endsWith('/me')) {
-    return handleGetMe(req, options);
+  if (method === 'GET') {
+    if (pathname.endsWith('/me')) return handleGetMe(req, options);
+    if (pathname.endsWith('/google/callback') || pathname.endsWith('/auth/google/callback')) {
+      return handleGoogleCallback(req, options);
+    }
+    if (pathname.endsWith('/google') || pathname.endsWith('/auth/google')) {
+      return handleGoogleRedirect(req);
+    }
   }
 
   return Response.json(
